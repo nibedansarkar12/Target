@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>Daily Attendance - Target Tutorials</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #ff6f61;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #e85d53;
+    }
+
+    footer {
+      margin-top: 50px;
+      color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Daily Attendance</h1>
+  <form id="attendanceForm">
+    <input type="text" id="studentName" placeholder="Student Name" required />
+    <select id="className" required>
+      <option value="">Select Class</option>
+      <option value="Class 7">Class 7</option>
+      <option value="Class 8">Class 8</option>
+      <option value="Class 9">Class 9</option>
+      <option value="Class 10">Class 10</option>
+      <option value="Class 11">Class 11</option>
+      <option value="Class 12">Class 12</option>
+    </select>
+    <input type="date" id="date" required />
+    <select id="status" required>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select>
+    <button type="submit">Submit Attendance</button>
+    <p id="message"></p>
+  </form>
+
+  <footer>
+    <p>&copy; 2025 Target Tutorials</p>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRjlqru-J-0UF8Sx1sEGxIlJjhvuXkctw",
+      authDomain: "target-tutorial-home.firebaseapp.com",
+      databaseURL: "https://target-tutorial-home-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "target-tutorial-home",
+      storageBucket: "target-tutorial-home.appspot.com",
+      messagingSenderId: "418581249562",
+      appId: "1:418581249562:web:7475c7eeec8605db2f1ba3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    document.getElementById("attendanceForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("studentName").value;
+      const cls = document.getElementById("className").value;
+      const date = document.getElementById("date").value;
+      const status = document.getElementById("status").value;
+
+      db.ref("attendance/" + cls + "/" + name + "/" + date).set({
+        status: status
+      }).then(() => {
+        document.getElementById("message").innerText = "Attendance saved successfully!";
+        document.getElementById("attendanceForm").reset();
+      }).catch((error) => {
+        document.getElementById("message").innerText = "Error: " + error.message;
+      });
+    });
+  </script>
+</body>
+</html>

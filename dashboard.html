@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #1c1c3c;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    header button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      border: none;
+      background-color: #ff6f61;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .dashboard-container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    section {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .courses ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .courses ul li {
+      background: rgba(255,255,255,0.15);
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #2e2e50;
+      color: #ffdd57;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255,255,255,0.05);
+    }
+
+    tr:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <div class="dashboard-container">
+    <section class="profile">
+      <h2>Your Profile</h2>
+      <p><strong>Email:</strong> <span id="user-email"></span></p>
+      <p><strong>User ID:</strong> <span id="user-id"></span></p>
+    </section>
+
+    <section class="courses">
+      <h2>Your Enrolled Courses</h2>
+      <ul>
+        <li>Web Development Fundamentals</li>
+        <li>Introduction to Data Science</li>
+        <li>Graphic Design Basics</li>
+      </ul>
+    </section>
+
+    <section class="attendance">
+      <h2>Your Attendance</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Class</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="attendance-body">
+          <tr><td colspan="3">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Target Tutorials. All rights reserved.</p>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRjlqru-J-0UF8Sx1sEGxIlJjhvuXkctw",
+      authDomain: "target-tutorial-home.firebaseapp.com",
+      databaseURL: "https://target-tutorial-home-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "target-tutorial-home",
+      storageBucket: "target-tutorial-home.appspot.com",
+      messagingSenderId: "418581249562",
+      appId: "1:418581249562:web:7475c7eeec8605db2f1ba3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const email = user.email || user.phoneNumber;
+        document.getElementById("user-email").innerText = email;
+        document.getElementById("user-id").innerText = user.uid;
+
+        db.ref("attendance").once("value").then(snapshot => {
+          const data = snapshot.val();
+          const tbody = document.getElementById("attendance-body");
+          tbody.innerHTML = "";
+          let found = false;
+
+          for (const cls in data) {
+            for (const student in data[cls]) {
+              if (student.toLowerCase() === email.split("@")[0].toLowerCase()) {
+                for (const date in data[cls][student]) {
+                  const status = data[cls][student][date].status;
+                  const row = document.createElement("tr");
+                  row.innerHTML = `<td>${date}</td><td>${cls}</td><td>${status}</td>`;
+                  tbody.appendChild(row);
+                  found = true;
+                }
+              }
+            }
+          }
+
+          if (!found) {
+            tbody.innerHTML = '<tr><td colspan="3">No attendance found.</td></tr>';
+          }
+        });
+      } else {
+        window.location.href = "loginsignup.html";
+      }
+    });
+
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = "loginsignup.html";
+      });
+    }
+  </script>
+</body>
+</html>
