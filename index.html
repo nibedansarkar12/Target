@@ -29,12 +29,12 @@
         <button onclick="location.href='#courses'">Browse Courses</button>
     </section>
 
-    <section id="about" class="about">
+    <section id="about">
         <h2>About Us</h2>
         <p>At Target Tutorials, we provide comprehensive online tutorials on a variety of subjects to help you succeed.</p>
     </section>
 
-    <section id="courses" class="courses">
+    <section id="courses">
         <h2>Our Courses</h2>
         <div class="course-card">
             <h3>Class 7 to 8</h3>
@@ -50,39 +50,32 @@
         </div>
     </section>
 
-    <section id="studentzone" class="studentzone"></section>
-
-    <section id="contact" class="contact">
+    <section id="contact">
         <h2>Contact Us</h2>
         <form>
-            <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" required>
-            <label for="email">Your Email:</label>
-            <input type="email" id="email" name="email" value="nibedansarkar12@gmail.com" required>
-            <label for="message">Your Message:</label>
-            <textarea id="message" name="message" required></textarea>
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Your Email" required>
+            <textarea name="message" placeholder="Your Message" required></textarea>
             <button type="submit">Submit</button>
         </form>
-        <p style="text-align:center; margin-top:10px;">
+        <p style="margin-top:20px">
             Email: <a href="mailto:nibedansarkar12@gmail.com">nibedansarkar12@gmail.com</a><br>
             Phone: <a href="tel:9614373839">9614373839</a> / <a href="tel:7679262362">7679262362</a>
         </p>
     </section>
 
+    <div class="slider">
+        <div class="slides">
+            <img src="photo1.jpg" alt="Slide 1">
+            <img src="photo2.jpg" alt="Slide 2">
+            <img src="photo3.jpg" alt="Slide 3">
+            <img src="photo4.jpg" alt="Slide 4">
+        </div>
+    </div>
+
     <footer>
         <p>&copy; 2025 Target Tutorials. All rights reserved.</p>
     </footer>
-
     <script src="script.js"></script>
-
-<div class="slider">
-    <div class="slides">
-        <img src="photo1.jpg" alt="Slide 1">
-        <img src="photo2.jpg" alt="Slide 2">
-        <img src="photo3.jpg" alt="Slide 3">
-        <img src="photo4.jpg" alt="Slide 4">
-    </div>
-</div>
-
 </body>
 </html>
