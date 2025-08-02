@@ -7,15 +7,13 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <style>
     body {
       background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
     }
     .card {
-      background-color: white;
+      background: white;
       border-radius: 20px;
       padding: 1.5rem;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -47,18 +45,16 @@
           <option value="C">C</option>
           <option value="D">D</option>
         </select>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Add Question</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যুক্ত করুন</button>
       </form>
       <div id="messageBox" class="text-center mt-4 font-semibold"></div>
     </div>
 
-    <!-- Export Options -->
+    <!-- Export -->
     <div class="card">
-      <h2 class="text-xl font-semibold mb-4">📁 প্রশ্ন এক্সপোর্ট করুন</h2>
-      <div class="flex flex-col gap-4">
-        <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export as PDF</button>
-        <button onclick="generateCSV()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Export as CSV</button>
-      </div>
+      <h2 class="text-xl font-semibold mb-4">📁 প্রশ্ন এক্সপোর্ট</h2>
+      <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full mb-3">Export as PDF</button>
+      <button onclick="generateCSV()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 w-full">Export as CSV</button>
     </div>
   </main>
 
@@ -67,19 +63,25 @@
     <div id="questionList" class="space-y-4"></div>
   </section>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
-      authDomain: "mocktest-dichvhi.firebaseapp.com",
-      projectId: "mocktest-dichvhi",
-      storageBucket: "mocktest-dichvhi.appspot.com",
-      messagingSenderId: "425345275542",
-      appId: "1:425345275542:web:01a9d12ff9e010ee306b6a"
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e",
+      measurementId: "G-436XDYLGVX"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
+    const questionForm = document.getElementById('questionForm');
     const messageBox = document.getElementById('messageBox');
     const questionList = document.getElementById('questionList');
 
@@ -89,112 +91,108 @@
       setTimeout(() => messageBox.textContent = '', 3000);
     }
 
-    async function fetchAndRenderQuestions() {
+    async function loadQuestions() {
       questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
-      const snapshot = await db.collection("questions").orderBy("id").get();
-      const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderQuestionList(questions);
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+      renderQuestions(questions);
     }
 
-    function renderQuestionList(questions) {
+    function renderQuestions(questions) {
       questionList.innerHTML = "";
       questions.forEach(q => {
-        const optionsHtml = q.options.map((opt, i) => {
-          const optLabel = String.fromCharCode(65 + i); // A, B, C, D
-          return `<li>${optLabel}. ${opt}</li>`;
+        const optionsHTML = q.options.map((opt, i) => {
+          const label = String.fromCharCode(65 + i);
+          return `<li>${label}. ${opt}</li>`;
         }).join("");
 
         questionList.innerHTML += `
-          <div class="bg-white shadow-md rounded p-4">
+          <div class="bg-white shadow rounded p-4">
             <p><strong>(${q.id})</strong> ${q.question}</p>
-            <ul class="list-disc ml-6">${optionsHtml}</ul>
-            <p class="mt-1">✅ সঠিক উত্তর: <strong>${q.answer}</strong></p>
-            <div class="mt-2 flex gap-2">
-              <button onclick="deleteQuestion('${q.id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-            </div>
+            <ul class="list-disc ml-6">${optionsHTML}</ul>
+            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
+            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
           </div>
         `;
       });
     }
 
-    async function deleteQuestion(docId) {
-      if (confirm("আপনি কি এই প্রশ্নটি মুছে ফেলতে চান?")) {
-        await db.collection("questions").doc(docId).delete();
-        showMessage("❌ প্রশ্ন মুছে ফেলা হয়েছে");
-        fetchAndRenderQuestions();
+    window.deleteQuestion = async function (docId) {
+      if (confirm("আপনি কি নিশ্চিত মুছতে চান?")) {
+        await deleteDoc(doc(db, "questions", docId));
+        showMessage("প্রশ্ন মুছে ফেলা হয়েছে");
+        loadQuestions();
       }
-    }
+    };
 
-    document.getElementById('questionForm').addEventListener('submit', async function(e) {
+    questionForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      const question = document.getElementById('questionText').value.trim();
-      const optionA = document.getElementById('optionA').value.trim();
-      const optionB = document.getElementById('optionB').value.trim();
-      const optionC = document.getElementById('optionC').value.trim();
-      const optionD = document.getElementById('optionD').value.trim();
-      const correctOption = document.getElementById('correctOption').value;
-
-      const options = [optionA, optionB, optionC, optionD];
-      const answer = { A: optionA, B: optionB, C: optionC, D: optionD }[correctOption];
+      const question = document.getElementById("questionText").value.trim();
+      const options = [
+        document.getElementById("optionA").value.trim(),
+        document.getElementById("optionB").value.trim(),
+        document.getElementById("optionC").value.trim(),
+        document.getElementById("optionD").value.trim()
+      ];
+      const correct = document.getElementById("correctOption").value;
+      const answer = options["ABCD".indexOf(correct)];
 
       try {
-        const snapshot = await db.collection("questions").get();
+        const snapshot = await getDocs(collection(db, "questions"));
         const newId = snapshot.size + 1;
 
-        await db.collection("questions").add({
+        await addDoc(collection(db, "questions"), {
           id: newId,
-          question: question,
-          options: options,
-          answer: answer
+          question,
+          options,
+          answer
         });
 
-        showMessage("✅ প্রশ্ন সফলভাবে যোগ হয়েছে!");
-        document.getElementById('questionForm').reset();
-        fetchAndRenderQuestions();
+        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
+        questionForm.reset();
+        loadQuestions();
       } catch (error) {
-        showMessage("❌ প্রশ্ন যোগ করতে ব্যর্থ: " + error.message, true);
+        showMessage("❌ ব্যর্থ: " + error.message, true);
       }
     });
 
-    function generatePDF() {
-      const doc = new jsPDF();
-      doc.setFontSize(12);
-      doc.text("Target Zone - প্রশ্নপত্র", 20, 20);
-      let y = 30;
+    window.generatePDF = async function () {
+      const docPDF = new jsPDF();
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      let y = 20;
+      docPDF.text("Target Zone প্রশ্নপত্র", 20, y);
+      y += 10;
 
-      db.collection("questions").orderBy("id").get().then(snapshot => {
-        snapshot.forEach(docSnap => {
-          const q = docSnap.data();
-          doc.text(`(${q.id}) ${q.question}`, 10, y);
-          y += 7;
-          q.options.forEach((opt, i) => {
-            doc.text(`${String.fromCharCode(65 + i)}. ${opt}`, 15, y);
-            y += 7;
-          });
-          doc.text(`✅ সঠিক উত্তর: ${q.answer}`, 15, y);
-          y += 10;
-          if (y > 270) {
-            doc.addPage();
-            y = 20;
-          }
+      snapshot.forEach(docSnap => {
+        const q = docSnap.data();
+        docPDF.text(`(${q.id}) ${q.question}`, 10, y); y += 7;
+        q.options.forEach((opt, i) => {
+          docPDF.text(`${String.fromCharCode(65+i)}. ${opt}`, 15, y);
+          y += 6;
         });
-        doc.save("questions.pdf");
+        docPDF.text(`✅ সঠিক উত্তর: ${q.answer}`, 15, y);
+        y += 10;
+        if (y > 270) { docPDF.addPage(); y = 20; }
       });
-    }
 
-    function generateCSV() {
-      db.collection("questions").orderBy("id").get().then(snapshot => {
-        const questions = snapshot.docs.map(docSnap => docSnap.data());
-        const csv = Papa.unparse(questions);
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "questions.csv";
-        link.click();
-      });
-    }
+      docPDF.save("questions.pdf");
+    };
 
-    fetchAndRenderQuestions();
+    window.generateCSV = async function () {
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const data = snapshot.docs.map(doc => doc.data());
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "questions.csv";
+      link.click();
+    };
+
+    loadQuestions();
   </script>
 </body>
 </html>
