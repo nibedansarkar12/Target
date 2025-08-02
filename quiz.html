@@ -12,7 +12,6 @@
       margin: 0;
       padding: 0;
     }
-
     .container {
       max-width: 800px;
       margin: 30px auto;
@@ -21,26 +20,21 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-
     .header {
       text-align: center;
       margin-bottom: 20px;
     }
-
     .header h2 {
       color: #333;
     }
-
     .question-box {
       margin-bottom: 20px;
     }
-
     .question-text {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 15px;
     }
-
     .options label {
       display: block;
       margin-bottom: 10px;
@@ -50,21 +44,17 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
     .options input[type="radio"] {
       margin-right: 8px;
     }
-
     .options label:hover {
       background: #e0f7fa;
     }
-
     .controls {
       display: flex;
       justify-content: space-between;
       margin-top: 20px;
     }
-
     .controls button {
       padding: 10px 20px;
       border: none;
@@ -74,11 +64,9 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
     .controls button:hover {
       background: #0056b3;
     }
-
     #timer {
       font-size: 16px;
       color: #d9534f;
@@ -109,14 +97,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase config
+    // ✅ Firebase config (same as student/index.html config)
     const firebaseConfig = {
-      apiKey: "তোমার-api-key",
-      authDomain: "তোমার-auth-domain",
-      projectId: "your-project-id",
-      storageBucket: "your-storage-bucket",
-      messagingSenderId: "your-msg-id",
-      appId: "your-app-id"
+      apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
+      authDomain: "mocktest-dichvhi.firebaseapp.com",
+      projectId: "mocktest-dichvhi",
+      storageBucket: "mocktest-dichvhi.appspot.com",
+      messagingSenderId: "425345275542",
+      appId: "1:425345275542:web:01a9d12ff9e010ee306b6a"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -137,7 +125,7 @@
 
       const q = questions[currentQuestionIndex];
       document.getElementById("questionText").textContent = `(${q.id}) ${q.question}`;
-      const optionsHTML = q.options.map((opt, idx) =>
+      const optionsHTML = q.options.map((opt) =>
         `<label><input type="radio" name="option" value="${opt}"> ${opt}</label>`
       ).join("");
       document.getElementById("optionsList").innerHTML = optionsHTML;
@@ -157,7 +145,7 @@
       }
     }
 
-    // Timer (80 minutes countdown)
+    // ⏱️ Timer
     let timeLeft = 80 * 60;
     const timerElement = document.getElementById("timer");
 
@@ -176,7 +164,7 @@
 
     const timerInterval = setInterval(updateTimer, 1000);
 
-    // Fetch questions on load
+    // 🚀 Fetch questions
     fetchQuestions();
   </script>
 </body>
