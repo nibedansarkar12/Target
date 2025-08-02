@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SSC GD Mock Test - Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>SSC GD Mock Test</h1>
+    <form id="loginForm">
+      <label for="name">Your Name:</label>
+      <input type="text" id="name" required />
+
+      <label for="roll">Roll Number:</label>
+      <input type="text" id="roll" required />
+
+      <button type="submit">Start Test</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const roll = document.getElementById('roll').value.trim();
+
+      if (name === '' || roll === '') {
+        alert('Please fill out all fields!');
+        return;
+      }
+
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userRoll', roll);
+
+      window.location.href = 'test.html';
+    });
+  </script>
+</body>
+</html>
