@@ -2,57 +2,123 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8" />
-  <title>লগইন - স্টুডেন্ট</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>লগইন পেজ | SSC GD Mock Test</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f1f1f1;
+      background: linear-gradient(to right, #ffecd2, #fcb69f);
+      font-family: 'Segoe UI', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
-    .box {
+
+    .login-box {
       background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      width: 300px;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 100%;
     }
-    input {
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    label {
+      font-size: 16px;
+      color: #555;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      margin-bottom: 20px;
+      transition: 0.3s;
     }
+
+    input:focus {
+      border-color: #ff7e5f;
+      outline: none;
+      box-shadow: 0 0 5px rgba(255,126,95,0.4);
+    }
+
     button {
       width: 100%;
-      padding: 10px;
-      margin-top: 20px;
-      background: #4CAF50;
-      color: white;
+      padding: 12px;
+      background-color: #ff7e5f;
       border: none;
-      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ff5722;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    .admin-link {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .admin-link a {
+      color: #333;
+      font-size: 14px;
+      text-decoration: underline;
       cursor: pointer;
     }
-    button:hover {
-      background: #45a049;
+
+    .admin-link a:hover {
+      color: #ff5722;
     }
+
     .error {
       color: red;
+      font-size: 14px;
+      text-align: center;
       margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h3>স্টুডেন্ট লগইন</h3>
-    <input type="email" id="email" placeholder="ইমেইল" />
-    <input type="password" id="password" placeholder="পাসওয়ার্ড" />
+  <div class="login-box">
+    <h2>SSC GD মক টেস্টে স্বাগতম</h2>
+
+    <label for="email">ইমেইল আইডি</label>
+    <input type="text" id="email" placeholder="ইমেইল লিখুন" />
+
+    <label for="password">পাসওয়ার্ড</label>
+    <input type="password" id="password" placeholder="পাসওয়ার্ড লিখুন" />
+
     <button id="login-btn">লগইন করুন</button>
+
     <div class="error" id="error-msg"></div>
+
+    <div class="admin-link">
+      <a href="admin-login.html">অ্যাডমিন লগইন</a>
+    </div>
+
+    <div class="footer">© 2025 Target Zone</div>
   </div>
 
   <!-- Firebase SDK -->
@@ -84,12 +150,12 @@
       const password = passwordInput.value.trim();
 
       if (!email || !password) {
-        errorMsg.textContent = "দয়া করে ইমেইল ও পাসওয়ার্ড দিন।";
+        errorMsg.textContent = "ইমেইল এবং পাসওয়ার্ড দিন।";
         return;
       }
 
       signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(() => {
           // ✅ লগইন সফল → quiz.html এ যাও
           window.location.href = "quiz.html";
         })
