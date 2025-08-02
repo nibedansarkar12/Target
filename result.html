@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mock Test Result</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h2>Exam Result</h2>
+    <p id="userInfo"></p>
+    <div id="resultBox">
+      <p>Total Questions: <span id="total"></span></p>
+      <p>Attempted: <span id="attempted"></span></p>
+      <p>Correct: <span id="correct"></span></p>
+      <p>Wrong: <span id="wrong"></span></p>
+      <p><strong>Score: <span id="score"></span></strong></p>
+    </div>
+    <br />
+    <a href="index.html" class="btn">Back to Home</a>
+  </div>
+
+  <script>
+    const name = localStorage.getItem("ssc_user");
+    const roll = localStorage.getItem("ssc_roll");
+    document.getElementById("userInfo").innerText = `Name: ${name} | Roll: ${roll}`;
+
+    const answers = JSON.parse(localStorage.getItem("ssc_answers"));
+    const questions = JSON.parse(localStorage.getItem("ssc_questions"));
+
+    let correct = 0;
+    let wrong = 0;
+    let attempted = 0;
+
+    answers.forEach((ans, i) => {
+      if (ans !== null) {
+        attempted++;
+        if (ans === questions[i].answer) {
+          correct++;
+        } else {
+          wrong++;
+        }
+      }
+    });
+
+    const score = (correct * 2) - (wrong * 0.25);
+
+    document.getElementById("total").innerText = questions.length;
+    document.getElementById("attempted").innerText = attempted;
+    document.getElementById("correct").innerText = correct;
+    document.getElementById("wrong").innerText = wrong;
+    document.getElementById("score").innerText = `${score.toFixed(2)} / ${questions.length * 2}`;
+
+    // Optional: Clear localStorage after result
+    // localStorage.clear();
+  </script>
+</body>
+</html>
