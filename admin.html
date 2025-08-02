@@ -1,182 +1,110 @@
-<!DOCTYPE html><html lang="en"><head>
+<!-- admin.html --><!DOCTYPE html><html lang="en">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Target Zone Admin Panel</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }.container {
-  max-width: 800px;
-  margin: 20px auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-  text-align: center;
-  color: #2c3e50;
-}
-
-label {
-  display: block;
-  margin-top: 10px;
-}
-
-input, textarea, button, select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-}
-
-button {
-  background-color: #27ae60;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-button:hover {
-  background-color: #1e8449;
-}
-
-.section {
-  margin-top: 30px;
-}
-
-.output {
-  background: #f9f9f9;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 10px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-  </style>
-</head><body>
-  <div class="container">
-    <h1>🎯 Target Zone Admin Panel</h1><!-- Add Question Section -->
-<div class="section">
-  <h3>➕ প্রশ্ন যোগ করুন</h3>
-  <label>প্রশ্ন (Bengali):</label>
-  <textarea id="questionText"></textarea>
-
-  <label>Option A:</label>
-  <input type="text" id="optionA">
-
-  <label>Option B:</label>
-  <input type="text" id="optionB">
-
-  <label>Option C:</label>
-  <input type="text" id="optionC">
-
-  <label>Option D:</label>
-  <input type="text" id="optionD">
-
-  <label>সঠিক উত্তর (A/B/C/D):</label>
-  <input type="text" id="correctAnswer">
-
-  <button onclick="addQuestion()">Add Question</button>
-  <div class="output" id="questionStatus"></div>
+  <title>Admin Panel - TargetZone</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+  <script src="/firebase-config.js"></script>
+</head>
+<body class="bg-gradient-to-r from-cyan-500 to-blue-600 min-h-screen text-white">
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">TargetZone Admin Panel</h1><!-- Admin Authentication Section -->
+<div id="login-section" class="bg-white text-black rounded-xl p-6 shadow-xl">
+  <h2 class="text-xl font-semibold mb-2">Admin Login</h2>
+  <input type="email" id="adminEmail" placeholder="Admin Email" class="w-full mb-2 p-2 border rounded" />
+  <input type="password" id="adminPassword" placeholder="Password" class="w-full mb-4 p-2 border rounded" />
+  <button onclick="adminLogin()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-800">Login</button>
 </div>
 
-<!-- Add Student Section -->
-<div class="section">
-  <h3>👤 ছাত্র যোগ করুন</h3>
-  <label>Student Name:</label>
-  <input type="text" id="studentName">
+<!-- Admin Panel Section -->
+<div id="admin-panel" class="hidden mt-8">
+  <div class="bg-white text-black rounded-xl p-6 shadow-xl">
+    <h2 class="text-xl font-bold mb-4">Admin Controls</h2>
+    <button onclick="clearStudentData()" class="bg-red-500 text-white px-4 py-2 mb-4 rounded hover:bg-red-700">Clear Previous Data</button>
 
-  <label>Roll Number:</label>
-  <input type="text" id="rollNumber">
+    <!-- Add Question Section -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold">Add Question</h3>
+      <textarea id="questionText" class="w-full p-2 border rounded mb-2" placeholder="Enter question..."></textarea>
+      <input type="text" id="optionA" placeholder="Option A" class="w-full p-2 border rounded mb-2" />
+      <input type="text" id="optionB" placeholder="Option B" class="w-full p-2 border rounded mb-2" />
+      <input type="text" id="optionC" placeholder="Option C" class="w-full p-2 border rounded mb-2" />
+      <input type="text" id="optionD" placeholder="Option D" class="w-full p-2 border rounded mb-2" />
+      <input type="text" id="correctAnswer" placeholder="Correct Answer (A/B/C/D)" class="w-full p-2 border rounded mb-2" />
+      <button onclick="addQuestion()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800">Add Question</button>
+    </div>
 
-  <button onclick="addStudent()">Add Student</button>
-  <div class="output" id="studentStatus"></div>
-</div>
-
-<!-- Result Section -->
-<div class="section">
-  <h3>📊 রেজাল্ট দেখুন</h3>
-  <label>Roll Number:</label>
-  <input type="text" id="resultRoll">
-  <button onclick="getResult()">Get Result</button>
-  <div class="output" id="resultOutput"></div>
-</div>
-
-<!-- Clear All Data -->
-<div class="section">
-  <h3>🧹 ডাটাবেস ক্লিয়ার করুন</h3>
-  <button onclick="clearAllData()" style="background:#c0392b">Clear All Questions & Students</button>
+    <!-- All Results Section -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold">Exam Results</h3>
+      <div id="results-list" class="bg-gray-100 rounded p-4 max-h-96 overflow-y-auto text-black"></div>
+    </div>
+  </div>
 </div>
 
   </div>  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-      projectId: "YOUR_PROJECT",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
+
+    const adminEmail = "admin@targetzone.com";
+
+    function adminLogin() {
+      const email = document.getElementById("adminEmail").value;
+      const password = document.getElementById("adminPassword").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          if (email === adminEmail) {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("admin-panel").style.display = "block";
+            loadResults();
+          } else {
+            alert("Not authorized");
+          }
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    }
 
     function addQuestion() {
       const question = document.getElementById("questionText").value;
-      const a = document.getElementById("optionA").value;
-      const b = document.getElementById("optionB").value;
-      const c = document.getElementById("optionC").value;
-      const d = document.getElementById("optionD").value;
-      const answer = document.getElementById("correctAnswer").value.toUpperCase();
+      const optionA = document.getElementById("optionA").value;
+      const optionB = document.getElementById("optionB").value;
+      const optionC = document.getElementById("optionC").value;
+      const optionD = document.getElementById("optionD").value;
+      const correct = document.getElementById("correctAnswer").value;
 
-      const newKey = db.ref().child("questions").push().key;
-      db.ref("questions/" + newKey).set({
-        question, a, b, c, d, answer
+      const newRef = db.ref("questions").push();
+      newRef.set({
+        question,
+        options: { A: optionA, B: optionB, C: optionC, D: optionD },
+        answer: correct.toUpperCase()
       });
 
-      document.getElementById("questionStatus").innerText = "প্রশ্ন সংরক্ষণ হয়েছে ✅";
+      alert("Question added successfully!");
     }
 
-    function addStudent() {
-      const name = document.getElementById("studentName").value;
-      const roll = document.getElementById("rollNumber").value;
-
-      db.ref("students/" + roll).set({
-        name, roll
-      });
-
-      document.getElementById("studentStatus").innerText = "Student added ✅";
-    }
-
-    function getResult() {
-      const roll = document.getElementById("resultRoll").value;
-      db.ref("results/" + roll).once("value", snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          document.getElementById("resultOutput").innerText = JSON.stringify(data, null, 2);
-        } else {
-          document.getElementById("resultOutput").innerText = "কোনো ফলাফল পাওয়া যায়নি ❌";
-        }
+    function loadResults() {
+      const container = document.getElementById("results-list");
+      db.ref("results").on("value", (snapshot) => {
+        container.innerHTML = "";
+        snapshot.forEach((child) => {
+          const r = child.val();
+          const div = document.createElement("div");
+          div.className = "mb-2 p-2 bg-white text-black rounded shadow";
+          div.innerHTML = `<strong>${r.name}</strong> (Roll: ${r.roll}) - Score: ${r.score}`;
+          container.appendChild(div);
+        });
       });
     }
 
-    function clearAllData() {
-      db.ref("questions").remove();
+    function clearStudentData() {
+      db.ref("results").remove();
       db.ref("students").remove();
-      alert("All data cleared!");
+      alert("Previous student data cleared!");
     }
-  </script></body></html>
+  </script></body>
+</html>
