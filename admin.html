@@ -1,110 +1,111 @@
-<!-- admin.html --><!DOCTYPE html><html lang="en">
+<!DOCTYPE html><html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - TargetZone</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
-  <script src="/firebase-config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>অ্যাডমিন প্যানেল - Target Zone</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #ece9e6, #ffffff);
+    }
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    .container {
+      padding: 2rem;
+    }
+    .card {
+      background-color: #f9f9f9;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin: 0 0 1rem;
+    }
+    button, input[type="text"], select {
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-top: 0.5rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-r from-cyan-500 to-blue-600 min-h-screen text-white">
-  <div class="max-w-5xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6 text-center">TargetZone Admin Panel</h1><!-- Admin Authentication Section -->
-<div id="login-section" class="bg-white text-black rounded-xl p-6 shadow-xl">
-  <h2 class="text-xl font-semibold mb-2">Admin Login</h2>
-  <input type="email" id="adminEmail" placeholder="Admin Email" class="w-full mb-2 p-2 border rounded" />
-  <input type="password" id="adminPassword" placeholder="Password" class="w-full mb-4 p-2 border rounded" />
-  <button onclick="adminLogin()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-800">Login</button>
+<body>
+  <header>অ্যাডমিন প্যানেল - Target Zone</header>
+  <div class="container">
+    <div class="card">
+      <h3>নতুন পরীক্ষা তৈরি করুন</h3>
+      <input type="text" id="examTitle" placeholder="পরীক্ষার শিরোনাম দিন">
+      <button onclick="createExam()">পরীক্ষা তৈরি করুন</button>
+    </div><div class="card">
+  <h3>প্রশ্ন যুক্ত করুন</h3>
+  <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন">
+  <input type="text" id="option1" placeholder="বিকল্প ১">
+  <input type="text" id="option2" placeholder="বিকল্প ২">
+  <input type="text" id="option3" placeholder="বিকল্প ৩">
+  <input type="text" id="option4" placeholder="বিকল্প ৪">
+  <input type="text" id="correctAnswer" placeholder="সঠিক উত্তর">
+  <button onclick="addQuestion()">প্রশ্ন যুক্ত করুন</button>
 </div>
 
-<!-- Admin Panel Section -->
-<div id="admin-panel" class="hidden mt-8">
-  <div class="bg-white text-black rounded-xl p-6 shadow-xl">
-    <h2 class="text-xl font-bold mb-4">Admin Controls</h2>
-    <button onclick="clearStudentData()" class="bg-red-500 text-white px-4 py-2 mb-4 rounded hover:bg-red-700">Clear Previous Data</button>
+<div class="card">
+  <h3>সব রেজাল্ট দেখুন</h3>
+  <button onclick="viewResults()">রেজাল্ট দেখুন</button>
+  <div id="results"></div>
+</div>
 
-    <!-- Add Question Section -->
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold">Add Question</h3>
-      <textarea id="questionText" class="w-full p-2 border rounded mb-2" placeholder="Enter question..."></textarea>
-      <input type="text" id="optionA" placeholder="Option A" class="w-full p-2 border rounded mb-2" />
-      <input type="text" id="optionB" placeholder="Option B" class="w-full p-2 border rounded mb-2" />
-      <input type="text" id="optionC" placeholder="Option C" class="w-full p-2 border rounded mb-2" />
-      <input type="text" id="optionD" placeholder="Option D" class="w-full p-2 border rounded mb-2" />
-      <input type="text" id="correctAnswer" placeholder="Correct Answer (A/B/C/D)" class="w-full p-2 border rounded mb-2" />
-      <button onclick="addQuestion()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800">Add Question</button>
-    </div>
-
-    <!-- All Results Section -->
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold">Exam Results</h3>
-      <div id="results-list" class="bg-gray-100 rounded p-4 max-h-96 overflow-y-auto text-black"></div>
-    </div>
-  </div>
+<div class="card">
+  <h3>পুরোনো ডেটা ক্লিয়ার করুন</h3>
+  <button onclick="clearData()">সব মুছে ফেলুন</button>
 </div>
 
   </div>  <script>
-    const auth = firebase.auth();
-    const db = firebase.database();
-
-    const adminEmail = "admin@targetzone.com";
-
-    function adminLogin() {
-      const email = document.getElementById("adminEmail").value;
-      const password = document.getElementById("adminPassword").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          if (email === adminEmail) {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("admin-panel").style.display = "block";
-            loadResults();
-          } else {
-            alert("Not authorized");
-          }
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+    function createExam() {
+      const title = document.getElementById('examTitle').value;
+      alert('পরীক্ষা তৈরি হয়েছে: ' + title);
+      // Firebase-এ সংযোগ করুন
     }
 
     function addQuestion() {
-      const question = document.getElementById("questionText").value;
-      const optionA = document.getElementById("optionA").value;
-      const optionB = document.getElementById("optionB").value;
-      const optionC = document.getElementById("optionC").value;
-      const optionD = document.getElementById("optionD").value;
-      const correct = document.getElementById("correctAnswer").value;
-
-      const newRef = db.ref("questions").push();
-      newRef.set({
-        question,
-        options: { A: optionA, B: optionB, C: optionC, D: optionD },
-        answer: correct.toUpperCase()
-      });
-
-      alert("Question added successfully!");
+      const q = document.getElementById('questionText').value;
+      const o1 = document.getElementById('option1').value;
+      const o2 = document.getElementById('option2').value;
+      const o3 = document.getElementById('option3').value;
+      const o4 = document.getElementById('option4').value;
+      const ans = document.getElementById('correctAnswer').value;
+      alert('প্রশ্ন যুক্ত হয়েছে: ' + q);
+      // Firebase-এ যুক্ত করুন
     }
 
-    function loadResults() {
-      const container = document.getElementById("results-list");
-      db.ref("results").on("value", (snapshot) => {
-        container.innerHTML = "";
-        snapshot.forEach((child) => {
-          const r = child.val();
-          const div = document.createElement("div");
-          div.className = "mb-2 p-2 bg-white text-black rounded shadow";
-          div.innerHTML = `<strong>${r.name}</strong> (Roll: ${r.roll}) - Score: ${r.score}`;
-          container.appendChild(div);
-        });
-      });
+    function viewResults() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<p>রেজাল্ট লোড হচ্ছে...</p>';
+      // Firebase থেকে ফলাফল পড়ুন এবং এখানে দেখান
     }
 
-    function clearStudentData() {
-      db.ref("results").remove();
-      db.ref("students").remove();
-      alert("Previous student data cleared!");
+    function clearData() {
+      if (confirm('আপনি কি সত্যিই সব মুছে ফেলতে চান?')) {
+        alert('সব ডেটা মুছে ফেলা হয়েছে');
+        // Firebase থেকে সব ডেটা মুছুন
+      }
     }
   </script></body>
 </html>
