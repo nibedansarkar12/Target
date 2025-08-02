@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>লগইন পেজ | SSC GD Mock Test</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     body {
       background: linear-gradient(to right, #ffecd2, #fcb69f);
@@ -92,6 +94,21 @@
   </div>
 
   <script>
+    // Firebase config: তুমি আগে যেটা দিয়েছিলে
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
+      authDomain: "mocktest-dichvhi.firebaseapp.com",
+      databaseURL: "https://mocktest-dichvhi-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "mocktest-dichvhi",
+      storageBucket: "mocktest-dichvhi.appspot.com",
+      messagingSenderId: "425345275542",
+      appId: "1:425345275542:web:01a9d12ff9e010ee306b6a"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     function loginUser() {
       const name = document.getElementById("name").value.trim();
       const roll = document.getElementById("roll").value.trim();
@@ -105,8 +122,18 @@
       sessionStorage.setItem("userName", name);
       sessionStorage.setItem("rollNumber", roll);
 
-      // quiz.html-এ যাও
-      window.location.href = "quiz.html";
+      // Firebase-এ সেভ
+      const loginTime = new Date().toLocaleString("bn-BD");
+      database.ref("users/" + roll).set({
+        name: name,
+        roll: roll,
+        loginTime: loginTime
+      }).then(() => {
+        // quiz.html-এ রিডাইরেক্ট
+        window.location.href = "quiz.html";
+      }).catch((error) => {
+        alert("ডেটা সেভ করতে সমস্যা হয়েছে: " + error.message);
+      });
     }
   </script>
 </body>
