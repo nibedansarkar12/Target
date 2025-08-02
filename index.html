@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>লগইন পেজ | SSC GD Mock Test</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     body {
       background: linear-gradient(to right, #ffecd2, #fcb69f);
@@ -97,14 +95,14 @@
 <body>
   <div class="login-box">
     <h2>SSC GD মক টেস্টে স্বাগতম</h2>
-    
+
     <label for="name">আপনার নাম</label>
     <input type="text" id="name" placeholder="নাম লিখুন" />
 
     <label for="roll">রোল নম্বর</label>
     <input type="text" id="roll" placeholder="রোল নম্বর লিখুন" />
 
-    <button onclick="loginUser()">লগইন করুন</button>
+    <button id="login-btn">লগইন করুন</button>
 
     <div class="admin-link">
       <a href="admin-login.html">অ্যাডমিন লগইন</a>
@@ -113,43 +111,56 @@
     <div class="footer">© 2025 Target Zone</div>
   </div>
 
-  <script>
+  <!-- Firebase Realtime DB (Modular SDK v9) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    // ✅ তোর Firebase config (target-zone-8fffd)
     const firebaseConfig = {
-      apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
-      authDomain: "mocktest-dichvhi.firebaseapp.com",
-      databaseURL: "https://mocktest-dichvhi-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "mocktest-dichvhi",
-      storageBucket: "mocktest-dichvhi.appspot.com",
-      messagingSenderId: "425345275542",
-      appId: "1:425345275542:web:01a9d12ff9e010ee306b6a"
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e",
+      measurementId: "G-436XDYLGVX"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    function loginUser() {
-      const name = document.getElementById("name").value.trim();
-      const roll = document.getElementById("roll").value.trim();
+    const nameInput = document.getElementById("name");
+    const rollInput = document.getElementById("roll");
+    const loginBtn = document.getElementById("login-btn");
+
+    loginBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      const roll = rollInput.value.trim();
 
       if (name === "" || roll === "") {
         alert("অনুগ্রহ করে নাম ও রোল নম্বর লিখুন।");
         return;
       }
 
-      sessionStorage.setItem("userName", name);
-      sessionStorage.setItem("rollNumber", roll);
+      const loginTime = new Date().toISOString();
 
-      const loginTime = new Date().toLocaleString("bn-BD");
-      database.ref("users/" + roll).set({
+      // ✅ Write to Realtime Database
+      set(ref(db, "users/" + roll), {
         name: name,
         roll: roll,
         loginTime: loginTime
-      }).then(() => {
+      })
+      .then(() => {
+        // 🔄 Login সফল → quiz.html এ পাঠিয়ে দাও
         window.location.href = "quiz.html";
-      }).catch((error) => {
-        alert("ডেটা সেভ করতে সমস্যা হয়েছে: " + error.message);
+      })
+      .catch((error) => {
+        console.error("🔥 Login error:", error);
+        alert("লগইন করতে সমস্যা হয়েছে: " + error.message);
       });
-    }
+    });
   </script>
 </body>
 </html>
