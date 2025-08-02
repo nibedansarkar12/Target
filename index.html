@@ -76,6 +76,22 @@
       font-size: 13px;
       color: #777;
     }
+
+    .admin-link {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .admin-link a {
+      color: #333;
+      font-size: 14px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .admin-link a:hover {
+      color: #ff5722;
+    }
   </style>
 </head>
 <body>
@@ -90,11 +106,14 @@
 
     <button onclick="loginUser()">লগইন করুন</button>
 
+    <div class="admin-link">
+      <a href="admin-login.html">অ্যাডমিন লগইন</a>
+    </div>
+
     <div class="footer">© 2025 Target Zone</div>
   </div>
 
   <script>
-    // Firebase config: তুমি আগে যেটা দিয়েছিলে
     const firebaseConfig = {
       apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
       authDomain: "mocktest-dichvhi.firebaseapp.com",
@@ -105,7 +124,6 @@
       appId: "1:425345275542:web:01a9d12ff9e010ee306b6a"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
@@ -118,18 +136,15 @@
         return;
       }
 
-      // SessionStorage-এ সেভ
       sessionStorage.setItem("userName", name);
       sessionStorage.setItem("rollNumber", roll);
 
-      // Firebase-এ সেভ
       const loginTime = new Date().toLocaleString("bn-BD");
       database.ref("users/" + roll).set({
         name: name,
         roll: roll,
         loginTime: loginTime
       }).then(() => {
-        // quiz.html-এ রিডাইরেক্ট
         window.location.href = "quiz.html";
       }).catch((error) => {
         alert("ডেটা সেভ করতে সমস্যা হয়েছে: " + error.message);
