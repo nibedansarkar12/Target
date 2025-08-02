@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel - Target Zone</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
-  <!-- Firebase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <style>
@@ -20,9 +20,6 @@
       padding: 1.5rem;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
-    .icon {
-      color: #4f46e5;
-    }
   </style>
 </head>
 <body class="p-6">
@@ -31,12 +28,12 @@
     <p class="text-gray-600">Manage your mock tests smartly</p>
   </header>
 
-  <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <!-- Add Question Card -->
+  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Add Question -->
     <div class="card">
-      <h2 class="text-xl font-semibold mb-2">➕ Add Question</h2>
+      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
       <form id="questionForm">
-        <input type="text" id="questionText" placeholder="Enter Question" class="w-full mb-2 p-2 border rounded" required>
+        <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন" class="w-full mb-2 p-2 border rounded" required>
         <div class="grid grid-cols-2 gap-2 mb-2">
           <input type="text" id="optionA" placeholder="Option A" class="p-2 border rounded" required>
           <input type="text" id="optionB" placeholder="Option B" class="p-2 border rounded" required>
@@ -44,40 +41,33 @@
           <input type="text" id="optionD" placeholder="Option D" class="p-2 border rounded" required>
         </div>
         <select id="correctOption" class="w-full mb-2 p-2 border rounded" required>
-          <option value="">Correct Option</option>
+          <option value="">সঠিক অপশন</option>
           <option value="A">A</option>
           <option value="B">B</option>
           <option value="C">C</option>
           <option value="D">D</option>
         </select>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Add Question</button>
       </form>
+      <div id="messageBox" class="text-center mt-4 font-semibold"></div>
     </div>
 
-    <!-- Export PDF -->
+    <!-- Export Options -->
     <div class="card">
-      <h2 class="text-xl font-semibold mb-2">📄 Export Questions as PDF</h2>
-      <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download PDF</button>
-    </div>
-
-    <!-- Clear Login -->
-    <div class="card">
-      <h2 class="text-xl font-semibold mb-2">🗑️ Clear All Student Logins</h2>
-      <button onclick="clearLogins()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Clear Logins</button>
-    </div>
-
-    <!-- View Results (Placeholder) -->
-    <div class="card col-span-1 md:col-span-2 lg:col-span-3">
-      <h2 class="text-xl font-semibold mb-2">📊 View Results (Grouped by Test)</h2>
-      <div id="resultsContainer" class="space-y-4">
-        <p>Coming soon...</p>
+      <h2 class="text-xl font-semibold mb-4">📁 প্রশ্ন এক্সপোর্ট করুন</h2>
+      <div class="flex flex-col gap-4">
+        <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export as PDF</button>
+        <button onclick="generateCSV()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Export as CSV</button>
       </div>
     </div>
   </main>
 
-  <!-- Scripts -->
+  <section class="mt-8">
+    <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
+    <div id="questionList" class="space-y-4"></div>
+  </section>
+
   <script>
-    // ✅ Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
       authDomain: "mocktest-dichvhi.firebaseapp.com",
@@ -90,10 +80,53 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // ✅ Add Question to Firestore
-    document.getElementById('questionForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+    const messageBox = document.getElementById('messageBox');
+    const questionList = document.getElementById('questionList');
 
+    function showMessage(msg, isError = false) {
+      messageBox.textContent = msg;
+      messageBox.style.color = isError ? 'red' : 'green';
+      setTimeout(() => messageBox.textContent = '', 3000);
+    }
+
+    async function fetchAndRenderQuestions() {
+      questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
+      const snapshot = await db.collection("questions").orderBy("id").get();
+      const questions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderQuestionList(questions);
+    }
+
+    function renderQuestionList(questions) {
+      questionList.innerHTML = "";
+      questions.forEach(q => {
+        const optionsHtml = q.options.map((opt, i) => {
+          const optLabel = String.fromCharCode(65 + i); // A, B, C, D
+          return `<li>${optLabel}. ${opt}</li>`;
+        }).join("");
+
+        questionList.innerHTML += `
+          <div class="bg-white shadow-md rounded p-4">
+            <p><strong>(${q.id})</strong> ${q.question}</p>
+            <ul class="list-disc ml-6">${optionsHtml}</ul>
+            <p class="mt-1">✅ সঠিক উত্তর: <strong>${q.answer}</strong></p>
+            <div class="mt-2 flex gap-2">
+              <button onclick="deleteQuestion('${q.id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function deleteQuestion(docId) {
+      if (confirm("আপনি কি এই প্রশ্নটি মুছে ফেলতে চান?")) {
+        await db.collection("questions").doc(docId).delete();
+        showMessage("❌ প্রশ্ন মুছে ফেলা হয়েছে");
+        fetchAndRenderQuestions();
+      }
+    }
+
+    document.getElementById('questionForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
       const question = document.getElementById('questionText').value.trim();
       const optionA = document.getElementById('optionA').value.trim();
       const optionB = document.getElementById('optionB').value.trim();
@@ -102,12 +135,7 @@
       const correctOption = document.getElementById('correctOption').value;
 
       const options = [optionA, optionB, optionC, optionD];
-      const answer = {
-        A: optionA,
-        B: optionB,
-        C: optionC,
-        D: optionD
-      }[correctOption];
+      const answer = { A: optionA, B: optionB, C: optionC, D: optionD }[correctOption];
 
       try {
         const snapshot = await db.collection("questions").get();
@@ -120,25 +148,53 @@
           answer: answer
         });
 
-        alert("✅ Question added successfully!");
+        showMessage("✅ প্রশ্ন সফলভাবে যোগ হয়েছে!");
         document.getElementById('questionForm').reset();
+        fetchAndRenderQuestions();
       } catch (error) {
-        alert("❌ Failed to add question: " + error.message);
+        showMessage("❌ প্রশ্ন যোগ করতে ব্যর্থ: " + error.message, true);
       }
     });
 
-    // Export PDF (Dummy Content)
     function generatePDF() {
       const doc = new jsPDF();
-      doc.text("Target Zone - Questions PDF", 20, 20);
-      doc.text("1. Sample Question\nA. Opt A\nB. Opt B\nC. Opt C\nD. Opt D", 20, 40);
-      doc.save("questions.pdf");
+      doc.setFontSize(12);
+      doc.text("Target Zone - প্রশ্নপত্র", 20, 20);
+      let y = 30;
+
+      db.collection("questions").orderBy("id").get().then(snapshot => {
+        snapshot.forEach(docSnap => {
+          const q = docSnap.data();
+          doc.text(`(${q.id}) ${q.question}`, 10, y);
+          y += 7;
+          q.options.forEach((opt, i) => {
+            doc.text(`${String.fromCharCode(65 + i)}. ${opt}`, 15, y);
+            y += 7;
+          });
+          doc.text(`✅ সঠিক উত্তর: ${q.answer}`, 15, y);
+          y += 10;
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+        });
+        doc.save("questions.pdf");
+      });
     }
 
-    // Clear Login (Demo only)
-    function clearLogins() {
-      alert("All previous student logins cleared!");
+    function generateCSV() {
+      db.collection("questions").orderBy("id").get().then(snapshot => {
+        const questions = snapshot.docs.map(docSnap => docSnap.data());
+        const csv = Papa.unparse(questions);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "questions.csv";
+        link.click();
+      });
     }
+
+    fetchAndRenderQuestions();
   </script>
 </body>
 </html>
