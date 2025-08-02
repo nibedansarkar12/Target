@@ -71,6 +71,8 @@
       font-size: 16px;
       color: #d9534f;
       font-weight: bold;
+      text-align: right;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -87,66 +89,73 @@
     </div>
 
     <div class="controls">
-      <button onclick="prevQuestion()">পূর্ববর্তী</button>
-      <button onclick="nextQuestion()">পরবর্তী</button>
+      <button onclick="prevQuestion()">← পূর্ববর্তী</button>
+      <button onclick="nextQuestion()">পরবর্তী →</button>
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <script>
-    // ✅ Firebase config (same as student/index.html config)
     const firebaseConfig = {
-      apiKey: "AIzaSyDgJ-FQWMIbmNFi-m0XbZzLzrLU13F5v84",
-      authDomain: "mocktest-dichvhi.firebaseapp.com",
-      projectId: "mocktest-dichvhi",
-      storageBucket: "mocktest-dichvhi.appspot.com",
-      messagingSenderId: "425345275542",
-      appId: "1:425345275542:web:01a9d12ff9e010ee306b6a"
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e",
+      measurementId: "G-436XDYLGVX"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     let questions = [];
     let currentQuestionIndex = 0;
 
     async function fetchQuestions() {
-      const snapshot = await db.collection("questions").orderBy("id").get();
+      const q = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(q);
       questions = snapshot.docs.map(doc => doc.data());
       showQuestion();
     }
 
     function showQuestion() {
+      if (questions.length === 0) {
+        document.getElementById("questionText").textContent = "কোনো প্রশ্ন পাওয়া যায়নি।";
+        return;
+      }
+
       if (currentQuestionIndex < 0) currentQuestionIndex = 0;
       if (currentQuestionIndex >= questions.length) currentQuestionIndex = questions.length - 1;
 
       const q = questions[currentQuestionIndex];
       document.getElementById("questionText").textContent = `(${q.id}) ${q.question}`;
-      const optionsHTML = q.options.map((opt) =>
-        `<label><input type="radio" name="option" value="${opt}"> ${opt}</label>`
-      ).join("");
+      const optionsHTML = q.options.map((opt, idx) => {
+        return `<label><input type="radio" name="option" value="${opt}"> ${String.fromCharCode(65 + idx)}. ${opt}</label>`;
+      }).join("");
       document.getElementById("optionsList").innerHTML = optionsHTML;
     }
 
-    function nextQuestion() {
+    window.nextQuestion = function () {
       if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         showQuestion();
       }
     }
 
-    function prevQuestion() {
+    window.prevQuestion = function () {
       if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         showQuestion();
       }
     }
 
-    // ⏱️ Timer
-    let timeLeft = 80 * 60;
+    // Timer setup
+    let timeLeft = 80 * 60; // 80 minutes
     const timerElement = document.getElementById("timer");
 
     function updateTimer() {
@@ -157,14 +166,14 @@
         timeLeft--;
       } else {
         clearInterval(timerInterval);
-        alert("সময় শেষ!");
-        // window.location.href = "result.html";
+        alert("🕒 সময় শেষ!");
+        // window.location.href = "result.html"; // Future redirect
       }
     }
 
     const timerInterval = setInterval(updateTimer, 1000);
 
-    // 🚀 Fetch questions
+    // Start quiz
     fetchQuestions();
   </script>
 </body>
