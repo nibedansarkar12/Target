@@ -2,102 +2,122 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SSC GD প্রশ্নপত্র</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap" rel="stylesheet">
+  <title>Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: 'Noto Sans Bengali', sans-serif;
-      background: #f0f8ff;
       margin: 0;
-      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
     }
-    .container {
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 20px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .header {
+
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
       text-align: center;
-      margin-bottom: 20px;
+      font-size: 18px;
     }
-    .header h2 {
-      color: #333;
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .question-box {
       margin-bottom: 20px;
     }
-    .question-text {
+
+    .question {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 15px;
     }
-    .options label {
-      display: block;
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
       margin-bottom: 10px;
-      background: #f1f1f1;
-      padding: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
     }
-    .options input[type="radio"] {
-      margin-right: 8px;
+
+    .options input {
+      margin-right: 10px;
     }
-    .options label:hover {
-      background: #e0f7fa;
-    }
-    .controls {
+
+    .btn-row {
       display: flex;
       justify-content: space-between;
       margin-top: 20px;
     }
-    .controls button {
+
+    .btn {
       padding: 10px 20px;
+      font-size: 14px;
       border: none;
-      background: #007bff;
-      color: white;
       border-radius: 6px;
       cursor: pointer;
       transition: 0.3s;
     }
-    .controls button:hover {
-      background: #0056b3;
+
+    .btn:hover {
+      opacity: 0.9;
     }
-    #timer {
-      font-size: 16px;
-      color: #d9534f;
-      font-weight: bold;
-      text-align: right;
-      margin-bottom: 10px;
+
+    .mark {
+      background-color: #f9a825;
+      color: #fff;
+    }
+
+    .next {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .prev {
+      background-color: #888;
+      color: white;
+    }
+
+    .submit {
+      background-color: #e53935;
+      color: white;
+      width: 100%;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
+  <header>
+    কুইজ পেজ - <span id="student-email">লোড হচ্ছে...</span>
+  </header>
+
   <div class="container">
-    <div class="header">
-      <h2>SSC GD মক টেস্ট</h2>
-      <div id="timer">সময়: 80:00</div>
-    </div>
-
     <div class="question-box">
-      <div class="question-text" id="questionText">লোড হচ্ছে...</div>
-      <div class="options" id="optionsList"></div>
+      <div class="question" id="question-text">Loading question...</div>
+      <ul class="options" id="options-list"></ul>
     </div>
 
-    <div class="controls">
-      <button onclick="prevQuestion()">← পূর্ববর্তী</button>
-      <button onclick="nextQuestion()">পরবর্তী →</button>
+    <div class="btn-row">
+      <button class="btn prev" id="prev-btn">Previous</button>
+      <button class="btn mark" id="mark-btn">Mark for Review</button>
+      <button class="btn next" id="next-btn">Next</button>
     </div>
+
+    <button class="btn submit" id="submit-btn">Submit</button>
   </div>
 
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
@@ -112,69 +132,96 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const questionText = document.getElementById("question-text");
+    const optionsList = document.getElementById("options-list");
+    const studentEmail = document.getElementById("student-email");
+
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const markBtn = document.getElementById("mark-btn");
+    const submitBtn = document.getElementById("submit-btn");
 
     let questions = [];
-    let currentQuestionIndex = 0;
+    let currentQuestion = 0;
+    const answers = {};
+    const reviewMarked = new Set();
 
-    async function fetchQuestions() {
-      const q = query(collection(db, "questions"), orderBy("id"));
-      const snapshot = await getDocs(q);
-      questions = snapshot.docs.map(doc => doc.data());
+    // Show logged-in user's email
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        studentEmail.textContent = user.email;
+      } else {
+        alert("আপনি লগইন করেননি!");
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadQuestions() {
+      const querySnapshot = await getDocs(collection(db, "questions"));
+      questions = querySnapshot.docs.map(doc => doc.data());
       showQuestion();
     }
 
     function showQuestion() {
-      if (questions.length === 0) {
-        document.getElementById("questionText").textContent = "কোনো প্রশ্ন পাওয়া যায়নি।";
-        return;
-      }
+      const q = questions[currentQuestion];
+      if (!q) return;
 
-      if (currentQuestionIndex < 0) currentQuestionIndex = 0;
-      if (currentQuestionIndex >= questions.length) currentQuestionIndex = questions.length - 1;
+      questionText.textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
+      optionsList.innerHTML = "";
 
-      const q = questions[currentQuestionIndex];
-      document.getElementById("questionText").textContent = `(${q.id}) ${q.question}`;
-      const optionsHTML = q.options.map((opt, idx) => {
-        return `<label><input type="radio" name="option" value="${opt}"> ${String.fromCharCode(65 + idx)}. ${opt}</label>`;
-      }).join("");
-      document.getElementById("optionsList").innerHTML = optionsHTML;
+      q.options.forEach((option, index) => {
+        const li = document.createElement("li");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "option";
+        input.value = option;
+        if (answers[currentQuestion] === option) input.checked = true;
+
+        input.addEventListener("change", () => {
+          answers[currentQuestion] = option;
+        });
+
+        li.appendChild(input);
+        li.append(option);
+        optionsList.appendChild(li);
+      });
     }
 
-    window.nextQuestion = function () {
-      if (currentQuestionIndex < questions.length - 1) {
-        currentQuestionIndex++;
+    prevBtn.addEventListener("click", () => {
+      if (currentQuestion > 0) {
+        currentQuestion--;
         showQuestion();
       }
-    }
+    });
 
-    window.prevQuestion = function () {
-      if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
+    nextBtn.addEventListener("click", () => {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
         showQuestion();
       }
-    }
+    });
 
-    // Timer setup
-    let timeLeft = 80 * 60; // 80 minutes
-    const timerElement = document.getElementById("timer");
+    markBtn.addEventListener("click", () => {
+      reviewMarked.add(currentQuestion);
+      alert(`প্রশ্ন ${currentQuestion + 1} মার্কড ফর রিভিউ`);
+    });
 
-    function updateTimer() {
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = timeLeft % 60;
-      timerElement.textContent = `সময়: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-      if (timeLeft > 0) {
-        timeLeft--;
-      } else {
-        clearInterval(timerInterval);
-        alert("🕒 সময় শেষ!");
-        // window.location.href = "result.html"; // Future redirect
+    submitBtn.addEventListener("click", () => {
+      const total = questions.length;
+      const answered = Object.keys(answers).length;
+      const review = reviewMarked.size;
+
+      const confirmSubmit = confirm(`আপনি ${answered}/${total} প্রশ্নের উত্তর দিয়েছেন।\n${review} প্রশ্ন মার্ক করেছেন রিভিউর জন্য।\nসাবমিট করতে চান?`);
+      if (confirmSubmit) {
+        alert("সাবমিশন সফল হয়েছে। ধন্যবাদ!");
+        // TODO: এখানে Firebase-এ result জমাতে পারিস
+        window.location.href = "index.html";
       }
-    }
+    });
 
-    const timerInterval = setInterval(updateTimer, 1000);
-
-    // Start quiz
-    fetchQuestions();
+    loadQuestions();
   </script>
 </body>
 </html>
