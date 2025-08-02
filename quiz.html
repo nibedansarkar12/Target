@@ -209,13 +209,11 @@
       const confirmSubmit = confirm(`আপনি ${answered}/${total} প্রশ্নের উত্তর দিয়েছেন।\n${review} প্রশ্ন মার্ক করেছেন রিভিউর জন্য।\nসাবমিট করতে চান?`);
       if (!confirmSubmit) return;
 
-      // Calculate score
       let score = 0;
       questions.forEach((q, index) => {
         if (answers[index] === q.answer) score++;
       });
 
-      // Save result to Firestore
       if (currentUser) {
         const resultRef = doc(db, "results", currentUser.uid);
         await setDoc(resultRef, {
@@ -224,10 +222,12 @@
           total: total,
           submittedAt: serverTimestamp()
         });
-      }
 
-      alert("✅ কুইজ সাবমিট হয়েছে। ধন্যবাদ!");
-      window.location.href = "index.html";
+        alert("✅ কুইজ সাবমিট হয়েছে। ধন্যবাদ!");
+        window.location.href = "index.html";
+      } else {
+        alert("ব্যর্থ: ব্যবহারকারীর তথ্য পাওয়া যায়নি।");
+      }
     });
 
     loadQuestions();
