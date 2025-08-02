@@ -1,50 +1,46 @@
 <!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Target Zone</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Target Zone Admin Panel</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f6f8;
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
       margin: 0;
       padding: 0;
-    }.header {
-  background-color: #2c3e50;
-  padding: 1rem;
-  color: white;
-  text-align: center;
-  font-size: 1.5rem;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 2rem auto;
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 10px;
+    }.container {
+  max-width: 800px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.section-title {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-  border-left: 5px solid #3498db;
-  padding-left: 10px;
+h1 {
+  text-align: center;
   color: #2c3e50;
 }
 
-input, textarea, select, button {
+label {
   display: block;
+  margin-top: 10px;
+}
+
+input, textarea, button, select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 1rem;
-  border-radius: 5px;
+  padding: 8px;
+  margin-top: 5px;
   border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
 }
 
 button {
-  background-color: #3498db;
+  background-color: #27ae60;
   color: white;
   font-weight: bold;
   cursor: pointer;
@@ -52,154 +48,135 @@ button {
 }
 
 button:hover {
-  background-color: #2980b9;
+  background-color: #1e8449;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 2rem;
+.section {
+  margin-top: 30px;
 }
 
-th, td {
+.output {
+  background: #f9f9f9;
   padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-th {
-  background-color: #f1f1f1;
-}
-
-.logout-btn {
-  float: right;
-  background: #e74c3c;
+  border-radius: 6px;
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
   </style>
 </head><body>
-  <div class="header">
-    Admin Dashboard - Target Zone
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </div>  <div class="container">
-    <div>
-      <h2 class="section-title">➤ Add New Question</h2>
-      <input type="text" id="questionText" placeholder="Enter Question">
-      <input type="text" id="optionA" placeholder="Option A">
-      <input type="text" id="optionB" placeholder="Option B">
-      <input type="text" id="optionC" placeholder="Option C">
-      <input type="text" id="optionD" placeholder="Option D">
-      <input type="text" id="correctAnswer" placeholder="Correct Option (A/B/C/D)">
-      <select id="language">
-        <option value="bengali">Bengali</option>
-        <option value="english">English</option>
-        <option value="hindi">Hindi</option>
-      </select>
-      <button onclick="addQuestion()">Add Question</button>
-    </div><div>
-  <h2 class="section-title">➤ All Students</h2>
-  <table id="studentTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Roll Number</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Filled dynamically from Firebase -->
-    </tbody>
-  </table>
+  <div class="container">
+    <h1>🎯 Target Zone Admin Panel</h1><!-- Add Question Section -->
+<div class="section">
+  <h3>➕ প্রশ্ন যোগ করুন</h3>
+  <label>প্রশ্ন (Bengali):</label>
+  <textarea id="questionText"></textarea>
+
+  <label>Option A:</label>
+  <input type="text" id="optionA">
+
+  <label>Option B:</label>
+  <input type="text" id="optionB">
+
+  <label>Option C:</label>
+  <input type="text" id="optionC">
+
+  <label>Option D:</label>
+  <input type="text" id="optionD">
+
+  <label>সঠিক উত্তর (A/B/C/D):</label>
+  <input type="text" id="correctAnswer">
+
+  <button onclick="addQuestion()">Add Question</button>
+  <div class="output" id="questionStatus"></div>
 </div>
 
-<div>
-  <h2 class="section-title">➤ View All Questions</h2>
-  <table id="questionTable">
-    <thead>
-      <tr>
-        <th>Question</th>
-        <th>Correct Answer</th>
-        <th>Language</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Filled dynamically from Firebase -->
-    </tbody>
-  </table>
+<!-- Add Student Section -->
+<div class="section">
+  <h3>👤 ছাত্র যোগ করুন</h3>
+  <label>Student Name:</label>
+  <input type="text" id="studentName">
+
+  <label>Roll Number:</label>
+  <input type="text" id="rollNumber">
+
+  <button onclick="addStudent()">Add Student</button>
+  <div class="output" id="studentStatus"></div>
 </div>
 
-  </div>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  <script>
+<!-- Result Section -->
+<div class="section">
+  <h3>📊 রেজাল্ট দেখুন</h3>
+  <label>Roll Number:</label>
+  <input type="text" id="resultRoll">
+  <button onclick="getResult()">Get Result</button>
+  <div class="output" id="resultOutput"></div>
+</div>
+
+<!-- Clear All Data -->
+<div class="section">
+  <h3>🧹 ডাটাবেস ক্লিয়ার করুন</h3>
+  <button onclick="clearAllData()" style="background:#c0392b">Clear All Questions & Students</button>
+</div>
+
+  </div>  <script>
+    // Firebase config
     const firebaseConfig = {
-      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
-      authDomain: "target-zone-8fffd.firebaseapp.com",
-      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
-      projectId: "target-zone-8fffd",
-      storageBucket: "target-zone-8fffd.appspot.com",
-      messagingSenderId: "667579216123",
-      appId: "1:667579216123:web:37bb1fcc724743073d005e"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     function addQuestion() {
-      const qText = document.getElementById("questionText").value;
+      const question = document.getElementById("questionText").value;
       const a = document.getElementById("optionA").value;
       const b = document.getElementById("optionB").value;
       const c = document.getElementById("optionC").value;
       const d = document.getElementById("optionD").value;
-      const correct = document.getElementById("correctAnswer").value.toUpperCase();
-      const lang = document.getElementById("language").value;
+      const answer = document.getElementById("correctAnswer").value.toUpperCase();
 
-      const newQuestionRef = db.ref("questions").push();
-      newQuestionRef.set({
-        question: qText,
-        options: { A: a, B: b, C: c, D: d },
-        correctAnswer: correct,
-        language: lang
+      const newKey = db.ref().child("questions").push().key;
+      db.ref("questions/" + newKey).set({
+        question, a, b, c, d, answer
       });
 
-      alert("Question added successfully!");
-      document.getElementById("questionText").value = "";
+      document.getElementById("questionStatus").innerText = "প্রশ্ন সংরক্ষণ হয়েছে ✅";
     }
 
-    function loadStudents() {
-      const tbody = document.querySelector("#studentTable tbody");
-      db.ref("students").on("value", (snapshot) => {
-        tbody.innerHTML = "";
-        snapshot.forEach(child => {
-          const data = child.val();
-          const row = `<tr><td>${data.name}</td><td>${data.roll}</td><td>${data.status || 'Not Started'}</td></tr>`;
-          tbody.innerHTML += row;
-        });
+    function addStudent() {
+      const name = document.getElementById("studentName").value;
+      const roll = document.getElementById("rollNumber").value;
+
+      db.ref("students/" + roll).set({
+        name, roll
       });
+
+      document.getElementById("studentStatus").innerText = "Student added ✅";
     }
 
-    function loadQuestions() {
-      const tbody = document.querySelector("#questionTable tbody");
-      db.ref("questions").on("value", (snapshot) => {
-        tbody.innerHTML = "";
-        snapshot.forEach(child => {
-          const data = child.val();
-          const row = `<tr><td>${data.question}</td><td>${data.correctAnswer}</td><td>${data.language}</td></tr>`;
-          tbody.innerHTML += row;
-        });
+    function getResult() {
+      const roll = document.getElementById("resultRoll").value;
+      db.ref("results/" + roll).once("value", snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById("resultOutput").innerText = JSON.stringify(data, null, 2);
+        } else {
+          document.getElementById("resultOutput").innerText = "কোনো ফলাফল পাওয়া যায়নি ❌";
+        }
       });
     }
 
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "index.html";
-      });
+    function clearAllData() {
+      db.ref("questions").remove();
+      db.ref("students").remove();
+      alert("All data cleared!");
     }
-
-    // Admin check
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user || user.email !== "nibedansarkar12@gmail.com") {
-        alert("Unauthorized access. Redirecting...");
-        window.location.href = "index.html";
-      } else {
-        loadStudents();
-        loadQuestions();
-      }
-    });
   </script></body></html>
