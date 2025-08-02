@@ -1,160 +1,90 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Target Zone Admin Panel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Target Zone</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/lucide@0.253.0/dist/umd/lucide.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Roboto', sans-serif;
-    }
     body {
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      min-height: 100vh;
-      padding: 20px;
+      background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.3);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #00ffd5;
-      text-shadow: 1px 1px 5px #000;
-    }
-    .section {
-      margin-bottom: 40px;
-    }
-    .section h2 {
-      margin-bottom: 15px;
-      border-left: 5px solid #00ffd5;
-      padding-left: 10px;
-      font-size: 22px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      margin-top: 5px;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 12px 25px;
-      border: none;
-      background-color: #00ffd5;
-      color: #000;
-      font-weight: bold;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: #00c4a7;
-    }
-    .result-box {
-      background: #111;
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 20px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    .student-result {
-      border-bottom: 1px solid #444;
-      padding: 10px 0;
+    .card {
+      background-color: white;
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
     .icon {
-      margin-right: 10px;
-      color: #00ffd5;
+      color: #4f46e5;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1><i class="fas fa-user-cog icon"></i> Admin Dashboard - Target Zone</h1><div class="section">
-  <h2><i class="fas fa-plus-circle icon"></i> Add New Question</h2>
-  <label>Question</label>
-  <textarea id="question"></textarea>
-  <label>Options (comma separated)</label>
-  <input id="options">
-  <label>Correct Answer</label>
-  <input id="correct">
-  <button onclick="addQuestion()">Add Question</button>
+<body class="p-6">
+  <header class="text-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">🎯 Admin Dashboard - Target Zone</h1>
+    <p class="text-gray-600">Manage your mock tests smartly</p>
+  </header>  <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="card">
+      <h2 class="text-xl font-semibold mb-2">➕ Add Question</h2>
+      <form id="questionForm">
+        <input type="text" placeholder="Enter Question" class="w-full mb-2 p-2 border rounded" required>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <input type="text" placeholder="Option A" class="p-2 border rounded" required>
+          <input type="text" placeholder="Option B" class="p-2 border rounded" required>
+          <input type="text" placeholder="Option C" class="p-2 border rounded" required>
+          <input type="text" placeholder="Option D" class="p-2 border rounded" required>
+        </div>
+        <select class="w-full mb-2 p-2 border rounded" required>
+          <option value="">Correct Option</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+        </select>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
+      </form>
+    </div><div class="card">
+  <h2 class="text-xl font-semibold mb-2">📄 Export Questions as PDF</h2>
+  <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download PDF</button>
 </div>
 
-<div class="section">
-  <h2><i class="fas fa-trash-alt icon"></i> Clear Previous Student Data</h2>
-  <button onclick="clearStudents()">Clear All Student Data</button>
+<div class="card">
+  <h2 class="text-xl font-semibold mb-2">🗑️ Clear All Student Logins</h2>
+  <button onclick="clearLogins()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Clear Logins</button>
 </div>
 
-<div class="section">
-  <h2><i class="fas fa-file-alt icon"></i> View Student Results</h2>
-  <button onclick="loadResults()">Load All Results</button>
-  <div class="result-box" id="resultBox"></div>
+<div class="card col-span-1 md:col-span-2 lg:col-span-3">
+  <h2 class="text-xl font-semibold mb-2">📊 View Results (Grouped by Test)</h2>
+  <div id="resultsContainer" class="space-y-4">
+    <!-- Sample structure -->
+    <!--
+    <div class="border p-2 rounded">
+      <h3 class="font-bold">Test: SSC GD 2025</h3>
+      <ul>
+        <li>Nibedan | Roll: 1234 | Score: 75/80 | Time Taken: 65 mins</li>
+        ...
+      </ul>
+    </div>
+    -->
+  </div>
 </div>
 
-  </div>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, set, remove, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  </main>  <script>
+    function generatePDF() {
+      const doc = new jsPDF();
+      doc.text("Target Zone - Questions PDF", 20, 20);
+      // Sample content
+      doc.text("1. Sample Question\nA. Opt A\nB. Opt B\nC. Opt C\nD. Opt D\n", 20, 40);
+      doc.save("questions.pdf");
+    }
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDYBdLQop_R4Aef3ZXZaNRvc5_A2-UC5-w",
-      authDomain: "target-zone-app.firebaseapp.com",
-      databaseURL: "https://target-zone-app-default-rtdb.firebaseio.com",
-      projectId: "target-zone-app",
-      storageBucket: "target-zone-app.appspot.com",
-      messagingSenderId: "110606630259",
-      appId: "1:110606630259:web:30c7d83eb03d28f56e5ee0"
-    };
+    function clearLogins() {
+      alert("All previous student logins cleared!");
+    }
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    window.addQuestion = async function () {
-      const q = document.getElementById('question').value;
-      const o = document.getElementById('options').value.split(',');
-      const a = document.getElementById('correct').value;
-      const newRef = push(ref(db, 'questions'));
-      await set(newRef, { question: q, options: o, answer: a });
-      alert('Question Added!');
-    };
-
-    window.clearStudents = async function () {
-      await remove(ref(db, 'students'));
-      alert('All student data cleared!');
-    };
-
-    window.loadResults = async function () {
-      const snapshot = await get(child(ref(db), 'students'));
-      const box = document.getElementById('resultBox');
-      box.innerHTML = '';
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        Object.entries(data).forEach(([roll, info]) => {
-          box.innerHTML += `<div class='student-result'>
-            <strong>${info.name}</strong> (Roll: ${roll})<br>
-            Score: ${info.score} | Correct: ${info.correct} | Wrong: ${info.wrong} | Date: ${info.date} | Test: ${info.testTitle}
-          </div>`;
-        });
-      } else {
-        box.innerHTML = 'No results available.';
-      }
-    };
+    // Add more JS integration with Firebase here
   </script></body>
 </html>
