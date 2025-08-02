@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="bn">
-<head>
+<!DOCTYPE html><html lang="bn"><head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel - Target Zone</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
+  <!-- ✅ Updated jsPDF CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <style>
     body {
@@ -24,7 +24,6 @@
     <h1 class="text-3xl font-bold text-gray-800">🎯 Admin Dashboard - Target Zone</h1>
     <p class="text-gray-600">Manage your mock tests smartly</p>
   </header>  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Add Question -->
     <div class="card">
       <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
       <form id="questionForm">
@@ -45,8 +44,7 @@
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যোগ হয়েছে</button>
       </form>
       <div id="messageBox" class="text-center mt-4 font-semibold"></div>
-    </div><!-- Export -->
-<div class="card">
+    </div><div class="card">
   <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
   <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full mb-3">Export Questions as PDF</button>
   <button onclick="generateCSV()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 w-full mb-3">Export as CSV</button>
@@ -151,7 +149,7 @@
     });
 
     window.generatePDF = async function () {
-      const docPDF = new jsPDF();
+      const docPDF = new jspdf.jsPDF();
       const qRef = query(collection(db, "questions"), orderBy("id"));
       const snapshot = await getDocs(qRef);
       let y = 20;
@@ -186,10 +184,15 @@
     };
 
     window.generateStudentReports = async function () {
-      const resultSnapshot = await getDocs(collection(db, "results"));
       const { jsPDF } = window.jspdf;
+      const resultSnapshot = await getDocs(collection(db, "results"));
 
-      resultSnapshot.forEach((docSnap, index) => {
+      if (resultSnapshot.empty) {
+        alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
+        return;
+      }
+
+      resultSnapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const correct = data.score;
         const total = data.total;
@@ -197,16 +200,17 @@
 
         const pdf = new jsPDF();
         pdf.setFontSize(16);
-        pdf.text("Target Zone - Student Quiz Report", 20, 20);
+        pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
 
         pdf.setFontSize(12);
-        pdf.text(`Student Email: ${data.email}`, 20, 40);
-        pdf.text(`Correct Answers: ${correct}`, 20, 50);
-        pdf.text(`Incorrect Answers: ${wrong}`, 20, 60);
-        pdf.text(`Total Questions: ${total}`, 20, 70);
+        pdf.text(`📧 Email: ${data.email}`, 20, 40);
+        pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
+        pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
+        pdf.text(`📊 Total Questions: ${total}`, 20, 70);
+
         if (data.submittedAt?.seconds) {
           const date = new Date(data.submittedAt.seconds * 1000);
-          pdf.text(`Submitted At: ${date.toLocaleString()}`, 20, 80);
+          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 80);
         }
 
         pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
