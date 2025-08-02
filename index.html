@@ -1,42 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SSC GD Mock Test - Login</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>লগইন পেজ | SSC GD Mock Test</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #ffecd2, #fcb69f);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    label {
+      font-size: 16px;
+      color: #555;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      transition: 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #ff7e5f;
+      outline: none;
+      box-shadow: 0 0 5px rgba(255,126,95,0.4);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #ff7e5f;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ff5722;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>SSC GD Mock Test</h1>
-    <form id="loginForm">
-      <label for="name">Your Name:</label>
-      <input type="text" id="name" required />
+  <div class="login-box">
+    <h2>SSC GD মক টেস্টে স্বাগতম</h2>
+    
+    <label for="name">আপনার নাম</label>
+    <input type="text" id="name" placeholder="নাম লিখুন" />
 
-      <label for="roll">Roll Number:</label>
-      <input type="text" id="roll" required />
+    <label for="roll">রোল নম্বর</label>
+    <input type="text" id="roll" placeholder="রোল নম্বর লিখুন" />
 
-      <button type="submit">Start Test</button>
-    </form>
+    <button onclick="loginUser()">লগইন করুন</button>
+
+    <div class="footer">© 2025 Maa Laxmi Coaching</div>
   </div>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+    function loginUser() {
+      const name = document.getElementById("name").value.trim();
+      const roll = document.getElementById("roll").value.trim();
 
-      const name = document.getElementById('name').value.trim();
-      const roll = document.getElementById('roll').value.trim();
-
-      if (name === '' || roll === '') {
-        alert('Please fill out all fields!');
+      if (name === "" || roll === "") {
+        alert("অনুগ্রহ করে নাম ও রোল নম্বর লিখুন।");
         return;
       }
 
-      localStorage.setItem('userName', name);
-      localStorage.setItem('userRoll', roll);
+      // SessionStorage-এ সেভ
+      sessionStorage.setItem("userName", name);
+      sessionStorage.setItem("rollNumber", roll);
 
-      window.location.href = 'test.html';
-    });
+      // quiz.html-এ যাও
+      window.location.href = "quiz.html";
+    }
   </script>
 </body>
 </html>
