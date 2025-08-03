@@ -157,7 +157,7 @@
       }
     });
 
-    // ✅ PDF রিপোর্ট তৈরি করার সঠিক ফাংশন
+    // ✅ Student Report Function (Negative Marking সহ)
     window.generateStudentReports = async function () {
       const { jsPDF } = window.jspdf;
       const resultSnapshot = await getDocs(collection(db, "results"));
@@ -173,15 +173,18 @@
         const data = docSnap.data();
         const userAnswers = data.answers || {};
         let correct = 0, wrong = 0, unattempted = 0;
+        let score = 0;
 
         allQuestions.forEach((q, i) => {
-          const userAns = userAnswers[i];
+          const userAns = userAnswers[i] ?? userAnswers[String(i)];
           if (userAns === undefined) {
             unattempted++;
           } else if (userAns === q.answer) {
             correct++;
+            score += 2; // ✅ সঠিকের জন্য +2
           } else {
             wrong++;
+            score -= 0.25; // ❌ ভুলের জন্য -0.25
           }
         });
 
@@ -195,10 +198,11 @@
         pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
         pdf.text(`⚪ Unattempted Questions: ${unattempted}`, 20, 70);
         pdf.text(`📊 Total Questions: ${allQuestions.length}`, 20, 80);
+        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 90);
 
         if (data.submittedAt?.seconds) {
           const date = new Date(data.submittedAt.seconds * 1000);
-          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 90);
+          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 100);
         }
 
         pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
