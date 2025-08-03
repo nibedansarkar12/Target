@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="bn">
+<!DOCTYPE html>
+<html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <title>Quiz</title>
@@ -7,106 +8,170 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
-    }header {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  font-size: 18px;
-}
-
-.container {
-  max-width: 600px;
-  margin: 20px auto;
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.question-box {
-  margin-bottom: 20px;
-}
-
-.question {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
-.options {
-  list-style: none;
-  padding: 0;
-}
-
-.options li {
-  margin-bottom: 10px;
-}
-
-.options input {
-  margin-right: 10px;
-}
-
-.btn-row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.btn {
-  padding: 10px 20px;
-  font-size: 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn:hover {
-  opacity: 0.9;
-}
-
-.mark {
-  background-color: #f9a825;
-  color: #fff;
-}
-
-.next {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.prev {
-  background-color: #888;
-  color: white;
-}
-
-.submit {
-  background-color: #e53935;
-  color: white;
-  width: 100%;
-  margin-top: 20px;
-}
-
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+    }
+    header {
+      background: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #timer {
+      font-weight: bold;
+      background: #2196F3;
+      padding: 6px 12px;
+      border-radius: 6px;
+      min-width: 80px;
+      text-align: center;
+      transition: background 0.5s, color 0.5s;
+    }
+    #timer.warning {
+      background: #e53935;
+      color: #fff;
+      animation: flash 1s infinite;
+    }
+    @keyframes flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .container {
+      max-width: 700px;
+      width: 100%;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    .question-box { margin-bottom: 20px; }
+    .question {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .options { list-style: none; padding: 0; }
+    .options li {
+      margin-bottom: 12px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    .options li:hover { background: #e6f0ff; }
+    .options input { margin-right: 10px; }
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn {
+      padding: 10px 18px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .mark { background-color: #f9a825; color: #fff; }
+    .next { background-color: #4CAF50; color: white; }
+    .prev { background-color: #888; color: white; }
+    .submit {
+      background-color: #e53935;
+      color: white;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .nav-box {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f6f9;
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .nav-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ddd;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .nav-btn.active { background: #4CAF50; color: white; }
+    .nav-btn.marked { background: #f9a825; color: white; }
+    .nav-btn.answered { background: #2196F3; color: white; }
+    .nav-btn:hover { transform: scale(1.1); }
+    .legend {
+      margin-top: 25px;
+      background: #eef3f9;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .legend span {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .legend-item { margin-bottom: 6px; }
   </style>
 </head>
 <body>
-  <header>
-    কুইজ পেজ - <span id="student-email">লোড হচ্ছে...</span>
-  </header>  <div class="container">
-    <div class="question-box">
-      <div class="question" id="question-text">Loading question...</div>
-      <ul class="options" id="options-list"></ul>
-    </div><div class="btn-row">
-  <button class="btn prev" id="prev-btn">Previous</button>
-  <button class="btn mark" id="mark-btn">Mark for Review</button>
-  <button class="btn next" id="next-btn">Next</button>
-</div>
+  <div>
+    <header>
+      <div>কুইজ পেজ - <span id="student-email">লোড হচ্ছে...</span></div>
+      <div id="timer">80:00</div>
+    </header>
+    <div class="container">
+      <div class="question-box">
+        <div class="question" id="question-text">Loading question...</div>
+        <ul class="options" id="options-list"></ul>
+      </div>
+      <div class="btn-row">
+        <button class="btn prev" id="prev-btn">Previous</button>
+        <button class="btn mark" id="mark-btn">Mark for Review</button>
+        <button class="btn next" id="next-btn">Next</button>
+      </div>
+      <div class="nav-box" id="nav-box"></div>
+      <button class="btn submit" id="submit-btn">Submit</button>
+      
+      <!-- Legend Section -->
+      <div class="legend">
+        <div class="legend-item"><span style="background:#4CAF50"></span>বর্তমান প্রশ্ন</div>
+        <div class="legend-item"><span style="background:#2196F3"></span>উত্তর দেওয়া হয়েছে</div>
+        <div class="legend-item"><span style="background:#f9a825"></span>Mark for Review</div>
+        <div class="legend-item"><span style="background:#ddd"></span>অজানা প্রশ্ন</div>
+        <div class="legend-item">⏰ <b>টাইমার:</b> শেষ ৫ মিনিটে লাল হয়ে ফ্ল্যাশ করবে</div>
+      </div>
+    </div>
+  </div>
 
-<button class="btn submit" id="submit-btn">Submit</button>
-
-  </div>  <!-- Firebase SDK -->  <script type="module">
+  <!-- Firebase SDK -->
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
@@ -129,6 +194,8 @@
     const questionText = document.getElementById("question-text");
     const optionsList = document.getElementById("options-list");
     const studentEmail = document.getElementById("student-email");
+    const navBox = document.getElementById("nav-box");
+    const timerElement = document.getElementById("timer");
 
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
@@ -140,6 +207,8 @@
     const answers = {};
     const reviewMarked = new Set();
     let currentUser = null;
+    let timeLeft = 80 * 60;
+    let timer;
 
     onAuthStateChanged(auth, user => {
       if (user) {
@@ -154,7 +223,51 @@
     async function loadQuestions() {
       const querySnapshot = await getDocs(collection(db, "questions"));
       questions = querySnapshot.docs.map(doc => doc.data());
+      renderNav();
       showQuestion();
+      startTimer();
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          alert("⏰ সময় শেষ! কুইজ অটো সাবমিট হচ্ছে।");
+          submitQuiz();
+        } else {
+          timeLeft--;
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+          if (timeLeft <= 300) timerElement.classList.add("warning");
+        }
+      }, 1000);
+    }
+
+    function renderNav() {
+      navBox.innerHTML = "";
+      for (let i = 0; i < questions.length; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.classList.add("nav-btn");
+        if (i === currentQuestion) btn.classList.add("active");
+        btn.addEventListener("click", () => {
+          currentQuestion = i;
+          showQuestion();
+          updateNav();
+        });
+        navBox.appendChild(btn);
+      }
+    }
+
+    function updateNav() {
+      const navBtns = navBox.querySelectorAll(".nav-btn");
+      navBtns.forEach((btn, i) => {
+        btn.classList.remove("active", "marked", "answered");
+        if (i === currentQuestion) btn.classList.add("active");
+        if (reviewMarked.has(i)) btn.classList.add("marked");
+        if (answers[i]) btn.classList.add("answered");
+      });
     }
 
     function showQuestion() {
@@ -164,7 +277,7 @@
       questionText.textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
       optionsList.innerHTML = "";
 
-      q.options.forEach((option, index) => {
+      q.options.forEach((option) => {
         const li = document.createElement("li");
         const input = document.createElement("input");
         input.type = "radio";
@@ -174,12 +287,15 @@
 
         input.addEventListener("change", () => {
           answers[currentQuestion] = option;
+          updateNav();
         });
 
         li.appendChild(input);
         li.append(option);
         optionsList.appendChild(li);
       });
+
+      updateNav();
     }
 
     prevBtn.addEventListener("click", () => {
@@ -198,17 +314,34 @@
 
     markBtn.addEventListener("click", () => {
       reviewMarked.add(currentQuestion);
+      updateNav();
       alert(`প্রশ্ন ${currentQuestion + 1} মার্কড ফর রিভিউ`);
     });
 
-    submitBtn.addEventListener("click", async () => {
+    submitBtn.addEventListener("click", () => {
       const total = questions.length;
       const answered = Object.keys(answers).length;
-      const review = reviewMarked.size;
+      const marked = reviewMarked.size;
+      const unattempted = total - answered;
 
-      const confirmSubmit = confirm(`আপনি ${answered}/${total} প্রশ্নের উত্তর দিয়েছেন।\n${review} প্রশ্ন মার্ক করেছেন রিভিউর জন্য।\nসাবমিট করতে চান?`);
-      if (!confirmSubmit) return;
+      const confirm1 = confirm(
+        `📊 সাবমিট রিপোর্ট:\n\n` +
+        `✅ উত্তর দেওয়া হয়েছে: ${answered}\n` +
+        `⚠️ Mark for Review: ${marked}\n` +
+        `❌ উত্তর দেওয়া হয়নি: ${unattempted}\n\n` +
+        `আপনি কি সাবমিট করতে চান?`
+      );
+      if (!confirm1) return;
 
+      const confirm2 = confirm("⚠️ একবার সাবমিট করলে আর পরিবর্তন করা যাবে না। আপনি কি নিশ্চিত?");
+      if (!confirm2) return;
+
+      submitQuiz();
+    });
+
+    async function submitQuiz() {
+      clearInterval(timer);
+      const total = questions.length;
       let score = 0;
       questions.forEach((q, index) => {
         if (answers[index] === q.answer) score++;
@@ -218,18 +351,19 @@
         const resultRef = doc(db, "results", currentUser.uid);
         await setDoc(resultRef, {
           email: currentUser.email,
+          answers: answers,
           score: score,
           total: total,
           submittedAt: serverTimestamp()
         });
-
         alert("✅ কুইজ সাবমিট হয়েছে। ধন্যবাদ!");
         window.location.href = "index.html";
       } else {
         alert("ব্যর্থ: ব্যবহারকারীর তথ্য পাওয়া যায়নি।");
       }
-    });
+    }
 
     loadQuestions();
-  </script></body>
+  </script>
+</body>
 </html>
