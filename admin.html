@@ -1,27 +1,53 @@
-<!-- ✅ Updated admin.html with corrected Firebase config --><!DOCTYPE html><html lang="bn">
+<!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel - Target Zone</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">  <!-- ✅ jsPDF -->  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  <script>
-    window.jsPDF = window.jspdf.jsPDF;
-  </script>  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>  <style>
-    body {
-      background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 1.5rem;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-  </style></head>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>window.jsPDF = window.jspdf.jsPDF;</script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body { background: linear-gradient(120deg, #a1c4fd, #c2e9fb); font-family: 'Segoe UI', sans-serif; }
+    .card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
+  </style>
+</head>
 <body class="p-6">
   <header class="text-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">🎯 Admin Dashboard - Target Zone</h1>
     <p class="text-gray-600">Manage your mock tests smartly</p>
-  </header>  <!-- MAIN CONTENT OMITTED FOR BREVITY (unchanged) -->  <script type="module">
+  </header>  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card">
+      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
+      <form id="questionForm">
+        <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন" class="w-full mb-2 p-2 border rounded" required>
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <input type="text" id="optionA" placeholder="Option A" class="p-2 border rounded" required>
+          <input type="text" id="optionB" placeholder="Option B" class="p-2 border rounded" required>
+          <input type="text" id="optionC" placeholder="Option C" class="p-2 border rounded" required>
+          <input type="text" id="optionD" placeholder="Option D" class="p-2 border rounded" required>
+        </div>
+        <select id="correctOption" class="w-full mb-2 p-2 border rounded" required>
+          <option value="">সঠিক অপশন</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+        </select>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যোগ করুন</button>
+      </form>
+      <div id="messageBox" class="text-center mt-4 font-semibold"></div>
+    </div><div class="card">
+  <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
+  <button onclick="generatePDF()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full mb-3">Export Questions as PDF</button>
+  <button onclick="generateCSV()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 w-full mb-3">Export as CSV</button>
+  <button onclick="generateStudentReports()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full">Generate Student Reports (PDF)</button>
+</div>
+
+  </main>  <section class="mt-8">
+    <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
+    <div id="questionList" class="space-y-4"></div>
+  </section>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -48,7 +74,177 @@
       }
     });
 
-    // ✅ LoadQuestions, Submit, Export functions remain the same (unchanged)
+    const questionForm = document.getElementById('questionForm');
+    const messageBox = document.getElementById('messageBox');
+    const questionList = document.getElementById('questionList');
 
+    function showMessage(msg, isError = false) {
+      messageBox.textContent = msg;
+      messageBox.style.color = isError ? 'red' : 'green';
+      setTimeout(() => messageBox.textContent = '', 3000);
+    }
+
+    async function loadQuestions() {
+      questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+      renderQuestions(questions);
+    }
+
+    function renderQuestions(questions) {
+      questionList.innerHTML = "";
+      questions.forEach(q => {
+        const optionsHTML = q.options.map((opt, i) => {
+          const label = String.fromCharCode(65 + i);
+          return `<li>${label}. ${opt}</li>`;
+        }).join("");
+
+        questionList.innerHTML += `
+          <div class="bg-white shadow rounded p-4">
+            <p><strong>(${q.id})</strong> ${q.question}</p>
+            <ul class="list-disc ml-6">${optionsHTML}</ul>
+            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
+            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    window.deleteQuestion = async function (docId) {
+      if (confirm("আপনি কি নিশ্চিত মুছতে চান?")) {
+        await deleteDoc(doc(db, "questions", docId));
+        showMessage("প্রশ্ন মুছে ফেলা হয়েছে");
+        loadQuestions();
+      }
+    };
+
+    questionForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const question = document.getElementById("questionText").value.trim();
+      const options = [
+        document.getElementById("optionA").value.trim(),
+        document.getElementById("optionB").value.trim(),
+        document.getElementById("optionC").value.trim(),
+        document.getElementById("optionD").value.trim()
+      ];
+      const correct = document.getElementById("correctOption").value;
+      const answer = options["ABCD".indexOf(correct)];
+
+      try {
+        const snapshot = await getDocs(collection(db, "questions"));
+        const newId = snapshot.size + 1;
+
+        await addDoc(collection(db, "questions"), {
+          id: newId,
+          question,
+          options,
+          answer
+        });
+
+        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
+        questionForm.reset();
+        loadQuestions();
+      } catch (error) {
+        showMessage("❌ ব্যর্থ: " + error.message, true);
+      }
+    });
+
+    window.generateCSV = async function () {
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const data = snapshot.docs.map(doc => doc.data());
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "questions.csv";
+      link.click();
+    };
+
+    window.generatePDF = async function () {
+      const { jsPDF } = window.jspdf;
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const pdf = new jsPDF();
+      let y = 20;
+      pdf.text("Target Zone প্রশ্নপত্র", 20, y);
+      y += 10;
+
+      snapshot.forEach(docSnap => {
+        const q = docSnap.data();
+        pdf.text(`(${q.id}) ${q.question}`, 10, y); y += 7;
+        q.options.forEach((opt, i) => {
+          pdf.text(`${String.fromCharCode(65+i)}. ${opt}`, 15, y);
+          y += 6;
+        });
+        pdf.text(`✅ সঠিক উত্তর: ${q.answer}`, 15, y); y += 10;
+        if (y > 270) { pdf.addPage(); y = 20; }
+      });
+
+      pdf.save("questions.pdf");
+    };
+
+    window.generateStudentReports = async function () {
+      const { jsPDF } = window.jspdf;
+      const resultSnapshot = await getDocs(collection(db, "results"));
+      const qSnapshot = await getDocs(collection(db, "questions"));
+      const allQuestions = qSnapshot.docs.map(doc => doc.data());
+
+      if (resultSnapshot.empty) {
+        alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
+        return;
+      }
+
+      for (const docSnap of resultSnapshot.docs) {
+        const data = docSnap.data();
+        const userAnswers = data.answers || {};
+        let correct = 0, wrong = 0, unattempted = 0, score = 0;
+
+        allQuestions.forEach((q, i) => {
+          const userAns = userAnswers[i] ?? userAnswers[String(i)];
+          if (userAns === undefined) unattempted++;
+          else if (userAns === q.answer) { correct++; score += 2; }
+          else { wrong++; score -= 0.25; }
+        });
+
+        const pdf = new jsPDF();
+        pdf.setFontSize(16);
+        pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
+        pdf.setFontSize(12);
+        pdf.text(`📧 Email: ${data.email}`, 20, 40);
+        pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
+        pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
+        pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
+        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
+
+        if (data.submittedAt) {
+          const date = data.submittedAt.seconds ? new Date(data.submittedAt.seconds * 1000) : new Date(data.submittedAt);
+          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 90);
+        }
+
+        let y = 110;
+        allQuestions.forEach((q, i) => {
+          if (y > 270) { pdf.addPage(); y = 20; }
+          const userAns = userAnswers[i] ?? "❌ Not Answered";
+          pdf.text(`${i + 1}. ${q.question}`, 10, y); y += 7;
+          pdf.text(`আপনার উত্তর: ${userAns}`, 15, y); y += 6;
+          pdf.text(`সঠিক উত্তর: ${q.answer}`, 15, y); y += 10;
+        });
+
+        try {
+          pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+        } catch (err) {
+          console.error("PDF Save Failed:", err);
+          const blob = pdf.output("blob");
+          const url = URL.createObjectURL(blob);
+          window.open(url);
+        }
+      }
+
+      alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
+    };
+
+    loadQuestions();
   </script></body>
 </html>
