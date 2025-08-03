@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+    }header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.question-box {
+  margin-bottom: 20px;
+}
+
+.question {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.options {
+  list-style: none;
+  padding: 0;
+}
+
+.options li {
+  margin-bottom: 10px;
+}
+
+.options input {
+  margin-right: 10px;
+}
+
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.mark {
+  background-color: #f9a825;
+  color: #fff;
+}
+
+.next {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.prev {
+  background-color: #888;
+  color: white;
+}
+
+.submit {
+  background-color: #e53935;
+  color: white;
+  width: 100%;
+  margin-top: 20px;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    কুইজ পেজ - <span id="student-email">লোড হচ্ছে...</span>
+  </header>  <div class="container">
+    <div class="question-box">
+      <div class="question" id="question-text">Loading question...</div>
+      <ul class="options" id="options-list"></ul>
+    </div><div class="btn-row">
+  <button class="btn prev" id="prev-btn">Previous</button>
+  <button class="btn mark" id="mark-btn">Mark for Review</button>
+  <button class="btn next" id="next-btn">Next</button>
+</div>
+
+<button class="btn submit" id="submit-btn">Submit</button>
+
+  </div>  <!-- Firebase SDK -->  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e",
+      measurementId: "G-436XDYLGVX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const questionText = document.getElementById("question-text");
+    const optionsList = document.getElementById("options-list");
+    const studentEmail = document.getElementById("student-email");
+
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const markBtn = document.getElementById("mark-btn");
+    const submitBtn = document.getElementById("submit-btn");
+
+    let questions = [];
+    let currentQuestion = 0;
+    const answers = {};
+    const reviewMarked = new Set();
+    let currentUser = null;
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        studentEmail.textContent = user.email;
+        currentUser = user;
+      } else {
+        alert("আপনি লগইন করেননি!");
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadQuestions() {
+      const querySnapshot = await getDocs(collection(db, "questions"));
+      questions = querySnapshot.docs.map(doc => doc.data());
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      if (!q) return;
+
+      questionText.textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
+      optionsList.innerHTML = "";
+
+      q.options.forEach((option, index) => {
+        const li = document.createElement("li");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "option";
+        input.value = option;
+        if (answers[currentQuestion] === option) input.checked = true;
+
+        input.addEventListener("change", () => {
+          answers[currentQuestion] = option;
+        });
+
+        li.appendChild(input);
+        li.append(option);
+        optionsList.appendChild(li);
+      });
+    }
+
+    prevBtn.addEventListener("click", () => {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        showQuestion();
+      }
+    });
+
+    markBtn.addEventListener("click", () => {
+      reviewMarked.add(currentQuestion);
+      alert(`প্রশ্ন ${currentQuestion + 1} মার্কড ফর রিভিউ`);
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      const total = questions.length;
+      const answered = Object.keys(answers).length;
+      const review = reviewMarked.size;
+
+      const confirmSubmit = confirm(`আপনি ${answered}/${total} প্রশ্নের উত্তর দিয়েছেন।\n${review} প্রশ্ন মার্ক করেছেন রিভিউর জন্য।\nসাবমিট করতে চান?`);
+      if (!confirmSubmit) return;
+
+      let score = 0;
+      questions.forEach((q, index) => {
+        if (answers[index] === q.answer) score++;
+      });
+
+      if (currentUser) {
+        const resultRef = doc(db, "results", currentUser.uid);
+        await setDoc(resultRef, {
+          email: currentUser.email,
+          score: score,
+          total: total,
+          submittedAt: serverTimestamp()
+        });
+
+        alert("✅ কুইজ সাবমিট হয়েছে। ধন্যবাদ!");
+        window.location.href = "index.html";
+      } else {
+        alert("ব্যর্থ: ব্যবহারকারীর তথ্য পাওয়া যায়নি।");
+      }
+    });
+
+    loadQuestions();
+  </script></body>
+</html>
