@@ -157,9 +157,8 @@
       }
     });
 
-    // ✅ Student Report Function (Negative Marking সহ)
+    // ✅ Student Report Function (Negative Marking সহ এবং কাজের জন্য ফিক্সড)
     window.generateStudentReports = async function () {
-      const { jsPDF } = window.jspdf;
       const resultSnapshot = await getDocs(collection(db, "results"));
       const qSnapshot = await getDocs(collection(db, "questions"));
       const allQuestions = qSnapshot.docs.map(doc => doc.data());
@@ -169,7 +168,7 @@
         return;
       }
 
-      resultSnapshot.forEach((docSnap) => {
+      for (const docSnap of resultSnapshot.docs) {
         const data = docSnap.data();
         const userAnswers = data.answers || {};
         let correct = 0, wrong = 0, unattempted = 0;
@@ -181,14 +180,14 @@
             unattempted++;
           } else if (userAns === q.answer) {
             correct++;
-            score += 2; // ✅ সঠিকের জন্য +2
+            score += 2;
           } else {
             wrong++;
-            score -= 0.25; // ❌ ভুলের জন্য -0.25
+            score -= 0.25;
           }
         });
 
-        const pdf = new jsPDF();
+        const pdf = new window.jspdf.jsPDF();
         pdf.setFontSize(16);
         pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
 
@@ -206,13 +205,13 @@
         }
 
         pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
-      });
+      }
 
       alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
     };
 
     window.generatePDF = async function () {
-      const docPDF = new jspdf.jsPDF();
+      const docPDF = new window.jspdf.jsPDF();
       const qRef = query(collection(db, "questions"), orderBy("id"));
       const snapshot = await getDocs(qRef);
       let y = 20;
