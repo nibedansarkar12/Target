@@ -163,6 +163,19 @@
       }
     });
 
+    // ✅ Blob download function
+    function downloadPDF(pdf, filename) {
+      const blob = pdf.output("blob");
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
     // ✅ Student Report Function
     window.generateStudentReports = async function () {
       const resultSnapshot = await getDocs(collection(db, "results"));
@@ -212,7 +225,8 @@
           pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 100);
         }
 
-        pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+        // ✅ Safe Blob download
+        downloadPDF(pdf, `${data.email.replace(/[@.]/g, "_")}_report.pdf`);
       }
 
       alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
@@ -238,7 +252,7 @@
         if (y > 270) { docPDF.addPage(); y = 20; }
       });
 
-      docPDF.save("questions.pdf");
+      downloadPDF(docPDF, "questions.pdf");
     };
 
     window.generateCSV = async function () {
