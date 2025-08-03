@@ -1,18 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Admin Panel</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { color: #333; }
+    .section { margin-bottom: 30px; }
+    button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+  </style>
 </head>
 <body>
-  <h2>Student Reports</h2>
-  <button onclick="generateReports()">Download All Reports</button>
-  <div id="report-container"></div>
+  <h2>Admin Panel</h2>
 
+  <!-- Question Management -->
+  <div class="section">
+    <h3>Manage Questions</h3>
+    <form id="question-form">
+      <input type="text" id="question" placeholder="Enter Question" required>
+      <input type="text" id="option1" placeholder="Option 1" required>
+      <input type="text" id="option2" placeholder="Option 2" required>
+      <input type="text" id="option3" placeholder="Option 3" required>
+      <input type="text" id="option4" placeholder="Option 4" required>
+      <input type="text" id="answer" placeholder="Correct Answer" required>
+      <button type="submit">Add Question</button>
+    </form>
+    <table id="question-table">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Options</th>
+          <th>Answer</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="export-pdf">Export Questions as PDF</button>
+    <button id="export-csv">Export as CSV</button>
+  </div>
+
+  <!-- Student Reports -->
+  <div class="section">
+    <h3>Student Reports</h3>
+    <button onclick="generateReports()">Generate Student Reports (PDF)</button>
+  </div>
+
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
@@ -26,18 +67,101 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function generateReports() {
+    const questionForm = document.getElementById("question-form");
+    const questionTable = document.querySelector("#question-table tbody");
+
+    // Load Questions
+    async function loadQuestions() {
+      questionTable.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "questions"));
+      querySnapshot.forEach((docSnap) => {
+        const q = docSnap.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${q.question}</td>
+          <td>${q.options.join(", ")}</td>
+          <td>${q.answer}</td>
+          <td><button onclick="deleteQuestion('${docSnap.id}')">Delete</button></td>
+        `;
+        questionTable.appendChild(row);
+      });
+    }
+
+    // Add Question
+    questionForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const newQ = {
+        question: document.getElementById("question").value,
+        options: [
+          document.getElementById("option1").value,
+          document.getElementById("option2").value,
+          document.getElementById("option3").value,
+          document.getElementById("option4").value
+        ],
+        answer: document.getElementById("answer").value
+      };
+      await addDoc(collection(db, "questions"), newQ);
+      alert("Question added!");
+      questionForm.reset();
+      loadQuestions();
+    });
+
+    // Delete Question
+    window.deleteQuestion = async function(id) {
+      await deleteDoc(doc(db, "questions", id));
+      alert("Question deleted!");
+      loadQuestions();
+    };
+
+    // Export Questions as PDF
+    document.getElementById("export-pdf").addEventListener("click", async () => {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      pdf.setFontSize(16);
+      pdf.text("Questions List", 80, 20);
+      let y = 40;
+      const querySnapshot = await getDocs(collection(db, "questions"));
+      querySnapshot.forEach((docSnap, index) => {
+        const q = docSnap.data();
+        pdf.text(`${index + 1}. ${q.question}`, 20, y);
+        y += 10;
+        q.options.forEach((opt, i) => {
+          pdf.text(`   ${String.fromCharCode(65+i)}. ${opt}`, 30, y);
+          y += 8;
+        });
+        pdf.text(`Answer: ${q.answer}`, 30, y);
+        y += 12;
+        if (y > 270) { pdf.addPage(); y = 20; }
+      });
+      pdf.save("questions.pdf");
+    });
+
+    // Export as CSV
+    document.getElementById("export-csv").addEventListener("click", async () => {
+      let csv = "Question,Option1,Option2,Option3,Option4,Answer\n";
+      const querySnapshot = await getDocs(collection(db, "questions"));
+      querySnapshot.forEach((docSnap) => {
+        const q = docSnap.data();
+        csv += `"${q.question}","${q.options[0]}","${q.options[1]}","${q.options[2]}","${q.options[3]}","${q.answer}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "questions.csv";
+      a.click();
+    });
+
+    // Generate Student Reports
+    window.generateReports = async function() {
       const { jsPDF } = window.jspdf;
 
-      // Load all questions first
       const questionsSnapshot = await getDocs(collection(db, "questions"));
       const questions = questionsSnapshot.docs.map(doc => doc.data());
 
-      // Load all results
       const resultsSnapshot = await getDocs(collection(db, "results"));
-
       if (resultsSnapshot.empty) {
-        alert("⚠️ কোনো রেজাল্ট পাওয়া যায়নি। অন্তত একজন স্টুডেন্টকে কুইজ সাবমিট করতে দিন।");
+        alert("⚠️ কোনো রেজাল্ট পাওয়া যায়নি।");
         return;
       }
 
@@ -45,42 +169,32 @@
         const data = docSnap.data();
         const pdf = new jsPDF();
 
-        // Header
         pdf.setFontSize(18);
         pdf.text("Quiz Report Card", 70, 20);
 
-        // Student Info
         pdf.setFontSize(12);
         pdf.text(`Student Email: ${data.email}`, 20, 40);
 
-        // Calculate correct, incorrect, unanswered
         let correctCount = 0;
         let incorrectCount = 0;
         let unansweredCount = 0;
 
-        if (data.answers) {
-          questions.forEach((q, index) => {
-            if (data.answers[index] === undefined) {
-              unansweredCount++;
-            } else if (data.answers[index] === q.answer) {
-              correctCount++;
-            } else {
-              incorrectCount++;
-            }
-          });
-        } else {
-          unansweredCount = questions.length;
-        }
+        questions.forEach((q, index) => {
+          if (!data.answers || data.answers[index] === undefined) {
+            unansweredCount++;
+          } else if (data.answers[index] === q.answer) {
+            correctCount++;
+          } else {
+            incorrectCount++;
+          }
+        });
 
-        // Score
-        pdf.text(`Total Score: ${correctCount} / ${questions.length}`, 20, 50);
         pdf.text(`✅ Correct Answers: ${correctCount}`, 20, 60);
         pdf.text(`❌ Incorrect Answers: ${incorrectCount}`, 20, 70);
         pdf.text(`⚠️ Unanswered Questions: ${unansweredCount}`, 20, 80);
+        pdf.text(`Total Score: ${correctCount} / ${questions.length}`, 20, 90);
 
-        // Detailed answers
-        let y = 100;
-        pdf.setFontSize(12);
+        let y = 110;
         pdf.text("Detailed Answers:", 20, y);
         y += 10;
 
@@ -88,23 +202,24 @@
           const studentAns = data.answers ? data.answers[index] : "Not Answered";
           const correctAns = q.answer;
           const status = studentAns === correctAns ? "✔ Correct" :
-                         (studentAns === "Not Answered" ? "⚠ Unanswered" : "✘ Wrong");
-          pdf.text(`${index + 1}. Q: ${q.question}`, 20, y);
+                        (studentAns === "Not Answered" ? "⚠ Unanswered" : "✘ Wrong");
+
+          pdf.text(`${index + 1}. ${q.question}`, 20, y);
           y += 8;
           pdf.text(`Your Ans: ${studentAns}`, 30, y);
           y += 8;
           pdf.text(`Correct Ans: ${correctAns}   [${status}]`, 30, y);
           y += 12;
 
-          if (y > 270) { // New page if needed
-            pdf.addPage();
-            y = 20;
-          }
+          if (y > 270) { pdf.addPage(); y = 20; }
         });
 
         pdf.save(`${data.email}_report.pdf`);
       });
-    }
+    };
+
+    // Initial Load
+    loadQuestions();
   </script>
 </body>
 </html>
