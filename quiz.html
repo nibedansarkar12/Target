@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <title>Quiz</title>
@@ -20,10 +19,14 @@
     .next { background-color: #4CAF50; color: white; }
     .prev { background-color: #888; color: white; }
     .submit { background-color: #e53935; color: white; width: 100%; margin-top: 20px; }
+    #timer { position: fixed; top: 10px; right: 20px; font-weight: bold; font-size: 18px; color: #e53935; }
   </style>
 </head>
-<body>
-  <header> কুইজ পেজ - <span id="student-email">লোড হচ্ছে...</span> </header>
+<body oncontextmenu="return false" oncopy="return false" oncut="return false" onpaste="return false">
+  <header>
+    কুইজ পেজ - <span id="student-email">লোড হচ্ছে...</span>
+    <div id="timer">⏳</div>
+  </header>
   <div class="container">
     <div class="question-box">
       <div class="question" id="question-text">Loading question...</div>
@@ -35,11 +38,9 @@
       <button class="btn next" id="next-btn">Next</button>
     </div>
     <button class="btn submit" id="submit-btn">Submit</button>
-  </div>
-
-  <script type="module">
+  </div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -59,7 +60,7 @@
     const questionText = document.getElementById("question-text");
     const optionsList = document.getElementById("options-list");
     const studentEmail = document.getElementById("student-email");
-
+    const timerDisplay = document.getElementById("timer");
     const prevBtn = document.getElementById("prev-btn");
     const nextBtn = document.getElementById("next-btn");
     const markBtn = document.getElementById("mark-btn");
@@ -71,10 +72,24 @@
     const reviewMarked = new Set();
     let currentUser = null;
 
-    onAuthStateChanged(auth, user => {
+    let timeLeft = 80 * 60;
+    let warningCount = 0;
+
+    onAuthStateChanged(auth, async user => {
       if (user) {
         studentEmail.textContent = user.email;
         currentUser = user;
+
+        // One-time access check
+        const resultRef = doc(db, "results", user.uid);
+        const resultSnap = await getDoc(resultRef);
+        if (resultSnap.exists()) {
+          alert("⚠️ আপনি ইতিমধ্যেই পরীক্ষা দিয়েছেন!");
+          window.location.href = "index.html";
+        } else {
+          loadQuestions();
+          startTimer();
+        }
       } else {
         alert("আপনি লগইন করেননি!");
         window.location.href = "index.html";
@@ -84,13 +99,20 @@
     async function loadQuestions() {
       const querySnapshot = await getDocs(collection(db, "questions"));
       questions = querySnapshot.docs.map(doc => doc.data());
+      shuffleArray(questions);
       showQuestion();
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
     }
 
     function showQuestion() {
       const q = questions[currentQuestion];
       if (!q) return;
-
       questionText.textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
       optionsList.innerHTML = "";
 
@@ -133,12 +155,6 @@
 
     submitBtn.addEventListener("click", async () => {
       const total = questions.length;
-      const answered = Object.keys(answers).length;
-      const review = reviewMarked.size;
-
-      const confirmSubmit = confirm(`আপনি ${answered}/${total} প্রশ্নের উত্তর দিয়েছেন।\n${review} প্রশ্ন মার্ক করেছেন রিভিউর জন্য।\nসাবমিট করতে চান?`);
-      if (!confirmSubmit) return;
-
       let score = 0;
       questions.forEach((q, index) => {
         if (answers[index] === q.answer) score++;
@@ -151,7 +167,7 @@
           score: score,
           total: total,
           submittedAt: serverTimestamp(),
-          answers: answers // ✅ storing user responses for report
+          answers: answers
         });
 
         alert("✅ কুইজ সাবমিট হয়েছে। ধন্যবাদ!");
@@ -161,7 +177,29 @@
       }
     });
 
-    loadQuestions();
-  </script>
-</body>
+    function startTimer() {
+      const interval = setInterval(() => {
+        const min = Math.floor(timeLeft / 60);
+        const sec = timeLeft % 60;
+        timerDisplay.textContent = `⏱️ সময় বাকি: ${min}:${sec < 10 ? "0" + sec : sec}`;
+        timeLeft--;
+        if (timeLeft < 0) {
+          clearInterval(interval);
+          alert("🕒 সময় শেষ! পরীক্ষা অটো-সাবমিট হচ্ছে...");
+          submitBtn.click();
+        }
+      }, 1000);
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        warningCount++;
+        alert(`⚠️ আপনি ${warningCount} বার ট্যাব ছেড়েছেন! আরও করলে পরীক্ষা বন্ধ হবে।`);
+        if (warningCount >= 3) {
+          alert("⛔ আপনি অনেকবার ট্যাব ছেড়েছেন, পরীক্ষা বন্ধ করা হচ্ছে!");
+          submitBtn.click();
+        }
+      }
+    });
+  </script></body>
 </html>
