@@ -1,4 +1,4 @@
-<!-- ✅ Final quiz.html with 9 essential features (excluding multi-language and bookmark) --><!DOCTYPE html><html lang="bn">
+<!-- ✅ Final quiz.html (With working Submit + Firestore Save + 9 Features) --><!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -162,19 +162,26 @@
     }
 
     async function confirmSubmit() {
-      const total = questions.length;
-      let correct = 0;
-      let wrong = 0;
-      questions.forEach((q, i) => {
-        const a = answers[i];
-        if (a === undefined) return;
-        if (a === q.answer) correct++;
-        else wrong++;
-      });
-      const score = correct * 2 - wrong * 0.25;
-      const confirmText = `✅ সঠিক: ${correct}, ❌ ভুল: ${wrong}, 📈 স্কোর: ${score} / ${total * 2}\n\nআপনি কি সাবমিট করতে চান?`;
-      if (!confirm(confirmText)) return;
-      if (currentUser) {
+      try {
+        const total = questions.length;
+        let correct = 0;
+        let wrong = 0;
+        questions.forEach((q, i) => {
+          const a = answers[i];
+          if (a === undefined) return;
+          if (a === q.answer) correct++;
+          else wrong++;
+        });
+        const score = correct * 2 - wrong * 0.25;
+        const confirmText = `✅ সঠিক: ${correct}, ❌ ভুল: ${wrong}, 📈 স্কোর: ${score} / ${total * 2}\n\nআপনি কি সাবমিট করতে চান?`;
+        if (!confirm(confirmText)) return;
+
+        if (!currentUser) {
+          alert("❌ ব্যবহারকারী লগইন নেই বা পাওয়া যায়নি।");
+          return;
+        }
+
+        console.log("🔥 Submitting to Firestore...");
         const resultRef = doc(db, "results", currentUser.uid);
         await setDoc(resultRef, {
           email: currentUser.email,
@@ -185,8 +192,12 @@
           submittedAt: serverTimestamp(),
           answers
         });
+
         alert("✅ কুইজ সাবমিট হয়েছে! ধন্যবাদ");
         window.location.href = "index.html";
+      } catch (error) {
+        console.error("❌ সাবমিট করতে সমস্যা:", error);
+        alert("⚠️ সাবমিট ব্যর্থ হয়েছে। Console-এ error দেখুন বা ইন্টারনেট চেক করুন।");
       }
     }
 
