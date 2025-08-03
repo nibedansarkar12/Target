@@ -163,24 +163,9 @@
       }
     });
 
-    // ✅ Blob download function
-    function downloadPDF(pdf, filename) {
-      const blob = pdf.output("blob");
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    // ✅ Student Report Function
+    // ✅ Student Report Function with detailed answers
     window.generateStudentReports = async function () {
       const resultSnapshot = await getDocs(collection(db, "results"));
-      alert("Documents found: " + resultSnapshot.size);
-
       const qSnapshot = await getDocs(collection(db, "questions"));
       const allQuestions = qSnapshot.docs.map(doc => doc.data());
 
@@ -217,21 +202,31 @@
         pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
         pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
         pdf.text(`⚪ Unattempted Questions: ${unattempted}`, 20, 70);
-        pdf.text(`📊 Total Questions: ${allQuestions.length}`, 20, 80);
-        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 90);
+        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
 
         if (data.submittedAt?.seconds) {
           const date = new Date(data.submittedAt.seconds * 1000);
-          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 100);
+          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 90);
         }
 
-        // ✅ Safe Blob download
-        downloadPDF(pdf, `${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+        // 🔎 প্রতিটি প্রশ্নের বিস্তারিত
+        let y = 110;
+        allQuestions.forEach((q, i) => {
+          if (y > 270) { pdf.addPage(); y = 20; }
+
+          const userAns = userAnswers[i] ?? "❌ Not Answered";
+          pdf.text(`${i + 1}. ${q.question}`, 10, y); y += 7;
+          pdf.text(`আপনার উত্তর: ${userAns}`, 15, y); y += 6;
+          pdf.text(`সঠিক উত্তর: ${q.answer}`, 15, y); y += 10;
+        });
+
+        pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
       }
 
       alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
     };
 
+    // ✅ Export Questions as PDF
     window.generatePDF = async function () {
       const docPDF = new jsPDF();
       const qRef = query(collection(db, "questions"), orderBy("id"));
@@ -252,9 +247,10 @@
         if (y > 270) { docPDF.addPage(); y = 20; }
       });
 
-      downloadPDF(docPDF, "questions.pdf");
+      docPDF.save("questions.pdf");
     };
 
+    // ✅ Export Questions as CSV
     window.generateCSV = async function () {
       const qRef = query(collection(db, "questions"), orderBy("id"));
       const snapshot = await getDocs(qRef);
