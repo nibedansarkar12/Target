@@ -1,42 +1,44 @@
-<!DOCTYPE html><html lang="bn">
+<!-- ✅ Final quiz.html with 9 essential features (excluding multi-language and bookmark) --><!DOCTYPE html><html lang="bn">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Online Quiz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
-    .dark-mode { background: #121212; color: #fff; }
-    header { background: #4CAF50; color: #fff; padding: 10px 20px; text-align: center; position: relative; }
-    #timer { position: absolute; right: 20px; top: 10px; font-size: 16px; }
-    #darkToggle { position: absolute; left: 20px; top: 10px; cursor: pointer; }
-    .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    .dark-mode .container { background: #1f1f1f; }
-    .question { font-size: 18px; margin-bottom: 10px; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; transition: background 0.3s, color 0.3s; }
+    .dark-mode { background: #121212; color: white; }
+    header { background: #4CAF50; color: white; padding: 10px; text-align: center; position: relative; }
+    #timer, #darkToggle { position: absolute; top: 10px; font-size: 14px; }
+    #timer { right: 20px; }
+    #darkToggle { left: 20px; cursor: pointer; }
+    .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .dark-mode .container { background: #1e1e1e; }
+    .question { font-weight: bold; margin-bottom: 10px; }
     .options { list-style: none; padding: 0; }
     .options li { margin-bottom: 8px; }
-    .nav-btns { display: flex; justify-content: space-between; margin-top: 20px; }
-    button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
     .palette { display: flex; flex-wrap: wrap; gap: 5px; margin: 15px 0; }
-    .palette button { width: 30px; height: 30px; border: 1px solid #ccc; background: #eee; font-size: 14px; }
-    .palette .attempted { background: #4CAF50; color: #fff; }
-    .palette .review { background: #f9a825; color: #fff; }
-    .summary { margin-top: 20px; font-size: 14px; }
-    .progress-bar { height: 6px; background: #ccc; margin-top: 5px; border-radius: 3px; overflow: hidden; }
-    .progress { height: 100%; background: #4CAF50; width: 0%; }
-    .flag-btn { float: right; font-size: 12px; color: #e53935; cursor: pointer; }
+    .palette button { width: 30px; height: 30px; border: none; background: #ccc; cursor: pointer; border-radius: 50%; }
+    .palette .attempted { background: #4CAF50; color: white; }
+    .palette .review { background: orange; color: white; }
+    .progress-bar { background: #ccc; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+    .progress { background: #4CAF50; width: 0%; height: 100%; }
+    .summary { font-size: 14px; margin-bottom: 15px; }
+    .flag-btn { font-size: 12px; color: red; cursor: pointer; float: right; }
+    .nav-btns { display: flex; justify-content: space-between; margin-top: 20px; }
+    button { padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .submit { background: #e53935; color: white; width: 100%; margin-top: 20px; }
   </style>
 </head>
 <body oncontextmenu="return false" oncopy="return false" oncut="return false" onpaste="return false">
   <header>
     <div id="darkToggle">🌙</div>
-    কুইজ - <span id="student-email">লোড হচ্ছে...</span>
+    অনলাইন কুইজ - <span id="student-email">লোড হচ্ছে...</span>
     <div id="timer">⏳</div>
   </header>
   <div class="container">
     <div class="progress-bar"><div class="progress" id="progress"></div></div>
     <div class="question" id="question-text"></div>
     <ul class="options" id="options-list"></ul>
-    <div class="flag-btn" onclick="alert('আপনি এই প্রশ্নটি রিপোর্ট করেছেন')">🚩 রিপোর্ট</div>
+    <div class="flag-btn" onclick="alert('প্রশ্নটি রিপোর্ট করা হয়েছে')">🚩 রিপোর্ট</div>
     <div class="nav-btns">
       <button onclick="prevQuestion()">Previous</button>
       <button onclick="markForReview()">Mark for Review</button>
@@ -44,48 +46,85 @@
     </div>
     <div class="palette" id="question-palette"></div>
     <div class="summary" id="attempt-summary"></div>
-    <button style="margin-top:20px;background:#e53935;color:white;width:100%;" onclick="confirmSubmit()">Submit</button>
-  </div>  <script>
-    const questions = [
-      { question: '2+2 = ?', options: ['3', '4', '5', '6'], answer: '4' },
-      { question: 'Capital of France?', options: ['London', 'Berlin', 'Paris', 'Rome'], answer: 'Paris' },
-      { question: 'HTML stands for?', options: ['Hyper Text Markup Language', 'Home Tool Markup', 'Hyperlinks Text', 'None'], answer: 'Hyper Text Markup Language' },
-    ];
+    <button class="submit" onclick="confirmSubmit()">Submit</button>
+  </div>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let questions = [];
     let currentQuestion = 0;
     const answers = {};
     const reviewMarked = new Set();
-    const flagged = new Set();
-    const palette = document.getElementById('question-palette');
+    let currentUser = null;
+    let timeLeft = 80 * 60;
+    let tabWarnCount = 0;
 
-    function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
-    shuffle(questions);
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        document.getElementById("student-email").textContent = user.email;
+        currentUser = user;
+        const resultRef = doc(db, "results", user.uid);
+        const resultSnap = await getDoc(resultRef);
+        if (resultSnap.exists()) {
+          alert("⚠️ আপনি ইতিমধ্যেই পরীক্ষা দিয়েছেন!");
+          window.location.href = "index.html";
+        } else {
+          loadQuestions();
+          startTimer();
+        }
+      } else {
+        alert("⚠️ লগইন করা হয়নি");
+        window.location.href = "index.html";
+      }
+    });
 
-    function updatePalette() {
-      palette.innerHTML = '';
-      for (let i = 0; i < questions.length; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i + 1;
-        if (answers[i]) btn.classList.add('attempted');
-        if (reviewMarked.has(i)) btn.classList.add('review');
-        btn.onclick = () => { currentQuestion = i; showQuestion(); };
-        palette.appendChild(btn);
+    async function loadQuestions() {
+      const querySnapshot = await getDocs(collection(db, "questions"));
+      questions = querySnapshot.docs.map(doc => doc.data());
+      shuffle(questions);
+      showQuestion();
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
     }
 
     function showQuestion() {
       const q = questions[currentQuestion];
-      document.getElementById('question-text').innerHTML = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
-      const optionsList = document.getElementById('options-list');
-      optionsList.innerHTML = '';
+      document.getElementById("question-text").textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
+      const list = document.getElementById("options-list");
+      list.innerHTML = "";
       q.options.forEach(opt => {
-        const li = document.createElement('li');
+        const li = document.createElement("li");
         li.innerHTML = `<label><input type='radio' name='opt' value='${opt}' ${answers[currentQuestion] === opt ? 'checked' : ''}> ${opt}</label>`;
-        optionsList.appendChild(li);
+        list.appendChild(li);
       });
       updatePalette();
       updateSummary();
       updateProgress();
     }
+
+    function prevQuestion() { if (currentQuestion > 0) currentQuestion--; showQuestion(); }
+    function nextQuestion() { if (currentQuestion < questions.length - 1) currentQuestion++; showQuestion(); }
+    function markForReview() { reviewMarked.add(currentQuestion); updatePalette(); alert(`প্রশ্ন ${currentQuestion + 1} মার্ক করা হয়েছে`); }
 
     document.addEventListener('change', e => {
       if (e.target.name === 'opt') {
@@ -96,71 +135,99 @@
       }
     });
 
-    function prevQuestion() { if (currentQuestion > 0) { currentQuestion--; showQuestion(); } }
-    function nextQuestion() { if (currentQuestion < questions.length - 1) { currentQuestion++; showQuestion(); } }
-    function markForReview() { reviewMarked.add(currentQuestion); updatePalette(); alert(`প্রশ্ন ${currentQuestion + 1} রিভিউর জন্য মার্ক করা হয়েছে`); }
+    function updatePalette() {
+      const palette = document.getElementById("question-palette");
+      palette.innerHTML = '';
+      for (let i = 0; i < questions.length; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        if (answers[i]) btn.classList.add("attempted");
+        if (reviewMarked.has(i)) btn.classList.add("review");
+        btn.onclick = () => { currentQuestion = i; showQuestion(); };
+        palette.appendChild(btn);
+      }
+    }
 
     function updateSummary() {
       const attempted = Object.keys(answers).length;
-      const review = reviewMarked.size;
       const skipped = questions.length - attempted;
-      document.getElementById('attempt-summary').textContent = `Attempted: ${attempted}, Skipped: ${skipped}, Review: ${review}`;
+      const review = reviewMarked.size;
+      document.getElementById("attempt-summary").textContent = `Attempted: ${attempted}, Skipped: ${skipped}, Review: ${review}`;
     }
 
     function updateProgress() {
-      const p = document.getElementById('progress');
-      const perc = (Object.keys(answers).length / questions.length) * 100;
-      p.style.width = `${perc}%`;
+      const p = document.getElementById("progress");
+      const percent = (Object.keys(answers).length / questions.length) * 100;
+      p.style.width = `${percent}%`;
     }
 
-    function confirmSubmit() {
+    async function confirmSubmit() {
       const total = questions.length;
-      const correct = questions.filter((q, i) => answers[i] === q.answer).length;
-      const wrong = Object.keys(answers).filter(i => answers[i] !== questions[i].answer).length;
+      let correct = 0;
+      let wrong = 0;
+      questions.forEach((q, i) => {
+        const a = answers[i];
+        if (a === undefined) return;
+        if (a === q.answer) correct++;
+        else wrong++;
+      });
       const score = correct * 2 - wrong * 0.25;
-      const confirmText = `📊 আপনি ${correct}টি সঠিক, ${wrong}টি ভুল দিয়েছেন।\nমোট স্কোর: ${score} / ${total * 2}\n\nআপনি কি সাবমিট করতে চান?`;
-      if (confirm(confirmText)) alert("✅ সাবমিট হয়েছে। ধন্যবাদ!");
+      const confirmText = `✅ সঠিক: ${correct}, ❌ ভুল: ${wrong}, 📈 স্কোর: ${score} / ${total * 2}\n\nআপনি কি সাবমিট করতে চান?`;
+      if (!confirm(confirmText)) return;
+      if (currentUser) {
+        const resultRef = doc(db, "results", currentUser.uid);
+        await setDoc(resultRef, {
+          email: currentUser.email,
+          score,
+          correct,
+          wrong,
+          total,
+          submittedAt: serverTimestamp(),
+          answers
+        });
+        alert("✅ কুইজ সাবমিট হয়েছে! ধন্যবাদ");
+        window.location.href = "index.html";
+      }
     }
 
-    // Timer
-    let timeLeft = 80 * 60;
-    setInterval(() => {
-      if (--timeLeft <= 0) confirmSubmit();
-      const min = Math.floor(timeLeft / 60);
-      const sec = timeLeft % 60;
-      document.getElementById('timer').textContent = `⏱️ ${min}:${sec < 10 ? '0' + sec : sec}`;
-    }, 1000);
+    function startTimer() {
+      const t = document.getElementById("timer");
+      const interval = setInterval(() => {
+        const min = Math.floor(timeLeft / 60);
+        const sec = timeLeft % 60;
+        t.textContent = `⏱️ ${min}:${sec < 10 ? '0' + sec : sec}`;
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          alert("🕒 সময় শেষ! কুইজ সাবমিট হচ্ছে...");
+          confirmSubmit();
+        }
+      }, 1000);
+    }
 
-    // Tab Change Warning
-    let warnCount = 0;
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
-        warnCount++;
-        alert(`⚠️ আপনি ${warnCount} বার ট্যাব ছেড়েছেন!`);
-        if (warnCount >= 3) confirmSubmit();
+        tabWarnCount++;
+        alert(`⚠️ আপনি ${tabWarnCount} বার ট্যাব ছেড়েছেন!`);
+        if (tabWarnCount >= 3) confirmSubmit();
       }
     });
 
-    // Prevent back button
-    history.pushState(null, null, location.href);
     window.onpopstate = () => {
-      history.pushState(null, null, location.href);
-      alert("⛔ Back বাটন ব্যবহার করা যাবে না!");
+      history.pushState(null, null, window.location.href);
+      alert("🔒 Back বাটন নিষ্ক্রিয় করা হয়েছে!");
+    };
+    history.pushState(null, null, window.location.href);
+
+    document.getElementById("darkToggle").onclick = () => {
+      document.body.classList.toggle("dark-mode");
     };
 
-    // Dark mode toggle
-    document.getElementById('darkToggle').addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-    });
-
-    // Keyboard Shortcuts
-    document.addEventListener('keydown', e => {
+    document.addEventListener("keydown", e => {
       if (e.key === 'n') nextQuestion();
       if (e.key === 'p') prevQuestion();
       if (e.key === 'r') markForReview();
       if (e.key === 's') confirmSubmit();
     });
-
-    showQuestion();
   </script></body>
 </html>
