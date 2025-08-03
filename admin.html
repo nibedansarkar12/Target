@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel - Target Zone</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- ✅ jsPDF Fix -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    window.jsPDF = window.jspdf.jsPDF;
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <style>
     body {
@@ -157,9 +163,11 @@
       }
     });
 
-    // ✅ Student Report Function (Negative Marking সহ এবং কাজের জন্য ফিক্সড)
+    // ✅ Student Report Function
     window.generateStudentReports = async function () {
       const resultSnapshot = await getDocs(collection(db, "results"));
+      alert("Documents found: " + resultSnapshot.size);
+
       const qSnapshot = await getDocs(collection(db, "questions"));
       const allQuestions = qSnapshot.docs.map(doc => doc.data());
 
@@ -187,7 +195,7 @@
           }
         });
 
-        const pdf = new window.jspdf.jsPDF();
+        const pdf = new jsPDF();
         pdf.setFontSize(16);
         pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
 
@@ -211,7 +219,7 @@
     };
 
     window.generatePDF = async function () {
-      const docPDF = new window.jspdf.jsPDF();
+      const docPDF = new jsPDF();
       const qRef = query(collection(db, "questions"), orderBy("id"));
       const snapshot = await getDocs(qRef);
       let y = 20;
