@@ -6,7 +6,7 @@
   <title>Admin Panel - Target Zone</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- ✅ jsPDF Fix -->
+  <!-- ✅ jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     window.jsPDF = window.jspdf.jsPDF;
@@ -163,67 +163,88 @@
       }
     });
 
-    // ✅ Student Report Function with detailed answers
+    // ✅ আপডেটেড Student Report Function
     window.generateStudentReports = async function () {
-      const resultSnapshot = await getDocs(collection(db, "results"));
-      const qSnapshot = await getDocs(collection(db, "questions"));
-      const allQuestions = qSnapshot.docs.map(doc => doc.data());
+      try {
+        const { jsPDF } = window.jspdf;
+        const resultSnapshot = await getDocs(collection(db, "results"));
+        const qSnapshot = await getDocs(collection(db, "questions"));
+        const allQuestions = qSnapshot.docs.map(doc => doc.data());
 
-      if (resultSnapshot.empty) {
-        alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
-        return;
-      }
-
-      for (const docSnap of resultSnapshot.docs) {
-        const data = docSnap.data();
-        const userAnswers = data.answers || {};
-        let correct = 0, wrong = 0, unattempted = 0;
-        let score = 0;
-
-        allQuestions.forEach((q, i) => {
-          const userAns = userAnswers[i] ?? userAnswers[String(i)];
-          if (userAns === undefined) {
-            unattempted++;
-          } else if (userAns === q.answer) {
-            correct++;
-            score += 2;
-          } else {
-            wrong++;
-            score -= 0.25;
-          }
-        });
-
-        const pdf = new jsPDF();
-        pdf.setFontSize(16);
-        pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
-
-        pdf.setFontSize(12);
-        pdf.text(`📧 Email: ${data.email}`, 20, 40);
-        pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
-        pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
-        pdf.text(`⚪ Unattempted Questions: ${unattempted}`, 20, 70);
-        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
-
-        if (data.submittedAt?.seconds) {
-          const date = new Date(data.submittedAt.seconds * 1000);
-          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 90);
+        if (resultSnapshot.empty) {
+          alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
+          return;
         }
 
-        // 🔎 প্রতিটি প্রশ্নের বিস্তারিত
-        let y = 110;
-        allQuestions.forEach((q, i) => {
-          if (y > 270) { pdf.addPage(); y = 20; }
+        for (const docSnap of resultSnapshot.docs) {
+          const data = docSnap.data();
+          console.log("Result Data:", data);
 
-          const userAns = userAnswers[i] ?? "❌ Not Answered";
-          pdf.text(`${i + 1}. ${q.question}`, 10, y); y += 7;
-          pdf.text(`আপনার উত্তর: ${userAns}`, 15, y); y += 6;
-          pdf.text(`সঠিক উত্তর: ${q.answer}`, 15, y); y += 10;
-        });
+          const userAnswers = data.answers || {};
+          let correct = 0, wrong = 0, unattempted = 0;
+          let score = 0;
 
-        pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+          allQuestions.forEach((q, i) => {
+            const userAns = userAnswers[i] ?? userAnswers[String(i)];
+            if (userAns === undefined) {
+              unattempted++;
+            } else if (userAns === q.answer) {
+              correct++;
+              score += 2;
+            } else {
+              wrong++;
+              score -= 0.25;
+            }
+          });
+
+          const pdf = new jsPDF();
+          pdf.setFontSize(16);
+          pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
+
+          pdf.setFontSize(12);
+          pdf.text(`📧 Email: ${data.email}`, 20, 40);
+          pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
+          pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
+          pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
+          pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
+
+          if (data.submittedAt) {
+            let dateStr;
+            if (typeof data.submittedAt === "object" && data.submittedAt.seconds) {
+              const date = new Date(data.submittedAt.seconds * 1000);
+              dateStr = date.toLocaleString();
+            } else {
+              const tryDate = new Date(data.submittedAt);
+              dateStr = isNaN(tryDate) ? String(data.submittedAt) : tryDate.toLocaleString();
+            }
+            pdf.text(`🕒 Submitted At: ${dateStr}`, 20, 90);
+          }
+
+          let y = 110;
+          allQuestions.forEach((q, i) => {
+            if (y > 270) { pdf.addPage(); y = 20; }
+
+            const userAns = userAnswers[i] ?? "❌ Not Answered";
+            pdf.text(`${i + 1}. ${q.question}`, 10, y); y += 7;
+            pdf.text(`আপনার উত্তর: ${userAns}`, 15, y); y += 6;
+            pdf.text(`সঠিক উত্তর: ${q.answer}`, 15, y); y += 10;
+          });
+
+          try {
+            pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+          } catch (err) {
+            console.error("PDF Save Failed:", err);
+            const blob = pdf.output("blob");
+            const url = URL.createObjectURL(blob);
+            window.open(url);
+          }
+        }
+
+        alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
+      } catch (err) {
+        console.error("Error in generateStudentReports:", err);
+        alert("❌ রিপোর্ট তৈরি করতে সমস্যা হয়েছে: " + err.message);
       }
-
-      alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
     };
 
     // ✅ Export Questions as PDF
