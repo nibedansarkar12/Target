@@ -343,8 +343,14 @@
       clearInterval(timer);
       const total = questions.length;
       let score = 0;
+
+      // ✅ নতুন মার্কিং সিস্টেম
       questions.forEach((q, index) => {
-        if (answers[index] === q.answer) score++;
+        if (answers[index] === q.answer) {
+          score += 2; // সঠিক উত্তর
+        } else if (answers[index] !== undefined) {
+          score -= 0.25; // ভুল উত্তর
+        }
       });
 
       if (currentUser) {
