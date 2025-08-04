@@ -173,7 +173,8 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp, query, orderBy } 
+      from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -221,7 +222,8 @@
     });
 
     async function loadQuestions() {
-      const querySnapshot = await getDocs(collection(db, "questions"));
+      const q = query(collection(db, "questions"), orderBy("id")); // ✅ Shuffle বন্ধ
+      const querySnapshot = await getDocs(q);
       questions = querySnapshot.docs.map(doc => doc.data());
       renderNav();
       showQuestion();
@@ -343,14 +345,8 @@
       clearInterval(timer);
       const total = questions.length;
       let score = 0;
-
-      // ✅ নতুন মার্কিং সিস্টেম
       questions.forEach((q, index) => {
-        if (answers[index] === q.answer) {
-          score += 2; // সঠিক উত্তর
-        } else if (answers[index] !== undefined) {
-          score -= 0.25; // ভুল উত্তর
-        }
+        if (answers[index] === q.answer) score++;
       });
 
       if (currentUser) {
