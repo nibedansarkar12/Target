@@ -4,7 +4,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Target Zone - Signup</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/css/intlTelInput.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
@@ -38,10 +37,9 @@
         <input type="password" id="password" placeholder="🔐 Password *" class="w-full px-4 py-3 border rounded-lg shadow-sm" required>
         <p class="text-xs text-gray-600 mt-1">Must be 8+ chars, include uppercase, lowercase, number & symbol.</p>
       </div>
-      <input type="date" id="dob" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required><textarea id="address" placeholder="🏠 Full Address (optional)" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm"></textarea>
+      <input type="date" id="dob" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required placeholder="📅 Date of Birth *"><textarea id="address" placeholder="🏠 Full Address *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required></textarea>
 
-  <input type="text" id="pincode" placeholder="📮 PIN Code *" class="px-4 py-3 border rounded-lg shadow-sm" required>
-  <input type="text" id="postOffice" placeholder="🏤 Post Office (Auto)" class="px-4 py-3 border rounded-lg shadow-sm" readonly>
+  <input type="text" id="pincode" placeholder="📮 PIN Code *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
 
   <input type="text" id="guardian" placeholder="👨 Guardian Name or Phone" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
 
@@ -61,7 +59,7 @@
     <option>Employed</option>
   </select>
 
-  <input type="month" id="coachingStart" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" placeholder="📅 Coaching Start Month">
+  <input type="month" id="coachingStart" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" placeholder="📅 Coaching Start Month (optional)">
 
   <select id="hasAttempted" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
     <option value="">🎯 Have you attempted Target Zone exam before?</option>
@@ -76,8 +74,6 @@
     <option>বাংলা</option>
     <option>English</option>
   </select>
-
-  <input type="file" id="photo" accept="image/*" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
 
   <div class="col-span-2 flex items-start gap-2">
     <input type="checkbox" id="subscribe" class="mt-1">
@@ -98,7 +94,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
@@ -112,7 +107,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
     const form = document.getElementById("signupForm");
     const uidField = document.getElementById("uid");
@@ -156,7 +150,6 @@
       const dob = document.getElementById("dob").value;
       const address = document.getElementById("address").value;
       const pincode = document.getElementById("pincode").value;
-      const postOffice = document.getElementById("postOffice").value;
       const guardian = document.getElementById("guardian").value;
       const education = document.getElementById("education").value;
       const status = document.getElementById("status").value;
@@ -164,18 +157,10 @@
       const hasAttempted = document.getElementById("hasAttempted").value;
       const uid = uidField.value;
       const language = document.getElementById("language").value;
-      const photo = document.getElementById("photo").files[0];
       const subscribe = document.getElementById("subscribe").checked;
 
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        let photoURL = "";
-
-        if (photo) {
-          const storageRef = ref(storage, `photos/${uid}_${photo.name}`);
-          await uploadBytes(storageRef, photo);
-          photoURL = await getDownloadURL(storageRef);
-        }
+        await createUserWithEmailAndPassword(auth, email, password);
 
         await addDoc(collection(db, "students"), {
           uid,
@@ -185,7 +170,6 @@
           dob,
           address,
           pincode,
-          postOffice,
           guardian,
           education,
           status,
@@ -193,20 +177,19 @@
           hasAttempted,
           language,
           subscribe,
-          photoURL,
           createdAt: serverTimestamp()
         });
 
         Swal.fire({
           icon: 'success',
           title: 'Signup Successful!',
-          text: 'Redirecting to login...'
-        });
-
-        setTimeout(() => {
+          text: 'Redirecting to login...',
+          timer: 1000,
+          timerProgressBar: true,
+          showConfirmButton: false
+        }).then(() => {
           window.location.href = "index.html";
-        }, 2000);
-
+        });
       } catch (err) {
         Swal.fire({ icon: 'error', title: 'Signup Failed', text: err.message });
       } finally {
