@@ -36,9 +36,7 @@
       <div class="col-span-2">
         <input type="password" id="password" placeholder="🔐 Password *" class="w-full px-4 py-3 border rounded-lg shadow-sm" required>
         <p class="text-xs text-gray-600 mt-1">Must be 8+ chars, include uppercase, lowercase, number & symbol.</p>
-      </div>
-
-  <select id="education" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
+      </div><select id="education" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
     <option value="">🎓 Educational Qualification</option>
     <option>Madhyamik</option>
     <option>HS</option>
@@ -55,7 +53,6 @@
   </select>
 
   <input type="text" id="uid" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm bg-gray-100" placeholder="🆔 UID (Auto Generate)" readonly>
-
 
   <div class="col-span-2 flex items-start gap-2">
     <input type="checkbox" id="subscribe" class="mt-1">
@@ -129,16 +126,9 @@
       const whatsapp = document.getElementById("whatsapp").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      const dob = document.getElementById("dob").value;
-      const address = document.getElementById("address").value;
-      const pincode = document.getElementById("pincode").value;
-      const guardian = document.getElementById("guardian").value;
       const education = document.getElementById("education").value;
       const status = document.getElementById("status").value;
-      const coachingStart = document.getElementById("coachingStart").value;
-      const hasAttempted = document.getElementById("hasAttempted").value;
       const uid = uidField.value;
-      const language = document.getElementById("language").value;
       const subscribe = document.getElementById("subscribe").checked;
 
       try {
@@ -149,15 +139,8 @@
           name,
           whatsapp,
           email,
-          dob,
-          address,
-          pincode,
-          guardian,
           education,
           status,
-          coachingStart,
-          hasAttempted,
-          language,
           subscribe,
           createdAt: serverTimestamp()
         });
@@ -166,7 +149,7 @@
           icon: 'success',
           title: 'Signup Successful!',
           text: 'Redirecting to login...',
-          timer: 1000,
+          timer: 3000,
           timerProgressBar: true,
           showConfirmButton: false
         }).then(() => {
