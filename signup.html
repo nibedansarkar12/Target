@@ -1,148 +1,218 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Target Zone - সাইন আপ</title>
+  <title>Target Zone - Signup</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/css/intlTelInput.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      background: linear-gradient(to bottom right, #4facfe, #00f2fe);
     }
-    select:disabled {
-      background-color: #f3f3f3;
+    .form-container {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .input-error {
+      border-color: #f87171 !important;
     }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
-  <div class="bg-white shadow-2xl rounded-lg p-8 w-full max-w-3xl">
-    <h2 class="text-2xl font-bold text-center text-blue-700 mb-6">🎯 Target Zone - সাইন আপ ফর্ম</h2>
-    <form id="signupForm" class="grid grid-cols-1 md:grid-cols-2 gap-4" enctype="multipart/form-data">
-      <input type="text" id="name" placeholder="👤 পূর্ণ নাম *" class="col-span-2 px-4 py-2 border rounded" required>
-      <input type="tel" id="whatsapp" placeholder="📱 হোয়াটসঅ্যাপ নম্বর *" class="col-span-2 px-4 py-2 border rounded" required>
-      <input type="email" id="email" placeholder="📧 ইমেইল *" class="col-span-2 px-4 py-2 border rounded" required>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="form-container w-full max-w-4xl">
+    <h2 class="text-3xl font-extrabold text-center text-blue-700 mb-8">🎯 Target Zone - Signup Form</h2>
+    <form id="signupForm" class="grid grid-cols-1 md:grid-cols-2 gap-6" enctype="multipart/form-data" novalidate>
+      <input type="text" id="name" placeholder="👤 Full Name *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
+      <input type="tel" id="whatsapp" placeholder="📱 WhatsApp Number *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
+      <input type="email" id="email" placeholder="📧 Email *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
       <div class="col-span-2">
-        <input type="password" id="password" placeholder="🔐 পাসওয়ার্ড *" class="w-full px-4 py-2 border rounded" required>
-        <p class="text-xs text-gray-600 mt-1">🔐 পাসওয়ার্ডে বড়, ছোট অক্ষর, সংখ্যা ও চিহ্ন থাকতে হবে, এবং কমপক্ষে ৮ অক্ষর হতে হবে।</p>
+        <input type="password" id="password" placeholder="🔐 Password *" class="w-full px-4 py-3 border rounded-lg shadow-sm" required>
+        <p class="text-xs text-gray-600 mt-1">Must be 8+ chars, include uppercase, lowercase, number & symbol.</p>
       </div>
-      <input type="text" id="dob" placeholder="📅 জন্ম তারিখ (YYYY-MM-DD) *" onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}" class="col-span-2 px-4 py-2 border rounded" required>
+      <input type="date" id="dob" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required><textarea id="address" placeholder="🏠 Full Address (optional)" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm"></textarea>
 
-      <textarea id="address" placeholder="🏠 পূর্ণ ঠিকানা *" class="col-span-2 px-4 py-2 border rounded" required></textarea>
+  <input type="text" id="pincode" placeholder="📮 PIN Code *" class="px-4 py-3 border rounded-lg shadow-sm" required>
+  <input type="text" id="postOffice" placeholder="🏤 Post Office (Auto)" class="px-4 py-3 border rounded-lg shadow-sm" readonly>
 
-      <select id="state" class="px-4 py-2 border rounded" required>
-        <option value="">🗺️ রাজ্য নির্বাচন করুন</option>
-      </select>
-      <select id="district" class="px-4 py-2 border rounded" disabled required>
-        <option value="">🏞️ জেলা নির্বাচন করুন</option>
-      </select>
-      <select id="thana" class="px-4 py-2 border rounded" disabled required>
-        <option value="">🚓 থানা নির্বাচন করুন</option>
-      </select>
+  <input type="text" id="guardian" placeholder="👨 Guardian Name or Phone" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
 
-      <input type="text" id="pincode" placeholder="📮 পিন কোড *" class="px-4 py-2 border rounded" required>
-      <input type="text" id="postOffice" placeholder="🏤 পোস্ট অফিস (অটো)" class="px-4 py-2 border rounded" readonly>
+  <select id="education" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
+    <option value="">🎓 Educational Qualification</option>
+    <option>Madhyamik</option>
+    <option>HS</option>
+    <option>Graduate</option>
+    <option>Post Graduate</option>
+    <option>Other</option>
+  </select>
 
-      <input type="file" id="photo" accept="image/*" class="col-span-2 px-4 py-2 border rounded">
+  <select id="status" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
+    <option value="">🧑‍🎓 Current Status</option>
+    <option>Student</option>
+    <option>Job Seeker</option>
+    <option>Employed</option>
+  </select>
 
-      <div class="col-span-2 flex items-start gap-2">
-        <input type="checkbox" id="subscribe" class="mt-1">
-        <label for="subscribe" class="text-sm">আমি পরীক্ষার গুরুত্বপূর্ণ আপডেট ও অফার পেতে আগ্রহী।</label>
-      </div>
+  <input type="month" id="coachingStart" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" placeholder="📅 Coaching Start Month">
 
-      <div class="col-span-2 flex items-start gap-2">
-        <input type="checkbox" id="terms" class="mt-1" required>
-        <label for="terms" class="text-sm">আমি <a href="terms.html" class="text-blue-600 underline">টার্মস এবং কন্ডিশন</a> মেনে নিচ্ছি।</label>
-      </div>
+  <select id="hasAttempted" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
+    <option value="">🎯 Have you attempted Target Zone exam before?</option>
+    <option>Yes</option>
+    <option>No</option>
+  </select>
 
-      <button type="submit" class="col-span-2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition-all duration-300">✅ সাইন আপ করুন</button>
-      <p id="message" class="col-span-2 text-center text-sm"></p>
-    </form>
-    <p class="text-center text-sm mt-4 text-gray-600">ইতিমধ্যে একাউন্ট আছে? <a href="index.html" class="text-blue-500 hover:underline">লগইন করুন</a></p>
+  <input type="text" id="uid" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm bg-gray-100" placeholder="🆔 UID (Auto Generate)" readonly>
+
+  <select id="language" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
+    <option value="">🌐 Preferred Language</option>
+    <option>বাংলা</option>
+    <option>English</option>
+  </select>
+
+  <input type="file" id="photo" accept="image/*" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
+
+  <div class="col-span-2 flex items-start gap-2">
+    <input type="checkbox" id="subscribe" class="mt-1">
+    <label for="subscribe" class="text-sm">🔔 I want to receive important updates and offers</label>
   </div>
 
-  <script>
-    const stateDistrictMap = {
-      "West Bengal": {
-        "Dakshin Dinajpur": ["Balurghat", "Kumarganj", "Tapan"],
-        "Malda": ["English Bazar", "Gazole", "Harishchandrapur"]
-      },
-      "Bihar": {
-        "Patna": ["Patna Sadar", "Phulwari Sharif"],
-        "Gaya": ["Gaya Town", "Tekari"]
-      }
-      // Add more states/districts/thanas as needed
+  <div class="col-span-2 flex items-start gap-2">
+    <input type="checkbox" id="terms" class="mt-1" required>
+    <label for="terms" class="text-sm">I agree to the <a href="terms.html" class="text-blue-600 underline" target="_blank">Terms and Conditions</a>.</label>
+  </div>
+
+  <button id="submitBtn" type="submit" class="col-span-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold text-lg transition-all duration-300">✅ Sign Up</button>
+  <p id="message" class="col-span-2 text-center text-sm"></p>
+</form>
+<p class="text-center text-sm mt-6 text-gray-700">Already have an account? <a href="index.html" class="text-blue-600 hover:underline">Login here</a></p>
+
+  </div>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e"
     };
 
-    const stateSelect = document.getElementById("state");
-    const districtSelect = document.getElementById("district");
-    const thanaSelect = document.getElementById("thana");
-    const pincodeInput = document.getElementById("pincode");
-    const postOfficeField = document.getElementById("postOffice");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    // Populate States
-    for (let state in stateDistrictMap) {
-      const opt = document.createElement("option");
-      opt.value = state;
-      opt.textContent = state;
-      stateSelect.appendChild(opt);
-    }
+    const form = document.getElementById("signupForm");
+    const uidField = document.getElementById("uid");
+    const nameField = document.getElementById("name");
 
-    stateSelect.addEventListener("change", () => {
-      districtSelect.innerHTML = '<option value="">🏞️ জেলা নির্বাচন করুন</option>';
-      thanaSelect.innerHTML = '<option value="">🚓 থানা নির্বাচন করুন</option>';
-      thanaSelect.disabled = true;
-
-      const selectedState = stateSelect.value;
-      if (selectedState && stateDistrictMap[selectedState]) {
-        districtSelect.disabled = false;
-        for (let dist in stateDistrictMap[selectedState]) {
-          const opt = document.createElement("option");
-          opt.value = dist;
-          opt.textContent = dist;
-          districtSelect.appendChild(opt);
-        }
-      } else {
-        districtSelect.disabled = true;
-      }
+    nameField.addEventListener("input", () => {
+      const prefix = nameField.value.trim().charAt(0).toUpperCase();
+      const serial = Math.floor(1000 + Math.random() * 9000);
+      uidField.value = `${prefix}${serial}`;
     });
 
-    districtSelect.addEventListener("change", () => {
-      thanaSelect.innerHTML = '<option value="">🚓 থানা নির্বাচন করুন</option>';
-      const selectedState = stateSelect.value;
-      const selectedDistrict = districtSelect.value;
-      if (selectedDistrict && stateDistrictMap[selectedState][selectedDistrict]) {
-        thanaSelect.disabled = false;
-        for (let thana of stateDistrictMap[selectedState][selectedDistrict]) {
-          const opt = document.createElement("option");
-          opt.value = thana;
-          opt.textContent = thana;
-          thanaSelect.appendChild(opt);
+    const validateForm = () => {
+      let valid = true;
+      form.querySelectorAll("input[required], select[required], textarea[required]").forEach(input => {
+        if (!input.value.trim()) {
+          input.classList.add("input-error");
+          valid = false;
+        } else {
+          input.classList.remove("input-error");
         }
-      } else {
-        thanaSelect.disabled = true;
-      }
-    });
+      });
+      return valid;
+    };
 
-    // PIN to Post Office
-    pincodeInput.addEventListener("blur", async () => {
-      const pin = pincodeInput.value.trim();
-      if (pin.length === 6) {
-        try {
-          const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
-          const data = await res.json();
-          const po = data[0]?.PostOffice?.[0]?.Name;
-          if (po) {
-            postOfficeField.value = po;
-          } else {
-            postOfficeField.value = "ডেটা পাওয়া যায়নি";
-          }
-        } catch {
-          postOfficeField.value = "অবৈধ পিন কোড";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        Swal.fire({ icon: 'error', title: 'Missing Fields', text: 'Please fill out all required fields.' });
+        return;
+      }
+
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Processing...";
+
+      const name = nameField.value.trim();
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const dob = document.getElementById("dob").value;
+      const address = document.getElementById("address").value;
+      const pincode = document.getElementById("pincode").value;
+      const postOffice = document.getElementById("postOffice").value;
+      const guardian = document.getElementById("guardian").value;
+      const education = document.getElementById("education").value;
+      const status = document.getElementById("status").value;
+      const coachingStart = document.getElementById("coachingStart").value;
+      const hasAttempted = document.getElementById("hasAttempted").value;
+      const uid = uidField.value;
+      const language = document.getElementById("language").value;
+      const photo = document.getElementById("photo").files[0];
+      const subscribe = document.getElementById("subscribe").checked;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        let photoURL = "";
+
+        if (photo) {
+          const storageRef = ref(storage, `photos/${uid}_${photo.name}`);
+          await uploadBytes(storageRef, photo);
+          photoURL = await getDownloadURL(storageRef);
         }
+
+        await addDoc(collection(db, "students"), {
+          uid,
+          name,
+          whatsapp,
+          email,
+          dob,
+          address,
+          pincode,
+          postOffice,
+          guardian,
+          education,
+          status,
+          coachingStart,
+          hasAttempted,
+          language,
+          subscribe,
+          photoURL,
+          createdAt: serverTimestamp()
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Signup Successful!',
+          text: 'Redirecting to login...'
+        });
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 2000);
+
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Signup Failed', text: err.message });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "✅ Sign Up";
       }
     });
-  </script>
-</body>
+  </script></body>
 </html>
