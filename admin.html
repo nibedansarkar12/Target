@@ -64,6 +64,7 @@
           <option value="railways">Railways</option>
           <option value="tet">TET</option>
         </select>
+        <input id="set" class="w-full border rounded px-3 py-2 mb-3" placeholder="Set নাম যেমনঃ Set1">
         <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
         <input type="file" id="photo" accept="image/*" class="w-full mb-3">
         <div class="grid grid-cols-2 gap-3">
@@ -132,33 +133,40 @@
     window.logout=async()=>{ await signOut(auth); window.location.href="index.html"; };
 
     // Add Question
-    window.addQuestion=async()=>{
-      const cat=document.getElementById("category").value;
-      currentCategory=cat;
-      const ques=document.getElementById("question").value;
-      const opts=[1,2,3,4].map(i=>document.getElementById("option"+i).value);
-      const correctIndex=document.querySelector('input[name="correct"]:checked')?.value;
-      const photoFile=document.getElementById("photo").files[0];
-      if(!ques||correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+    window.addQuestion = async () => {
+  const cat = document.getElementById("category").value;
+  currentCategory = cat;
+  const set = document.getElementById("set").value.trim();
+  const ques = document.getElementById("question").value;
+  const opts = [1, 2, 3, 4].map(i => document.getElementById("option" + i).value);
+  const correctIndex = document.querySelector('input[name="correct"]:checked')?.value;
+  const photoFile = document.getElementById("photo").files[0];
 
-      let photoURL="";
-      if(photoFile){
-        const storageRef=ref(storage,`questions/${Date.now()}-${photoFile.name}`);
-        await uploadBytes(storageRef,photoFile);
-        photoURL=await getDownloadURL(storageRef);
-      }
+  if (!cat || !set || !ques || correctIndex === undefined) {
+    return alert("⚠️ ক্যাটেগরি, সেট, প্রশ্ন ও সঠিক উত্তর অবশ্যই দিন!");
+  }
 
-      await addDoc(collection(db,cat),{
-        id: Date.now(),
-        question:ques,options:opts,
-        answer:opts[correctIndex],photo:photoURL,
-        createdAt:new Date()
-      });
+  let photoURL = "";
+  if (photoFile) {
+    const storageRef = ref(storage, `questions/${Date.now()}-${photoFile.name}`);
+    await uploadBytes(storageRef, photoFile);
+    photoURL = await getDownloadURL(storageRef);
+  }
 
-      alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
-      document.getElementById("question-form").reset();
-      loadQuestions(cat);
-    };
+  const setPath = `${cat}_sets/${set}/questions`;
+
+  await addDoc(collection(db, setPath), {
+    id: Date.now(),
+    question: ques,
+    options: opts,
+    answer: opts[correctIndex],
+    photo: photoURL,
+    createdAt: new Date()
+  });
+
+  alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
+  document.getElementById("question-form").reset();
+};
 
     // Load Questions
     window.loadQuestions=async(category)=>{
