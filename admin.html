@@ -164,7 +164,6 @@
       }
     });
 
-    // Edit Modal Functions
     let currentEditId = "";
 
     function openEditModal(docId, question, answer, options) {
@@ -196,7 +195,7 @@
         closeEditModal();
         loadQuestions();
       } catch (error) {
-        alert("❌ আপডেট করতে সমস্যা হয়েছে");
+        alert("❌ প্রশ্ন আপডেট ব্যর্থ");
         console.error(error);
       }
     }
