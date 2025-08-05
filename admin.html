@@ -2,79 +2,55 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Target Zone</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    body { background: linear-gradient(120deg, #a1c4fd, #c2e9fb); font-family: 'Segoe UI', sans-serif; }
-    .card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
-    .hidden { display: none; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="p-6">
-  <header class="text-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">🎯 Admin Dashboard - Target Zone</h1>
-    <p class="text-gray-600">Manage your mock tests smartly</p>
-  </header>
+<body class="bg-gray-100 p-4">
+  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-6 text-center">🛠️ Admin Panel</h1>
 
-  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Question Add Form -->
-    <div class="card">
-      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
-      <form id="questionForm">
-        <select id="examCategory" class="w-full mb-2 p-2 border rounded" required>
-          <option value="">পরীক্ষা নির্বাচন করুন</option>
-          <option value="wbcs">WBCS</option>
-          <option value="railways">Railways</option>
-          <option value="ssc">SSC</option>
-          <option value="tet">TET</option>
-        </select>
-        <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন" class="w-full mb-2 p-2 border rounded" required>
-        <div class="grid grid-cols-2 gap-2 mb-2">
-          <input type="text" id="optionA" placeholder="Option A" class="p-2 border rounded" required>
-          <input type="text" id="optionB" placeholder="Option B" class="p-2 border rounded" required>
-          <input type="text" id="optionC" placeholder="Option C" class="p-2 border rounded" required>
-          <input type="text" id="optionD" placeholder="Option D" class="p-2 border rounded" required>
-        </div>
-        <select id="correctOption" class="w-full mb-2 p-2 border rounded" required>
-          <option value="">সঠিক অপশন</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-        </select>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
-          প্রশ্ন যোগ করুন
-        </button>
-      </form>
-      <div id="messageBox" class="text-center mt-4 font-semibold"></div>
-    </div>
-
-    <!-- Export -->
-    <div class="card">
-      <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
-      <a href="student-results.html" class="block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-center">📊 ছাত্রদের রেজাল্ট দেখুন</a>
-    </div>
-  </main>
-
-  <!-- Question List -->
-  <section class="mt-8">
-    <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
-    <select id="categoryFilter" class="w-full mb-4 p-2 border rounded">
-      <option value="wbcs">WBCS</option>
+    <!-- Exam Category -->
+    <label class="block mb-2 font-semibold">Exam Category:</label>
+    <select id="exam-category" class="w-full border rounded px-3 py-2 mb-4">
+      <option value="ssc">SSC GD</option>
       <option value="railways">Railways</option>
-      <option value="ssc">SSC</option>
       <option value="tet">TET</option>
+      <option value="wbset">WB SET</option>
+      <option value="wbjee">WBJEE</option>
+      <option value="madhyamik">Madhyamik / HS</option>
     </select>
-    <div id="questionList" class="space-y-4"></div>
-  </section>
 
-  <!-- Firebase -->
+    <!-- Set Selection -->
+    <label class="block mb-2 font-semibold">Set Number:</label>
+    <input type="number" id="set-number" class="w-full border rounded px-3 py-2 mb-4" placeholder="যেমন: 1">
+
+    <!-- Add Question -->
+    <h2 class="text-xl font-semibold mb-3">➕ Add Question</h2>
+    <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="এখানে প্রশ্ন লিখুন"></textarea>
+    <input type="text" id="option1" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 1">
+    <input type="text" id="option2" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 2">
+    <input type="text" id="option3" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 3">
+    <input type="text" id="option4" class="w-full border rounded px-3 py-2 mb-4" placeholder="Option 4">
+    <input type="text" id="answer" class="w-full border rounded px-3 py-2 mb-4" placeholder="সঠিক উত্তর">
+    <input type="text" id="section" class="w-full border rounded px-3 py-2 mb-4" placeholder="Section (যেমন GK)">
+    <button onclick="addQuestion()" class="w-full bg-blue-600 text-white py-2 rounded text-lg font-semibold">💾 Add Question</button>
+    <p id="status" class="text-green-600 font-semibold mt-4 text-center"></p>
+
+    <!-- Search Box -->
+    <h2 class="text-xl font-semibold mt-8 mb-3">🔍 Search Questions</h2>
+    <input type="text" id="search-box" class="w-full border rounded px-3 py-2 mb-4" placeholder="কোনো শব্দ লিখুন...">
+    <button onclick="viewQuestions()" class="w-full bg-yellow-500 text-white py-2 rounded text-lg font-semibold mb-4">📂 Load Questions</button>
+    
+    <!-- Question List -->
+    <div id="questions-list" class="space-y-3 max-h-96 overflow-y-auto border p-3 rounded bg-gray-50"></div>
+  </div>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+    // 🔥 Firebase Config (তোমার আগের দেওয়া)
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -86,93 +62,103 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    onAuthStateChanged(auth, user => {
-      if (!user || user.email !== "nibedansarkar12@gmail.com") {
-        alert("⚠️ আপনি অ্যাডমিন না, এই পেজ অ্যাক্সেস করা যাবে না!");
-        window.location.href = "index.html";
-      }
-    });
-
-    const questionForm = document.getElementById("questionForm");
-    const messageBox = document.getElementById("messageBox");
-    const questionList = document.getElementById("questionList");
-    const categoryFilter = document.getElementById("categoryFilter");
-
-    questionForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const category = document.getElementById("examCategory").value;
-      const question = document.getElementById("questionText").value.trim();
+    // ➕ Add Question
+    window.addQuestion = async function() {
+      const examCategory = document.getElementById("exam-category").value;
+      const setNumber = document.getElementById("set-number").value.trim();
+      const question = document.getElementById("question").value.trim();
       const options = [
-        document.getElementById("optionA").value.trim(),
-        document.getElementById("optionB").value.trim(),
-        document.getElementById("optionC").value.trim(),
-        document.getElementById("optionD").value.trim()
+        document.getElementById("option1").value.trim(),
+        document.getElementById("option2").value.trim(),
+        document.getElementById("option3").value.trim(),
+        document.getElementById("option4").value.trim()
       ];
-      const correct = document.getElementById("correctOption").value;
-      const answer = options["ABCD".indexOf(correct)];
+      const answer = document.getElementById("answer").value.trim();
+      const section = document.getElementById("section").value.trim() || "General";
 
-      try {
-        const snapshot = await getDocs(collection(db, category));
-        const newId = snapshot.size + 1;
-
-        await addDoc(collection(db, category), {
-          id: newId,
-          question,
-          options,
-          answer
-        });
-
-        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
-        questionForm.reset();
-        loadQuestions();
-      } catch (error) {
-        showMessage("❌ ব্যর্থ: " + error.message, true);
+      if (!examCategory || !setNumber || !question || options.some(opt => !opt) || !answer) {
+        document.getElementById("status").textContent = "⚠️ সব ঘর পূরণ করুন।";
+        return;
       }
-    });
 
-    function showMessage(msg, isError = false) {
-      messageBox.textContent = msg;
-      messageBox.style.color = isError ? "red" : "green";
-      setTimeout(() => (messageBox.textContent = ""), 3000);
+      const snapshot = await getDocs(collection(db, `${examCategory}_set${setNumber}`));
+      const id = snapshot.size + 1;
+
+      await addDoc(collection(db, `${examCategory}_set${setNumber}`), { id, question, options, answer, section });
+
+      document.getElementById("status").textContent = "✅ প্রশ্ন সফলভাবে যোগ হয়েছে!";
+      
+      ["question","option1","option2","option3","option4","answer","section"].forEach(id => document.getElementById(id).value="");
     }
 
-    async function loadQuestions() {
-      const category = categoryFilter.value;
-      questionList.innerHTML = "লোড হচ্ছে...";
-      const qRef = query(collection(db, category), orderBy("id"));
-      const snapshot = await getDocs(qRef);
-      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-      renderQuestions(questions, category);
-    }
+    // 👁 View & Search Questions
+    window.viewQuestions = async function() {
+      const examCategory = document.getElementById("exam-category").value;
+      const setNumber = document.getElementById("set-number").value.trim();
+      const searchText = document.getElementById("search-box").value.trim().toLowerCase();
+      const listDiv = document.getElementById("questions-list");
+      listDiv.innerHTML = "<p class='text-blue-600'>⏳ লোড হচ্ছে...</p>";
 
-    function renderQuestions(questions, category) {
-      questionList.innerHTML = "";
-      questions.forEach(q => {
-        const optionsHTML = q.options.map((opt, i) => `<li>${String.fromCharCode(65 + i)}. ${opt}</li>`).join("");
-        questionList.innerHTML += `
-          <div class="bg-white shadow rounded p-4">
-            <p><strong>(${q.id})</strong> ${q.question}</p>
-            <ul class="list-disc ml-6">${optionsHTML}</ul>
-            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
-            <button onclick="deleteQuestion('${q.docId}','${category}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-          </div>
-        `;
+      const q = query(collection(db, `${examCategory}_set${setNumber}`), orderBy("id"));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        listDiv.innerHTML = "<p class='text-red-600'>❌ কোনো প্রশ্ন পাওয়া যায়নি।</p>";
+        return;
+      }
+
+      let html = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (!searchText || data.question.toLowerCase().includes(searchText) || data.options.some(opt => opt.toLowerCase().includes(searchText))) {
+          html += `
+            <div class="p-3 border rounded bg-white">
+              <b>${data.id}. ${data.question}</b><br>
+              <ul class="ml-4 list-disc">
+                ${data.options.map(opt => `<li>${opt}</li>`).join("")}
+              </ul>
+              ✅ <span class="text-green-600">${data.answer}</span>
+              <br><small class="text-gray-500">Section: ${data.section}</small>
+              <div class="mt-2 flex gap-2">
+                <button onclick="deleteQuestion('${examCategory}_set${setNumber}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑 Delete</button>
+                <button onclick="editQuestion('${examCategory}_set${setNumber}','${docSnap.id}','${data.question}','${data.answer}','${data.section}','${data.options.join("|||")}')" class="bg-green-600 text-white px-2 py-1 rounded">✏ Edit</button>
+              </div>
+            </div>
+          `;
+        }
       });
+
+      listDiv.innerHTML = html || "<p class='text-red-600'>❌ কোনো মিলে যাওয়া প্রশ্ন নেই।</p>";
     }
 
-    window.deleteQuestion = async function (docId, category) {
-      if (confirm("আপনি কি নিশ্চিত এই প্রশ্নটি মুছে ফেলতে চান?")) {
-        await deleteDoc(doc(db, category, docId));
+    // 🗑 Delete Question
+    window.deleteQuestion = async function(collectionName, docId) {
+      if(confirm("আপনি কি প্রশ্নটি মুছে ফেলতে চান?")) {
+        await deleteDoc(doc(db, collectionName, docId));
         alert("✅ প্রশ্ন মুছে ফেলা হয়েছে");
-        loadQuestions();
+        viewQuestions();
       }
-    };
+    }
 
-    categoryFilter.addEventListener("change", loadQuestions);
+    // ✏ Edit Question
+    window.editQuestion = async function(collectionName, docId, question, answer, section, options) {
+      const newQ = prompt("Edit Question:", question);
+      if(!newQ) return;
+      const newA = prompt("Edit Answer:", answer);
+      const newS = prompt("Edit Section:", section);
+      const newOptions = prompt("Edit Options (||| দিয়ে আলাদা করুন):", options);
 
-    loadQuestions();
+      await updateDoc(doc(db, collectionName, docId), {
+        question: newQ,
+        answer: newA,
+        section: newS,
+        options: newOptions.split("|||").map(o => o.trim())
+      });
+
+      alert("✅ প্রশ্ন আপডেট হয়েছে");
+      viewQuestions();
+    }
   </script>
 </body>
 </html>
