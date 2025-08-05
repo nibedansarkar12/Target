@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>Target Zone Admin</title>
+  <title>Target Zone - Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -9,67 +9,88 @@
       background-image: url('https://images.unsplash.com/photo-1503264116251-35a269479413');
       background-size: cover;
       background-position: center;
-      color: #fff;
+      color: #f0f0f0;
       font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+    .sidebar {
+      background: linear-gradient(180deg,#1e3c72,#2a5298);
     }
     .glass {
       background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(6px);
       border-radius: 10px;
-      padding: 20px;
+      padding: 1rem;
     }
-    #music-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 999;
+    .nav-btn {
+      background: rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .rainbow {
+      background: linear-gradient(90deg,#ff7e5f,#feb47b,#6a11cb,#2575fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
     }
   </style>
 </head>
-<body class="min-h-screen p-4">
-  <h1 class="text-3xl font-bold text-center mb-6">🎓 Target Zone Admin Panel</h1>  <div class="flex gap-4 flex-wrap">
-    <!-- Add Question Section -->
-    <div class="w-full md:w-1/2 glass">
-      <h2 class="text-xl font-semibold mb-2">➕ প্রশ্ন যুক্ত করুন</h2>
-      <select id="category" class="w-full p-2 mb-2 text-black">
-        <option value="">-- ক্যাটেগরি --</option>
-        <option value="ssc">SSC</option>
-        <option value="railways">Railways</option>
-        <option value="tet">TET</option>
-      </select>
-      <textarea id="question" class="w-full p-2 mb-2 text-black" rows="2" placeholder="প্রশ্ন লিখুন"></textarea>
-      <input id="photo" type="file" accept="image/*" class="mb-2">
-      <div class="grid grid-cols-2 gap-2">
-        <label class="text-sm">A <input id="option1" class="w-full p-1 text-black"><input type="radio" name="correct" value="0"></label>
-        <label class="text-sm">B <input id="option2" class="w-full p-1 text-black"><input type="radio" name="correct" value="1"></label>
-        <label class="text-sm">C <input id="option3" class="w-full p-1 text-black"><input type="radio" name="correct" value="2"></label>
-        <label class="text-sm">D <input id="option4" class="w-full p-1 text-black"><input type="radio" name="correct" value="3"></label>
-      </div>
-      <button onclick="addQuestion()" class="bg-green-600 mt-2 px-4 py-2 rounded">💾 সংরক্ষণ</button>
-      <div class="mt-4">
-        <h3 class="font-semibold">📋 প্রশ্ন তালিকা</h3>
-        <table class="text-sm w-full" id="questions-list"></table>
-      </div>
-    </div><!-- Results Section -->
-<div class="w-full md:w-1/2 glass">
-  <h2 class="text-xl font-semibold mb-2">📊 রেজাল্ট</h2>
-  <button onclick="loadResults()" class="bg-blue-500 mb-2 px-3 py-1 rounded">🔄 রিফ্রেশ</button>
-  <ul id="results-list" class="text-sm"></ul>
-</div>
+<body class="flex h-screen">
+  <!-- Sidebar -->
+  <aside class="sidebar w-64 p-4 text-white hidden md:block">
+    <h1 class="rainbow text-2xl mb-4">🌈 Target Zone</h1>
+    <nav class="space-y-2">
+      <button onclick="showSection('add')" class="nav-btn w-full px-3 py-2 rounded">➕ প্রশ্ন যুক্ত করুন</button>
+      <button onclick="showSection('results')" class="nav-btn w-full px-3 py-2 rounded">📊 রেজাল্ট</button>
+      <button onclick="showSection('students')" class="nav-btn w-full px-3 py-2 rounded">👥 ছাত্র তালিকা</button>
+    </nav>
+  </aside>  <!-- Main Content -->  <main class="flex-1 p-4 overflow-y-auto">
+    <h2 class="text-2xl rainbow mb-4">🛠️ Admin Panel</h2><!-- Add Question -->
+<section id="section-add" class="glass hidden">
+  <h3 class="text-lg font-bold mb-2">➕ প্রশ্ন যুক্ত করুন</h3>
+  <select id="category" class="w-full p-2 mb-2 text-black">
+    <option value="">-- ক্যাটেগরি --</option>
+    <option value="ssc">SSC</option>
+    <option value="railways">Railways</option>
+    <option value="tet">TET</option>
+  </select>
+  <textarea id="question" class="w-full p-2 mb-2 text-black" rows="2" placeholder="প্রশ্ন লিখুন"></textarea>
+  <input id="photo" type="file" accept="image/*" class="mb-2">
+  <div class="grid grid-cols-2 gap-2">
+    <label>A <input id="option1" class="w-full p-1 text-black"><input type="radio" name="correct" value="0"></label>
+    <label>B <input id="option2" class="w-full p-1 text-black"><input type="radio" name="correct" value="1"></label>
+    <label>C <input id="option3" class="w-full p-1 text-black"><input type="radio" name="correct" value="2"></label>
+    <label>D <input id="option4" class="w-full p-1 text-black"><input type="radio" name="correct" value="3"></label>
+  </div>
+  <button onclick="addQuestion()" class="bg-green-600 mt-2 px-4 py-2 rounded">💾 সংরক্ষণ</button>
+  <div class="mt-4">
+    <h4 class="font-semibold">📋 প্রশ্ন তালিকা</h4>
+    <table id="questions-list" class="text-sm w-full mt-2"></table>
+  </div>
+</section>
 
-<!-- Students Section -->
-<div class="w-full md:w-1/2 glass">
-  <h2 class="text-xl font-semibold mb-2">👥 ছাত্র তালিকা</h2>
-  <button onclick="loadStudents()" class="bg-blue-500 mb-2 px-3 py-1 rounded">🔄 লোড করুন</button>
-  <ul id="students-list" class="text-sm"></ul>
-</div>
+<!-- Results -->
+<section id="section-results" class="glass hidden">
+  <h3 class="text-lg font-bold mb-2">📊 রেজাল্ট</h3>
+  <button onclick="loadResults()" class="bg-blue-500 px-3 py-1 rounded">🔄 রিফ্রেশ</button>
+  <ul id="results-list" class="text-sm mt-2"></ul>
+</section>
 
-  </div>  <!-- Background Music -->  <audio id="bg-music" autoplay loop>
+<!-- Students -->
+<section id="section-students" class="glass hidden">
+  <h3 class="text-lg font-bold mb-2">👥 ছাত্র তালিকা</h3>
+  <button onclick="loadStudents()" class="bg-blue-500 px-3 py-1 rounded">🔄 লোড করুন</button>
+  <ul id="students-list" class="text-sm mt-2"></ul>
+</section>
+
+  </main>  <!-- Music -->  <audio id="bg-music" loop autoplay>
     <source src="https://cdn.pixabay.com/download/audio/2022/10/26/audio_9a7a41eb70.mp3" type="audio/mp3">
   </audio>
-  <button id="music-btn" class="bg-yellow-500 px-4 py-2 rounded">🔊 Play Sound</button>  <script type="module">
+  <button id="music-btn" class="fixed bottom-4 right-4 bg-yellow-500 px-3 py-1 rounded">🔊 Play Sound</button>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -108,17 +129,6 @@
         createdAt: new Date()
       });
       alert("✅ প্রশ্ন সংরক্ষিত হয়েছে");
-      loadQuestions(cat);
-    };
-
-    window.loadQuestions = async (cat) => {
-      const data = await getDocs(collection(db, cat));
-      let html = "";
-      data.forEach(d => {
-        const q = d.data();
-        html += `<tr><td>${q.question}</td><td>${q.answer}</td></tr>`;
-      });
-      document.getElementById("questions-list").innerHTML = html;
     };
 
     window.loadResults = async () => {
@@ -138,7 +148,7 @@
         const s = doc.data();
         html += `<li>👤 ${s.name || "Unknown"} - ${s.email}</li>`;
       });
-      document.getElementById("students-list").innerHTML = html || '<li>কোনো ছাত্র নেই</li>';
+      students-list.innerHTML = html || '<li>📭 কোনো ছাত্র নেই</li>';
     };
   </script>  <script>
     const music = document.getElementById("bg-music");
@@ -152,5 +162,10 @@
         btn.textContent = "🔊 Play Sound";
       }
     };
+
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+      document.getElementById("section-" + id).classList.remove("hidden");
+    }
   </script></body>
 </html>
