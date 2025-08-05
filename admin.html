@@ -19,8 +19,9 @@
   </header>
   <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="card">
-      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
+      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ বা এডিট করুন</h2>
       <form id="questionForm">
+        <input type="hidden" id="editingId" value="">
         <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন" class="w-full mb-2 p-2 border rounded" required>
         <div class="grid grid-cols-2 gap-2 mb-2">
           <input type="text" id="optionA" placeholder="Option A" class="p-2 border rounded" required>
@@ -35,166 +36,142 @@
           <option value="C">C</option>
           <option value="D">D</option>
         </select>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যোগ করুন</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">সংরক্ষণ করুন</button>
       </form>
       <div id="messageBox" class="text-center mt-4 font-semibold"></div>
     </div>
     <div class="card">
       <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
-      <button onclick="generateStudentReports()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full">Generate Student Reports (PDF)</button>
+      <a href="student-results.html" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full block text-center">📄 ছাত্রদের রেজাল্ট দেখুন</a>
     </div>
-  </main>
-  <section class="mt-8">
+  </main>  <section class="mt-8">
     <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
     <div id="questionList" class="space-y-4"></div>
-  </section>
-  <script type="module">
+  </section>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";const firebaseConfig = {
-  apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
-  authDomain: "target-zone-8fffd.firebaseapp.com",
-  databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
-  projectId: "target-zone-8fffd",
-  storageBucket: "target-zone-8fffd.appspot.com",
-  messagingSenderId: "667579216123",
-  appId: "1:667579216123:web:37bb1fcc724743073d005e",
-  measurementId: "G-436XDYLGVX"
-};
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e",
+      measurementId: "G-436XDYLGVX"
+    };
 
-onAuthStateChanged(auth, user => {
-  if (!user || user.email !== "nibedansarkar12@gmail.com") {
-    alert("⚠️ আপনি অ্যাডমিন না, এই পেজ অ্যাক্সেস করা যাবে না!");
-    window.location.href = "index.html";
-  }
-});
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-const questionForm = document.getElementById('questionForm');
-const questionList = document.getElementById('questionList');
-const messageBox = document.getElementById('messageBox');
-
-questionForm.addEventListener('submit', async function (e) {
-  e.preventDefault();
-  const question = document.getElementById("questionText").value.trim();
-  const options = [
-    document.getElementById("optionA").value.trim(),
-    document.getElementById("optionB").value.trim(),
-    document.getElementById("optionC").value.trim(),
-    document.getElementById("optionD").value.trim()
-  ];
-  const correct = document.getElementById("correctOption").value;
-  const answer = options["ABCD".indexOf(correct)];
-
-  try {
-    const snapshot = await getDocs(collection(db, "questions"));
-    const newId = snapshot.size + 1;
-
-    await addDoc(collection(db, "questions"), {
-      id: newId,
-      question,
-      options,
-      answer
-    });
-
-    showMessage("✅ প্রশ্ন যোগ হয়েছে!");
-    questionForm.reset();
-    loadQuestions();
-  } catch (error) {
-    showMessage("❌ ব্যর্থ: " + error.message, true);
-  }
-});
-
-function showMessage(msg, isError = false) {
-  messageBox.textContent = msg;
-  messageBox.style.color = isError ? 'red' : 'green';
-  setTimeout(() => messageBox.textContent = '', 3000);
-}
-
-async function loadQuestions() {
-  const qRef = query(collection(db, "questions"), orderBy("id"));
-  const snapshot = await getDocs(qRef);
-  const questions = snapshot.docs.map(doc => doc.data());
-
-  questionList.innerHTML = "";
-  questions.forEach(q => {
-    const optionsHTML = q.options.map((opt, i) => `<li>${String.fromCharCode(65+i)}. ${opt}</li>`).join("");
-    questionList.innerHTML += `
-      <div class="bg-white shadow rounded p-4">
-        <p><strong>(${q.id})</strong> ${q.question}</p>
-        <ul class="list-disc ml-6">${optionsHTML}</ul>
-        <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
-      </div>`;
-  });
-}
-
-window.generateStudentReports = async function () {
-  const { jsPDF } = window.jspdf;
-  const resultSnapshot = await getDocs(collection(db, "results"));
-  const qSnapshot = await getDocs(collection(db, "questions"));
-  const allQuestions = qSnapshot.docs.map(doc => doc.data());
-
-  if (resultSnapshot.empty) {
-    alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
-    return;
-  }
-
-  for (const docSnap of resultSnapshot.docs) {
-    const data = docSnap.data();
-    const userAnswers = data.answers || {};
-    let correct = 0, wrong = 0, unattempted = 0, score = 0;
-
-    allQuestions.forEach((q, i) => {
-      const userAns = userAnswers[i] ?? userAnswers[String(i)];
-      if (userAns === undefined || userAns === null || userAns === "") {
-        unattempted++;
-      } else if (userAns.trim() === q.answer.trim()) {
-        correct++;
-        score += 2;
-      } else {
-        wrong++;
-        score -= 0.25;
+    onAuthStateChanged(auth, user => {
+      if (!user || user.email !== "nibedansarkar12@gmail.com") {
+        alert("⚠️ আপনি অ্যাডমিন না, এই পেজ অ্যাক্সেস করা যাবে না!");
+        window.location.href = "index.html";
       }
     });
 
-    const pdf = new jsPDF();
-    pdf.setFontSize(16);
-    pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
-    pdf.setFontSize(12);
-    pdf.text(`📧 Email: ${data.email}`, 20, 40);
-    pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
-    pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
-    pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
-    pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
+    const questionForm = document.getElementById('questionForm');
+    const messageBox = document.getElementById('messageBox');
+    const questionList = document.getElementById('questionList');
+    const editingId = document.getElementById('editingId');
 
-    let y = 100;
-    allQuestions.forEach((q, i) => {
-      if (y > 270) { pdf.addPage(); y = 20; }
-      const userAns = userAnswers[i] ?? userAnswers[String(i)];
-      const label = q.options.findIndex(opt => opt.trim() === userAns?.trim());
-      const chosenLabel = label !== -1 ? String.fromCharCode(65 + label) : "Not Answered";
-      pdf.text(`${i + 1}. Chosen Option: ${chosenLabel}`, 20, y);
-      y += 8;
+    function showMessage(msg, isError = false) {
+      messageBox.textContent = msg;
+      messageBox.style.color = isError ? 'red' : 'green';
+      setTimeout(() => messageBox.textContent = '', 3000);
+    }
+
+    async function loadQuestions() {
+      questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+      renderQuestions(questions);
+    }
+
+    function renderQuestions(questions) {
+      questionList.innerHTML = "";
+      questions.forEach(q => {
+        const optionsHTML = q.options.map((opt, i) => {
+          const label = String.fromCharCode(65 + i);
+          return `<li>${label}. ${opt}</li>`;
+        }).join("");
+
+        questionList.innerHTML += `
+          <div class="bg-white shadow rounded p-4">
+            <p><strong>(${q.id})</strong> ${q.question}</p>
+            <ul class="list-disc ml-6">${optionsHTML}</ul>
+            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
+            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">🗑️ Delete</button>
+            <button onclick="editQuestion('${q.docId}', '${q.question.replace(/'/g, "\'")}', ${JSON.stringify(q.options).replace(/"/g, '&quot;')}, '${q.answer.replace(/'/g, "\'")}')" class="mt-2 ml-2 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">✏️ Edit</button>
+          </div>
+        `;
+      });
+    }
+
+    window.deleteQuestion = async function (docId) {
+      if (confirm("আপনি কি নিশ্চিত মুছতে চান?")) {
+        await deleteDoc(doc(db, "questions", docId));
+        showMessage("প্রশ্ন মুছে ফেলা হয়েছে");
+        loadQuestions();
+      }
+    };
+
+    window.editQuestion = function (docId, question, options, answer) {
+      document.getElementById("editingId").value = docId;
+      document.getElementById("questionText").value = question;
+      document.getElementById("optionA").value = options[0];
+      document.getElementById("optionB").value = options[1];
+      document.getElementById("optionC").value = options[2];
+      document.getElementById("optionD").value = options[3];
+      const correctIndex = options.findIndex(opt => opt.trim() === answer.trim());
+      document.getElementById("correctOption").value = ["A", "B", "C", "D"][correctIndex];
+    };
+
+    questionForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const docId = editingId.value;
+      const question = document.getElementById("questionText").value.trim();
+      const options = [
+        document.getElementById("optionA").value.trim(),
+        document.getElementById("optionB").value.trim(),
+        document.getElementById("optionC").value.trim(),
+        document.getElementById("optionD").value.trim()
+      ];
+      const correct = document.getElementById("correctOption").value;
+      const answer = options["ABCD".indexOf(correct)];
+
+      try {
+        if (docId) {
+          await updateDoc(doc(db, "questions", docId), {
+            question,
+            options,
+            answer
+          });
+          showMessage("✏️ প্রশ্ন আপডেট হয়েছে!");
+        } else {
+          const snapshot = await getDocs(collection(db, "questions"));
+          const newId = snapshot.size + 1;
+          await addDoc(collection(db, "questions"), {
+            id: newId,
+            question,
+            options,
+            answer
+          });
+          showMessage("✅ নতুন প্রশ্ন যুক্ত হয়েছে!");
+        }
+        questionForm.reset();
+        editingId.value = "";
+        loadQuestions();
+      } catch (error) {
+        showMessage("❌ ব্যর্থ: " + error.message, true);
+      }
     });
 
-    try {
-      pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
-    } catch (err) {
-      console.error("PDF Save Failed:", err);
-      const blob = pdf.output("blob");
-      const url = URL.createObjectURL(blob);
-      window.open(url);
-    }
-  }
-
-  alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
-};
-
-loadQuestions();
-
-  </script>
-</body>
+    loadQuestions();
+  </script></body>
 </html>
