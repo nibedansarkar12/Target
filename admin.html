@@ -186,64 +186,61 @@
     };
 
     window.generateStudentReports = async function () {
-      const { jsPDF } = window.jspdf;
-      const resultSnapshot = await getDocs(collection(db, "results"));
-      const qSnapshot = await getDocs(collection(db, "questions"));
-      const allQuestions = qSnapshot.docs.map(doc => doc.data());
+  const { jsPDF } = window.jspdf;
+  const resultSnapshot = await getDocs(collection(db, "results"));
+  const qSnapshot = await getDocs(collection(db, "questions"));
+  const allQuestions = qSnapshot.docs.map(doc => doc.data());
 
-      if (resultSnapshot.empty) {
-        alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
-        return;
-      }
+  if (resultSnapshot.empty) {
+    alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
+    return;
+  }
 
-      for (const docSnap of resultSnapshot.docs) {
-        const data = docSnap.data();
-        const userAnswers = data.answers || {};
-        let correct = 0, wrong = 0, unattempted = 0, score = 0;
+  for (const docSnap of resultSnapshot.docs) {
+    const data = docSnap.data();
+    const userAnswers = data.answers || {};
+    let correct = 0, wrong = 0, unattempted = 0, score = 0;
 
-        allQuestions.forEach((q, i) => {
-          const userAns = userAnswers[i] ?? userAnswers[String(i)];
-          if (userAns === undefined) unattempted++;
-          else if (userAns === q.answer) { correct++; score += 2; }
-          else { wrong++; score -= 0.25; }
-        });
+    allQuestions.forEach((q, i) => {
+      const userAns = userAnswers[i] ?? userAnswers[String(i)];
+      if (userAns === undefined) unattempted++;
+      else if (userAns === q.answer) { correct++; score += 2; }
+      else { wrong++; score -= 0.25; }
+    });
 
-        const pdf = new jsPDF();
-        pdf.setFontSize(16);
-        pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
-        pdf.setFontSize(12);
-        pdf.text(`📧 Email: ${data.email}`, 20, 40);
-        pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
-        pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
-        pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
-        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
+    const pdf = new jsPDF();
+    pdf.setFontSize(16);
+    pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
+    pdf.setFontSize(12);
+    pdf.text(`📧 Email: ${data.email}`, 20, 40);
+    pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
+    pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
+    pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
+    pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
 
-        if (data.submittedAt) {
-          const date = data.submittedAt.seconds ? new Date(data.submittedAt.seconds * 1000) : new Date(data.submittedAt);
-          pdf.text(`🕒 Submitted At: ${date.toLocaleString()}`, 20, 90);
-        }
+    let y = 100;
+    allQuestions.forEach((q, i) => {
+      if (y > 270) { pdf.addPage(); y = 20; }
+      const userAns = userAnswers[i] ?? userAnswers[String(i)];
+      const chosenLabel = userAns
+        ? `${String.fromCharCode(65 + q.options.indexOf(userAns))}`
+        : "Not Answered";
+      pdf.text(`${i + 1}. Chosen Option: ${chosenLabel}`, 20, y);
+      y += 8;
+    });
 
-        let y = 110;
-        allQuestions.forEach((q, i) => {
-          if (y > 270) { pdf.addPage(); y = 20; }
-          const userAns = userAnswers[i] ?? "❌ Not Answered";
-          pdf.text(`${i + 1}. ${q.question}`, 10, y); y += 7;
-          pdf.text(`আপনার উত্তর: ${userAns}`, 15, y); y += 6;
-          pdf.text(`সঠিক উত্তর: ${q.answer}`, 15, y); y += 10;
-        });
+    try {
+      pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+    } catch (err) {
+      console.error("PDF Save Failed:", err);
+      const blob = pdf.output("blob");
+      const url = URL.createObjectURL(blob);
+      window.open(url);
+    }
+  }
 
-        try {
-          pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
-        } catch (err) {
-          console.error("PDF Save Failed:", err);
-          const blob = pdf.output("blob");
-          const url = URL.createObjectURL(blob);
-          window.open(url);
-        }
-      }
-
-      alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
-    };
+  alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
+};
 
     loadQuestions();
   </script></body>
