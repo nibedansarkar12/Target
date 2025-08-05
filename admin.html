@@ -149,6 +149,7 @@
       }
 
       await addDoc(collection(db,cat),{
+        id: Date.now(),
         question:ques,options:opts,
         answer:opts[correctIndex],photo:photoURL,
         createdAt:new Date()
