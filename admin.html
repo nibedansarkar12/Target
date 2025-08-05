@@ -2,80 +2,94 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel - Target Zone</title>
+  <title>Target Zone - Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .slide-in { transform: translateX(0); transition: transform 0.3s ease-in-out; }
+    .slide-out { transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
+    .dark-mode { background: #1e293b; color: white; }
+  </style>
 </head>
-<body class="h-screen flex bg-gray-100">
+<body class="bg-gray-100 flex h-screen">
 
   <!-- Sidebar -->
-  <aside class="w-64 bg-gradient-to-b from-blue-800 to-indigo-900 text-white flex flex-col shadow-lg">
-    <div class="p-6 text-center border-b border-blue-700">
-      <h1 class="text-2xl font-bold">🎯 Target Zone</h1>
-      <p class="text-sm text-gray-300">Admin Dashboard</p>
+  <aside id="sidebar" class="slide-out fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-700 via-indigo-800 to-purple-900 text-white shadow-xl z-50">
+    <div class="flex items-center justify-between p-4 border-b border-indigo-600">
+      <h1 class="text-xl font-bold">🎯 Target Zone</h1>
+      <button onclick="toggleSidebar()" class="text-white text-2xl">✖</button>
     </div>
-    <nav class="flex-1 p-4">
-      <ul class="space-y-3">
-        <li><button onclick="showSection('add')" class="w-full text-left px-4 py-2 rounded hover:bg-blue-700">➕ Add Question</button></li>
-        <li><button onclick="showSection('manage')" class="w-full text-left px-4 py-2 rounded hover:bg-blue-700">📂 Manage Questions</button></li>
-        <li><button onclick="showSection('results')" class="w-full text-left px-4 py-2 rounded hover:bg-blue-700">📊 View Results</button></li>
-        <li><button onclick="showSection('users')" class="w-full text-left px-4 py-2 rounded hover:bg-blue-700">👥 Manage Users</button></li>
-      </ul>
+    <nav class="p-4 space-y-3">
+      <button onclick="showSection('add')" class="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-indigo-600 transition">➕ Add Question</button>
+      <button onclick="showSection('manage')" class="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-indigo-600 transition">📂 Manage Questions</button>
+      <button onclick="showSection('results')" class="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-indigo-600 transition">📊 View Results</button>
+      <button onclick="showSection('users')" class="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-indigo-600 transition">👥 Manage Users</button>
     </nav>
-    <div class="p-4 border-t border-blue-700">
+    <div class="p-4 border-t border-indigo-600">
+      <button onclick="toggleDarkMode()" class="w-full bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded mb-2">🌙 Dark Mode</button>
       <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded">🚪 Logout</button>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 p-6 overflow-y-auto">
-    <h2 class="text-3xl font-bold mb-6 text-gray-800">🛠️ Admin Panel</h2>
+  <!-- Content Area -->
+  <div class="flex-1 flex flex-col">
+    <!-- Top Navbar -->
+    <header class="bg-white shadow flex items-center justify-between p-4">
+      <button onclick="toggleSidebar()" class="text-3xl text-indigo-800">☰</button>
+      <h2 class="text-xl font-bold text-gray-700">🛠️ Admin Panel</h2>
+    </header>
 
-    <!-- Add Question -->
-    <div id="section-add" class="bg-white rounded-lg shadow-lg p-6 hidden">
-      <h3 class="text-xl font-semibold mb-4 border-b pb-2">➕ Add New Question</h3>
-      <label class="block mb-2 font-semibold">Exam Category</label>
-      <select id="exam-category" class="w-full border rounded-lg px-3 py-2 mb-3">
-        <option value="ssc_gd">SSC GD</option>
-        <option value="wbp_constable">WBP Constable</option>
-        <option value="wbpsc_clerkship">WBPSC Clerkship</option>
-        <option value="railway_ntpc">Railway NTPC</option>
-        <option value="tet_primary">WB Primary TET</option>
-      </select>
-      <label class="block mb-2 font-semibold">Set Number</label>
-      <input type="number" id="set-number" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="যেমন: 1">
-      <textarea id="question" rows="3" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
-      <div class="grid grid-cols-2 gap-3">
-        <input type="text" id="option1" class="border rounded-lg px-3 py-2" placeholder="Option 1">
-        <input type="text" id="option2" class="border rounded-lg px-3 py-2" placeholder="Option 2">
-        <input type="text" id="option3" class="border rounded-lg px-3 py-2" placeholder="Option 3">
-        <input type="text" id="option4" class="border rounded-lg px-3 py-2" placeholder="Option 4">
-      </div>
-      <input type="text" id="answer" class="w-full border rounded-lg px-3 py-2 mt-3" placeholder="সঠিক উত্তর">
-      <button onclick="addQuestion()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-lg font-semibold">💾 Save Question</button>
-      <p id="status" class="text-green-600 font-semibold mt-4"></p>
-    </div>
+    <!-- Main Content -->
+    <main class="flex-1 p-6 overflow-y-auto space-y-6">
 
-    <!-- Manage Questions -->
-    <div id="section-manage" class="bg-white rounded-lg shadow-lg p-6 hidden">
-      <h3 class="text-xl font-semibold mb-4 border-b pb-2">📂 Manage Questions</h3>
-      <input type="text" id="search-box" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="🔍 সার্চ করুন...">
-      <button onclick="viewQuestions()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg text-lg font-semibold mb-4">📥 Load Questions</button>
-      <div id="questions-list" class="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-gray-50"></div>
-    </div>
+      <!-- Add Question -->
+      <section id="section-add" class="hidden bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-xl font-semibold mb-4 border-b pb-2">➕ Add New Question</h3>
+        <select id="exam-category" class="w-full border rounded-lg px-3 py-2 mb-3">
+          <option value="ssc_gd">SSC GD</option>
+          <option value="wbp_constable">WBP Constable</option>
+          <option value="wbpsc_clerkship">WBPSC Clerkship</option>
+          <option value="railway_ntpc">Railway NTPC</option>
+          <option value="tet_primary">WB Primary TET</option>
+        </select>
+        <input type="number" id="set-number" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="Set Number">
+        <textarea id="question" rows="3" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
+        <div class="grid grid-cols-2 gap-3">
+          <input type="text" id="option1" class="border rounded-lg px-3 py-2" placeholder="Option 1">
+          <input type="text" id="option2" class="border rounded-lg px-3 py-2" placeholder="Option 2">
+          <input type="text" id="option3" class="border rounded-lg px-3 py-2" placeholder="Option 3">
+          <input type="text" id="option4" class="border rounded-lg px-3 py-2" placeholder="Option 4">
+        </div>
+        <input type="text" id="answer" class="w-full border rounded-lg px-3 py-2 mt-3" placeholder="সঠিক উত্তর">
+        <button onclick="addQuestion()" class="w-full mt-4 bg-indigo-700 hover:bg-indigo-800 text-white py-2 rounded-lg text-lg font-semibold">💾 Save Question</button>
+        <p id="status" class="text-green-600 font-semibold mt-4"></p>
+      </section>
 
-    <!-- View Results -->
-    <div id="section-results" class="bg-white rounded-lg shadow-lg p-6 hidden">
-      <h3 class="text-xl font-semibold mb-4 border-b pb-2">📊 View Results</h3>
-      <div id="results-list" class="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-gray-50"></div>
-    </div>
+      <!-- Manage Questions -->
+      <section id="section-manage" class="hidden bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-xl font-semibold mb-4 border-b pb-2">📂 Manage Questions</h3>
+        <input type="text" id="search-box" class="w-full border rounded-lg px-3 py-2 mb-3" placeholder="🔍 সার্চ করুন...">
+        <button onclick="viewQuestions()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg text-lg font-semibold mb-4">📥 Load Questions</button>
+        <div id="questions-list" class="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-gray-50"></div>
+      </section>
 
-    <!-- Manage Users -->
-    <div id="section-users" class="bg-white rounded-lg shadow-lg p-6 hidden">
-      <h3 class="text-xl font-semibold mb-4 border-b pb-2">👥 Registered Users</h3>
-      <div id="users-list" class="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-gray-50"></div>
-    </div>
-  </main>
+      <!-- View Results -->
+      <section id="section-results" class="hidden bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-xl font-semibold mb-4 border-b pb-2">📊 View Results</h3>
+        <canvas id="resultChart" width="400" height="200" class="mb-6"></canvas>
+        <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">⬇️ Download PDF</button>
+        <div id="results-list" class="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-gray-50"></div>
+      </section>
+
+      <!-- Manage Users -->
+      <section id="section-users" class="hidden bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-xl font-semibold mb-4 border-b pb-2">👥 Registered Users</h3>
+        <div id="users-list" class="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-3 bg-gray-50"></div>
+      </section>
+    </main>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -93,8 +107,15 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Toggle Sections
-    window.showSection = function(section){
+    const sidebar=document.getElementById("sidebar");
+    window.toggleSidebar=function(){
+      sidebar.classList.toggle("slide-in");
+      sidebar.classList.toggle("slide-out");
+    }
+    window.toggleDarkMode=function(){
+      document.body.classList.toggle("dark-mode");
+    }
+    window.showSection=function(section){
       ["add","manage","results","users"].forEach(s=>{
         document.getElementById(`section-${s}`).classList.add("hidden");
       });
@@ -104,85 +125,109 @@
     }
 
     // Add Question
-    window.addQuestion = async function() {
-      const examCategory = document.getElementById("exam-category").value;
-      const setNumber = document.getElementById("set-number").value.trim();
-      const question = document.getElementById("question").value.trim();
-      const options = [
+    window.addQuestion=async function(){
+      const category=document.getElementById("exam-category").value;
+      const setNumber=document.getElementById("set-number").value.trim();
+      const question=document.getElementById("question").value.trim();
+      const options=[
         document.getElementById("option1").value.trim(),
         document.getElementById("option2").value.trim(),
         document.getElementById("option3").value.trim(),
         document.getElementById("option4").value.trim()
       ];
-      const answer = document.getElementById("answer").value.trim();
-
-      if (!examCategory || !setNumber || !question || options.some(opt => !opt) || !answer) {
-        document.getElementById("status").textContent = "⚠️ সব ঘর পূরণ করুন।";
+      const answer=document.getElementById("answer").value.trim();
+      if(!category||!setNumber||!question||options.some(o=>!o)||!answer){
+        document.getElementById("status").textContent="⚠️ সব ঘর পূরণ করুন!";
         return;
       }
-
-      const snapshot = await getDocs(collection(db, `${examCategory}_set${setNumber}`));
-      const id = snapshot.size + 1;
-      await addDoc(collection(db, `${examCategory}_set${setNumber}`), { id, question, options, answer });
-      document.getElementById("status").textContent = "✅ প্রশ্ন যোগ হয়েছে!";
+      await addDoc(collection(db,`${category}_set${setNumber}`),{question,options,answer});
+      document.getElementById("status").textContent="✅ প্রশ্ন যোগ হয়েছে!";
     }
 
-    // Manage Questions
-    window.viewQuestions = async function() {
-      const examCategory = document.getElementById("exam-category").value;
-      const setNumber = document.getElementById("set-number").value.trim();
-      const searchText = document.getElementById("search-box").value.trim().toLowerCase();
-      const listDiv = document.getElementById("questions-list");
-      listDiv.innerHTML = "⏳ লোড হচ্ছে...";
-
-      const q = query(collection(db, `${examCategory}_set${setNumber}`), orderBy("id"));
-      const snapshot = await getDocs(q);
-      let html = "";
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        if (!searchText || data.question.toLowerCase().includes(searchText)) {
-          html += `<div class="p-4 border rounded-lg bg-white shadow">
-            <b>${data.id}. ${data.question}</b><br>
-            ${data.options.map(o=>`<li>${o}</li>`).join("")}
-            ✅ ${data.answer}
-          </div>`;
-        }
+    // View + Edit + Delete Questions
+    window.viewQuestions=async function(){
+      const category=document.getElementById("exam-category").value;
+      const setNumber=document.getElementById("set-number").value.trim();
+      const q=query(collection(db,`${category}_set${setNumber}`),orderBy("question"));
+      const snapshot=await getDocs(q);
+      const list=document.getElementById("questions-list");
+      let html="";
+      snapshot.forEach(docSnap=>{
+        const data=docSnap.data();
+        html+=`<div class="p-3 border rounded bg-white shadow">
+          <b>${data.question}</b><br>
+          ${data.options.map(o=>`<li>${o}</li>`).join("")}
+          ✅ ${data.answer}<br>
+          <button onclick="editQuestion('${docSnap.id}','${category}_set${setNumber}')" class="bg-green-600 text-white px-2 py-1 rounded mr-2">✏ Edit</button>
+          <button onclick="deleteQuestion('${docSnap.id}','${category}_set${setNumber}')" class="bg-red-600 text-white px-2 py-1 rounded">🗑 Delete</button>
+        </div>`;
       });
-      listDiv.innerHTML = html || "❌ কোনো প্রশ্ন নেই।";
+      list.innerHTML=html||"❌ কোনো প্রশ্ন নেই।";
+    }
+
+    // Delete Question
+    window.deleteQuestion=async function(id,collectionName){
+      if(confirm("আপনি কি নিশ্চিত মুছে ফেলতে চান?")){
+        await deleteDoc(doc(db,collectionName,id));
+        alert("❌ প্রশ্ন মুছে ফেলা হয়েছে!");
+        viewQuestions();
+      }
+    }
+
+    // Edit Question
+    window.editQuestion=async function(id,collectionName){
+      const newQuestion=prompt("নতুন প্রশ্ন লিখুন:");
+      if(!newQuestion) return;
+      await updateDoc(doc(db,collectionName,id),{question:newQuestion});
+      alert("✏ প্রশ্ন আপডেট হয়েছে!");
+      viewQuestions();
     }
 
     // Results
     async function loadResults(){
-      const listDiv=document.getElementById("results-list");
-      listDiv.innerHTML="⏳ লোড হচ্ছে...";
       const q=query(collection(db,"results"),orderBy("submittedAt","desc"));
       const snapshot=await getDocs(q);
-      let html="";
+      const list=document.getElementById("results-list");
+      let html="",correct=0,wrong=0,unattempted=0;
       snapshot.forEach(docSnap=>{
         const r=docSnap.data();
-        html+=`<div class="p-4 border rounded bg-gray-50 shadow">
+        correct+=r.correct; wrong+=r.wrong; unattempted+=r.unattempted;
+        html+=`<div class="p-3 border rounded bg-gray-50 shadow">
           <b>${r.exam.toUpperCase()}</b> - ${r.email}<br>
           🏆 ${r.score}/${r.total} | ✅ ${r.correct}, ❌ ${r.wrong}, ⚪ ${r.unattempted}
         </div>`;
       });
-      listDiv.innerHTML=html||"❌ কোনো রেজাল্ট নেই।";
+      list.innerHTML=html||"❌ কোনো রেজাল্ট নেই।";
+      new Chart(document.getElementById("resultChart"),{
+        type:"pie",
+        data:{labels:["Correct","Wrong","Unattempted"],
+          datasets:[{data:[correct,wrong,unattempted],backgroundColor:["#4caf50","#f44336","#9e9e9e"]}]}
+      });
     }
 
     // Users
     async function loadUsers(){
-      const listDiv=document.getElementById("users-list");
-      listDiv.innerHTML="⏳ লোড হচ্ছে...";
       const snapshot=await getDocs(collection(db,"users"));
+      const list=document.getElementById("users-list");
       let html="";
       snapshot.forEach(docSnap=>{
         const u=docSnap.data();
-        html+=`<div class="p-4 border rounded bg-gray-50 shadow">
-          👤 ${u.fullName || "No Name"}<br>
+        html+=`<div class="p-3 border rounded bg-gray-50 shadow">
+          👤 ${u.fullName||"No Name"}<br>
           📧 ${u.email}<br>
           📅 Joined: ${u.joinedAt?.toDate().toLocaleDateString()}
         </div>`;
       });
-      listDiv.innerHTML=html||"❌ কোনো ইউজার নেই।";
+      list.innerHTML=html||"❌ কোনো ইউজার নেই।";
+    }
+
+    // PDF Download
+    window.downloadPDF=function(){
+      const { jsPDF }=window.jspdf;
+      const doc=new jsPDF();
+      doc.text("Target Zone Results",20,20);
+      doc.text(document.getElementById("results-list").innerText,20,40);
+      doc.save("results.pdf");
     }
   </script>
 </body>
