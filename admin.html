@@ -64,7 +64,7 @@
           <option value="railways">Railways</option>
           <option value="tet">TET</option>
         </select>
-        <input id="set" class="w-full border rounded px-3 py-2 mb-3" placeholder="Set নাম যেমনঃ Set1">
+  <input id="set" class="w-full border rounded px-3 py-2 mb-3" placeholder="Set নাম যেমনঃ Set1" oninput="loadQuestions(document.getElementById('category').value)">
         <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
         <input type="file" id="photo" accept="image/*" class="w-full mb-3">
         <div class="grid grid-cols-2 gap-3">
