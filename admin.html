@@ -5,95 +5,13 @@
   <title>Target Zone - Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-  <style>
-    body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#6a11cb,#2575fc);}
-    .sidebar { background:linear-gradient(180deg,#1e3c72,#2a5298); }
-    .glass { background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); }
-    .rainbow { background:linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00,#ee0979,#6a11cb,#2575fc); 
-               -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:bold; }
-    .btn { transition:0.3s; }
-    .btn:hover { transform:scale(1.05); }
-    #music-controls { position:fixed;bottom:20px;right:20px;z-index:100;display:flex;gap:10px; }
-  </style>
-</head>
-<body class="flex h-screen text-gray-900">
-
-  <!-- Sidebar -->
-  <aside id="sidebar" class="sidebar w-64 text-white flex flex-col shadow-lg">
-    <div class="p-5 text-center border-b border-white/20">
-      <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
-      <p class="text-sm">Admin Dashboard</p>
-    </div>
-    <nav class="flex-1 p-4 space-y-3">
-      <button onclick="showSection('add')" class="btn w-full bg-white/20 py-2 rounded">➕ Add Question</button>
-      <button onclick="showSection('manage')" class="btn w-full bg-white/20 py-2 rounded">📂 Manage Questions</button>
-      <button onclick="showSection('results')" class="btn w-full bg-white/20 py-2 rounded">📊 View Results</button>
-      <button onclick="showSection('users')" class="btn w-full bg-white/20 py-2 rounded">👥 Manage Users</button>
-    </nav>
-    <div class="p-4 border-t border-white/20">
-      <button onclick="logout()" class="btn w-full bg-red-600 py-2 rounded">🚪 Logout</button>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 p-6 overflow-y-auto">
-    <h2 class="rainbow text-3xl mb-6">🛠️ Admin Panel</h2>
-
-    <!-- Add Question -->
-    <section id="section-add" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4">➕ Add New Question</h3>
-      <select id="category" class="w-full border rounded px-3 py-2 mb-3">
-        <option value="ssc">SSC Exams</option>
-        <option value="railways">Railways</option>
-        <option value="tet">TET Exams</option>
-        <option value="wbset">WB SET</option>
-        <option value="wbjee">WBJEE</option>
-        <option value="madhyamik">Madhyamik / HS</option>
-      </select>
-      <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
-      <input id="option1" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 1">
-      <input id="option2" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 2">
-      <input id="option3" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 3">
-      <input id="option4" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 4">
-      <input id="answer" class="w-full border rounded px-3 py-2 mb-3" placeholder="সঠিক উত্তর লিখুন">
-      <button onclick="saveQuestion()" class="btn w-full bg-blue-600 text-white py-2 rounded">💾 Save Question</button>
-    </section>
-
-    <!-- Manage Questions -->
-    <section id="section-manage" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4">📂 Manage Questions</h3>
-      <div id="questions-list">লোড হচ্ছে...</div>
-    </section>
-
-    <!-- View Results -->
-    <section id="section-results" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4">📊 View Results</h3>
-      <div id="results-list">লোড হচ্ছে...</div>
-    </section>
-
-    <!-- Manage Users -->
-    <section id="section-users" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4">👥 Manage Users</h3>
-      <div id="users-list">লোড হচ্ছে...</div>
-    </section>
-  </main>
-
-  <!-- Music Controls -->
-  <audio id="bg-music" autoplay loop></audio>
-  <div id="music-controls">
-    <button onclick="prevSong()" class="bg-green-600 text-white px-3 py-2 rounded-full">⏮</button>
-    <button onclick="toggleMusic()" id="music-btn" class="bg-blue-600 text-white px-3 py-2 rounded-full">🔊</button>
-    <button onclick="nextSong()" class="bg-green-600 text-white px-3 py-2 rounded-full">⏭</button>
-  </div>
-
   <script type="module">
+    // Firebase SDK Imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+    // Firebase Config (তোমারটা)
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -107,106 +25,200 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    let currentUser=null;
-    onAuthStateChanged(auth,user=>{
-      if(user){currentUser=user;}
-      else{alert("Login first!");window.location.href="index.html";}
+    let currentUser = null;
+
+    // Auth check
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "index.html"; // 🔄 লগআউট হলে index.html এ রিডাইরেক্ট
+      } else {
+        currentUser = user;
+        document.getElementById("admin-email").textContent = "👤 " + user.email;
+        loadQuestions();
+        loadResults();
+        loadUsers();
+      }
     });
 
-    window.showSection=function(section){
-      ["add","manage","results","users"].forEach(s=>{
-        document.getElementById(`section-${s}`).classList.add("hidden");
+    // Logout
+    window.logout = async function() {
+      await signOut(auth);
+      window.location.href = "index.html";
+    };
+
+    // Add Question
+    window.addQuestion = async function() {
+      const cat = document.getElementById("category").value;
+      const ques = document.getElementById("question").value;
+      const opt1 = document.getElementById("option1").value;
+      const opt2 = document.getElementById("option2").value;
+      const opt3 = document.getElementById("option3").value;
+      const opt4 = document.getElementById("option4").value;
+      const ans = document.getElementById("answer").value;
+
+      if (!ques || !ans) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+
+      await addDoc(collection(db, cat), {
+        question: ques,
+        options: [opt1, opt2, opt3, opt4],
+        answer: ans,
+        createdAt: new Date()
       });
-      document.getElementById(`section-${section}`).classList.remove("hidden");
-      if(section==="manage") loadQuestions();
-      if(section==="results") loadResults();
-      if(section==="users") loadUsers();
-    }
+      alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
+      loadQuestions();
+    };
 
-    // ➕ Add Question
-    window.saveQuestion=async function(){
-      const data={
-        category:document.getElementById("category").value,
-        question:document.getElementById("question").value,
-        options:[
-          document.getElementById("option1").value,
-          document.getElementById("option2").value,
-          document.getElementById("option3").value,
-          document.getElementById("option4").value
-        ],
-        answer:document.getElementById("answer").value
-      };
-      await addDoc(collection(db,data.category),data);
-      alert("✅ Question Saved!");
-    }
+    // Load Questions
+    async function loadQuestions() {
+      const table = document.getElementById("questions-list");
+      table.innerHTML = "<tr><td colspan='5'>লোড হচ্ছে...</td></tr>";
 
-    // 📂 Manage Questions
-    async function loadQuestions(){
-      const list=document.getElementById("questions-list");
-      list.innerHTML="";
-      const cats=["ssc","railways","tet","wbset","wbjee","madhyamik"];
-      for(const cat of cats){
-        const snap=await getDocs(collection(db,cat));
-        if(!snap.empty){
-          list.innerHTML+=`<h4 class="text-lg font-bold mt-4">${cat.toUpperCase()}</h4>`;
-          snap.forEach(d=>{
-            const q=d.data();
-            list.innerHTML+=`<div class="p-2 border rounded mt-2">${q.question}
-              <button onclick="deleteQuestion('${cat}','${d.id}')" class="bg-red-600 text-white px-2 py-1 rounded ml-2">🗑 Delete</button>
-            </div>`;
-          });
-        }
+      const cats = ["ssc", "railways", "tet"]; // তুমি আরো category যোগ করতে পারো
+      let rows = "";
+
+      for (const cat of cats) {
+        const snapshot = await getDocs(collection(db, cat));
+        snapshot.forEach(docSnap => {
+          const q = docSnap.data();
+          rows += `
+            <tr>
+              <td>${cat.toUpperCase()}</td>
+              <td>${q.question}</td>
+              <td>${q.answer}</td>
+              <td><button onclick="editQuestion('${cat}','${docSnap.id}')">✏️ Edit</button></td>
+              <td><button onclick="deleteQuestion('${cat}','${docSnap.id}')">🗑 Delete</button></td>
+            </tr>
+          `;
+        });
       }
-    }
-    window.deleteQuestion=async function(cat,id){
-      await deleteDoc(doc(db,cat,id));
-      alert("❌ Deleted!"); loadQuestions();
+      table.innerHTML = rows || "<tr><td colspan='5'>কোনো প্রশ্ন নেই</td></tr>";
     }
 
-    // 📊 View Results
-    async function loadResults(){
-      const snap=await getDocs(collection(db,"results"));
-      let html="";
-      snap.forEach(d=>{
-        const r=d.data();
-        html+=`<div class="p-3 border rounded mb-2">
-          <b>${r.email}</b> - ${r.exam} - 🏆 ${r.score}/${r.total}
-          <br>✅ ${r.correct}, ❌ ${r.wrong}, ⚪ ${r.unattempted}
-        </div>`;
+    // Delete Question
+    window.deleteQuestion = async function(cat, id) {
+      await deleteDoc(doc(db, cat, id));
+      alert("❌ প্রশ্ন ডিলিট হয়েছে!");
+      loadQuestions();
+    };
+
+    // View Results
+    async function loadResults() {
+      const table = document.getElementById("results-list");
+      table.innerHTML = "<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
+      const snapshot = await getDocs(collection(db, "results"));
+      let rows = "";
+      snapshot.forEach(docSnap => {
+        const r = docSnap.data();
+        rows += `
+          <tr>
+            <td>${r.email}</td>
+            <td>${r.exam}</td>
+            <td>${r.score}/${r.total}</td>
+            <td>${new Date(r.submittedAt.seconds*1000).toLocaleString()}</td>
+          </tr>
+        `;
       });
-      document.getElementById("results-list").innerHTML=html||"কোনো রেজাল্ট নেই।";
+      table.innerHTML = rows || "<tr><td colspan='4'>কোনো রেজাল্ট নেই</td></tr>";
     }
 
-    // 👥 Manage Users
-    async function loadUsers(){
-      const snap=await getDocs(collection(db,"students"));
-      let html="";
-      snap.forEach(d=>{
-        const u=d.data();
-        html+=`<div class="p-3 border rounded mb-2">
-          👤 ${u.name||"No Name"} <br>📧 ${u.email||"No Email"}
-        </div>`;
+    // Manage Users
+    async function loadUsers() {
+      const table = document.getElementById("users-list");
+      table.innerHTML = "<tr><td colspan='2'>লোড হচ্ছে...</td></tr>";
+      const snapshot = await getDocs(collection(db, "users"));
+      let rows = "";
+      snapshot.forEach(docSnap => {
+        const u = docSnap.data();
+        rows += `<tr><td>${u.email}</td><td>${u.name || "Unknown"}</td></tr>`;
       });
-      document.getElementById("users-list").innerHTML=html||"কোনো ইউজার নেই।";
+      table.innerHTML = rows || "<tr><td colspan='2'>কোনো ইউজার নেই</td></tr>";
     }
+  </script>
+  <style>
+    body { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); color:white; font-family: 'Segoe UI', sans-serif; }
+    .sidebar { background: linear-gradient(180deg,#1e3c72,#2a5298); transition: transform 0.3s ease; }
+    .sidebar.hidden { transform: translateX(-100%); }
+    .glass { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); color:black; }
+    .rainbow { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00,#ee0979,#6a11cb,#2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:bold; }
+  </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar fixed md:static w-64 h-full text-white z-50 hidden md:block">
+    <div class="p-5 text-center border-b border-white/20">
+      <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
+      <p id="admin-email" class="text-sm"></p>
+    </div>
+    <nav class="p-4 space-y-3">
+      <button onclick="showSection('add')" class="w-full bg-white/20 py-2 rounded">➕ Add Question</button>
+      <button onclick="showSection('manage')" class="w-full bg-white/20 py-2 rounded">📂 Manage Questions</button>
+      <button onclick="showSection('results')" class="w-full bg-white/20 py-2 rounded">📊 View Results</button>
+      <button onclick="showSection('users')" class="w-full bg-white/20 py-2 rounded">👥 Manage Users</button>
+    </nav>
+    <div class="p-4 border-t border-white/20">
+      <button onclick="logout()" class="w-full bg-red-600 py-2 rounded">🚪 Logout</button>
+    </div>
+  </aside>
 
-    window.logout=function(){signOut(auth).then(()=>{window.location.href="index.html";});}
+  <!-- Main -->
+  <main class="flex-1 p-6 overflow-y-auto">
+    <div class="flex justify-between items-center mb-6">
+      <button id="menu-btn" class="md:hidden bg-yellow-400 px-3 py-2 rounded">☰</button>
+      <h2 class="rainbow text-3xl">🛠️ Admin Panel</h2>
+      <audio id="bg-music" controls autoplay loop class="w-40">
+        <source src="YOUR_SONG_LINK_HERE.mp3" type="audio/mp3">
+      </audio>
+    </div>
 
-    // 🎶 Music
-    const music=document.getElementById("bg-music");
-    const musicBtn=document.getElementById("music-btn");
-    const playlist=[
-      "https://pagalworld4u.in/download/128k-bengali-song-1.mp3",
-      "https://pagalworld4u.in/download/128k-bengali-song-2.mp3",
-      "https://pagalworld4u.in/download/128k-bengali-song-3.mp3"
-    ];
-    let currentSong=0;
-    function loadSong(i){music.src=playlist[i];music.play();}
-    window.nextSong=function(){currentSong=(currentSong+1)%playlist.length;loadSong(currentSong);}
-    window.prevSong=function(){currentSong=(currentSong-1+playlist.length)%playlist.length;loadSong(currentSong);}
-    window.toggleMusic=function(){if(music.paused){music.play();musicBtn.textContent="🔊";}else{music.pause();musicBtn.textContent="🔇";}}
-    music.addEventListener("ended",()=>{window.nextSong();});
-    loadSong(currentSong);
+    <!-- Sections -->
+    <section id="section-add" class="glass p-6 rounded-lg shadow-lg hidden">
+      <h3 class="text-xl font-bold mb-4">➕ Add New Question</h3>
+      <select id="category" class="w-full border rounded px-3 py-2 mb-3">
+        <option value="ssc">SSC</option>
+        <option value="railways">Railways</option>
+        <option value="tet">TET</option>
+      </select>
+      <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
+      <input id="option1" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 1">
+      <input id="option2" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 2">
+      <input id="option3" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 3">
+      <input id="option4" class="w-full border rounded px-3 py-2 mb-2" placeholder="Option 4">
+      <input id="answer" class="w-full border rounded px-3 py-2 mb-3" placeholder="সঠিক উত্তর">
+      <button onclick="addQuestion()" class="w-full bg-blue-600 text-white py-2 rounded">💾 Save Question</button>
+    </section>
+
+    <section id="section-manage" class="glass p-6 rounded-lg shadow-lg hidden">
+      <h3 class="text-xl font-bold mb-4">📂 Manage Questions</h3>
+      <table class="w-full text-left border">
+        <thead><tr><th>Category</th><th>Question</th><th>Answer</th><th>Edit</th><th>Delete</th></tr></thead>
+        <tbody id="questions-list"></tbody>
+      </table>
+    </section>
+
+    <section id="section-results" class="glass p-6 rounded-lg shadow-lg hidden">
+      <h3 class="text-xl font-bold mb-4">📊 View Results</h3>
+      <table class="w-full text-left border">
+        <thead><tr><th>Email</th><th>Exam</th><th>Score</th><th>Submitted</th></tr></thead>
+        <tbody id="results-list"></tbody>
+      </table>
+    </section>
+
+    <section id="section-users" class="glass p-6 rounded-lg shadow-lg hidden">
+      <h3 class="text-xl font-bold mb-4">👥 Manage Users</h3>
+      <table class="w-full text-left border">
+        <thead><tr><th>Email</th><th>Name</th></tr></thead>
+        <tbody id="users-list"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const sections=["add","manage","results","users"];
+    window.showSection=function(id){
+      sections.forEach(sec=>document.getElementById("section-"+sec).classList.add("hidden"));
+      document.getElementById("section-"+id).classList.remove("hidden");
+    };
+    document.getElementById("menu-btn").addEventListener("click",()=>{document.getElementById("sidebar").classList.toggle("hidden");});
   </script>
 </body>
 </html>
