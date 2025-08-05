@@ -5,13 +5,21 @@
   <title>Target Zone - Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); color:white; font-family:'Segoe UI',sans-serif; overflow:hidden; }
+    .sidebar { background: linear-gradient(180deg,#1e3c72,#2a5298); transition: transform 0.4s ease; }
+    .sidebar.hidden { transform: translateX(-100%); }
+    .glass { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); color:black; }
+    .rainbow { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00,#ee0979,#6a11cb,#2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:bold; }
+    .nav-btn { display:flex; align-items:center; gap:10px; transition:all 0.3s; background:rgba(255,255,255,0.1); }
+    .nav-btn:hover { background:linear-gradient(90deg,#ff7e5f,#feb47b,#6a11cb); color:white; transform:translateX(5px); }
+  </style>
   <script type="module">
-    // Firebase SDK Imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // Firebase Config (তোমারটা)
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -20,214 +28,107 @@
       messagingSenderId: "667579216123",
       appId: "1:667579216123:web:37bb1fcc724743073d005e"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    let currentUser = null;
-
-    // Auth check
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "index.html"; // 🔄 লগআউট হলে index.html এ রিডাইরেক্ট
-      } else {
-        currentUser = user;
-        document.getElementById("admin-email").textContent = "👤 " + user.email;
-        loadQuestions();
-        loadResults();
-        loadUsers();
+    let currentUser=null;
+    onAuthStateChanged(auth, user=>{
+      if(!user){ window.location.href="index.html"; }
+      else{
+        currentUser=user;
+        document.getElementById("admin-email").textContent="👤 "+user.email;
+        loadQuestions(); loadResults(); loadUsers();
       }
     });
 
-    // Logout
-    window.logout = async function() {
-      await signOut(auth);
-      window.location.href = "index.html";
-    };
+    window.logout=async()=>{ await signOut(auth); window.location.href="index.html"; };
 
-    // Add Question
-    window.addQuestion = async function() {
-      const cat = document.getElementById("category").value;
-      const ques = document.getElementById("question").value;
-      const opt1 = document.getElementById("option1").value;
-      const opt2 = document.getElementById("option2").value;
-      const opt3 = document.getElementById("option3").value;
-      const opt4 = document.getElementById("option4").value;
-      const ans = document.getElementById("answer").value;
-
-      if (!ques || !ans) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
-
-      await addDoc(collection(db, cat), {
-        question: ques,
-        options: [opt1, opt2, opt3, opt4],
-        answer: ans,
-        createdAt: new Date()
-      });
+    window.addQuestion=async()=>{
+      const cat=document.getElementById("category").value;
+      const ques=document.getElementById("question").value;
+      const opts=[1,2,3,4].map(i=>document.getElementById("option"+i).value);
+      const ans=document.getElementById("answer").value;
+      if(!ques||!ans) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+      await addDoc(collection(db,cat),{question:ques,options:opts,answer:ans,createdAt:new Date()});
       alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
       loadQuestions();
     };
 
-    // Load Questions
-    async function loadQuestions() {
-      const table = document.getElementById("questions-list");
-      table.innerHTML = "<tr><td colspan='5'>লোড হচ্ছে...</td></tr>";
-
-      const cats = ["ssc", "railways", "tet"]; // তুমি আরো category যোগ করতে পারো
-      let rows = "";
-
-      for (const cat of cats) {
-        const snapshot = await getDocs(collection(db, cat));
-        snapshot.forEach(docSnap => {
-          const q = docSnap.data();
-          rows += `
+    async function loadQuestions(){
+      const table=document.getElementById("questions-list");
+      table.innerHTML="<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
+      const cats=["ssc","railways","tet"];
+      let rows="";
+      for(const cat of cats){
+        const snapshot=await getDocs(collection(db,cat));
+        snapshot.forEach(docSnap=>{
+          const q=docSnap.data();
+          rows+=`
             <tr>
               <td>${cat.toUpperCase()}</td>
               <td>${q.question}</td>
               <td>${q.answer}</td>
-              <td><button onclick="editQuestion('${cat}','${docSnap.id}')">✏️ Edit</button></td>
-              <td><button onclick="deleteQuestion('${cat}','${docSnap.id}')">🗑 Delete</button></td>
+              <td><button onclick="deleteQuestion('${cat}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
             </tr>
           `;
         });
       }
-      table.innerHTML = rows || "<tr><td colspan='5'>কোনো প্রশ্ন নেই</td></tr>";
+      table.innerHTML=rows||"<tr><td colspan='4'>কোনো প্রশ্ন নেই</td></tr>";
     }
+    window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(); };
 
-    // Delete Question
-    window.deleteQuestion = async function(cat, id) {
-      await deleteDoc(doc(db, cat, id));
-      alert("❌ প্রশ্ন ডিলিট হয়েছে!");
-      loadQuestions();
-    };
-
-    // View Results
-    async function loadResults() {
-      const table = document.getElementById("results-list");
-      table.innerHTML = "<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
-      const snapshot = await getDocs(collection(db, "results"));
-      let rows = "";
-      snapshot.forEach(docSnap => {
-        const r = docSnap.data();
-        rows += `
+    async function loadResults(){
+      const table=document.getElementById("results-list");
+      table.innerHTML="<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
+      const snapshot=await getDocs(collection(db,"results"));
+      let rows="";
+      snapshot.forEach(docSnap=>{
+        const r=docSnap.data();
+        rows+=`
           <tr>
             <td>${r.email}</td>
             <td>${r.exam}</td>
             <td>${r.score}/${r.total}</td>
-            <td>${new Date(r.submittedAt.seconds*1000).toLocaleString()}</td>
+            <td>${new Date(r.submittedAt?.seconds*1000||Date.now()).toLocaleString()}</td>
           </tr>
         `;
       });
-      table.innerHTML = rows || "<tr><td colspan='4'>কোনো রেজাল্ট নেই</td></tr>";
+      table.innerHTML=rows||"<tr><td colspan='4'>কোনো রেজাল্ট নেই</td></tr>";
     }
 
-    // Manage Users
-    async function loadUsers() {
-      const table = document.getElementById("users-list");
-      table.innerHTML = "<tr><td colspan='2'>লোড হচ্ছে...</td></tr>";
-      const snapshot = await getDocs(collection(db, "users"));
-      let rows = "";
-      snapshot.forEach(docSnap => {
-        const u = docSnap.data();
-        rows += `<tr><td>${u.email}</td><td>${u.name || "Unknown"}</td></tr>`;
+    async function loadUsers(){
+      const table=document.getElementById("users-list");
+      table.innerHTML="<tr><td colspan='2'>লোড হচ্ছে...</td></tr>";
+      const snapshot=await getDocs(collection(db,"users"));
+      let rows="";
+      snapshot.forEach(docSnap=>{
+        const u=docSnap.data();
+        rows+=`<tr><td>${u.email}</td><td>${u.name||"Unknown"}</td></tr>`;
       });
-      table.innerHTML = rows || "<tr><td colspan='2'>কোনো ইউজার নেই</td></tr>";
+      table.innerHTML=rows||"<tr><td colspan='2'>কোনো ইউজার নেই</td></tr>";
     }
   </script>
-  <style>
-    body { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); color:white; font-family: 'Segoe UI', sans-serif; }
-    .sidebar { background: linear-gradient(180deg,#1e3c72,#2a5298); transition: transform 0.3s ease; }
-    .sidebar.hidden { transform: translateX(-100%); }
-    .glass { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); color:black; }
-    .rainbow { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00,#ee0979,#6a11cb,#2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:bold; }
-  </style>
 </head>
 <body class="h-screen flex overflow-hidden">
+  <!-- Background Animation -->
+  <canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>
+  <button id="toggle-bg" class="fixed top-4 right-4 bg-red-500 text-white px-3 py-1 rounded shadow-lg z-50">✖️ Stop Animation</button>
+
   <!-- Sidebar -->
-  <!-- Canvas Background -->
-<canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>
-<button id="toggle-bg" class="fixed top-4 right-4 bg-red-500 text-white px-3 py-1 rounded">✖️ Stop Animation</button>
-
-<script>
-const canvas=document.getElementById("bg-canvas");
-const ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-let stars=[];
-for(let i=0;i<150;i++){
-  stars.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    r:Math.random()*2,
-    dx:(Math.random()-0.5)*0.5,
-    dy:(Math.random()-0.5)*0.5
-  });
-}
-
-let planes=[];
-for(let i=0;i<2;i++){
-  planes.push({
-    x:-50,
-    y:Math.random()*canvas.height/2,
-    dx:2+Math.random()*2,
-    size:20
-  });
-}
-
-function draw(){
-  ctx.fillStyle="rgba(0,0,30,0.4)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // Stars
-  ctx.fillStyle="white";
-  stars.forEach(s=>{
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fill();
-    s.x+=s.dx;s.y+=s.dy;
-    if(s.x<0||s.x>canvas.width) s.dx*=-1;
-    if(s.y<0||s.y>canvas.height) s.dy*=-1;
-  });
-
-  // Planes
-  planes.forEach(p=>{
-    ctx.fillStyle="lightblue";
-    ctx.fillRect(p.x,p.y,p.size,3);
-    ctx.fillStyle="white";
-    ctx.fillRect(p.x-5,p.y+1,10,1);
-    p.x+=p.dx;
-    if(p.x>canvas.width+50){
-      p.x=-50;
-      p.y=Math.random()*canvas.height/2;
-    }
-  });
-}
-
-let animation=setInterval(draw,30);
-
-// Stop Animation
-document.getElementById("toggle-bg").addEventListener("click",()=>{
-  if(animation){
-    clearInterval(animation);
-    animation=null;
-    document.getElementById("toggle-bg").textContent="▶️ Start Animation";
-  }else{
-    animation=setInterval(draw,30);
-    document.getElementById("toggle-bg").textContent="✖️ Stop Animation";
-  }
-});
-      </script>
-  <aside id="sidebar" class="sidebar fixed md:static w-64 h-full text-white z-50 hidden md:block">
-    <div class="p-5 text-center border-b border-white/20">
-      <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
-      <p id="admin-email" class="text-sm"></p>
+  <aside id="sidebar" class="sidebar fixed md:static w-64 h-full text-white z-50 hidden md:flex flex-col">
+    <div class="p-5 flex justify-between items-center border-b border-white/20">
+      <div>
+        <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
+        <p id="admin-email" class="text-sm"></p>
+      </div>
+      <button id="close-sidebar" class="md:hidden text-xl">❌</button>
     </div>
-    <nav class="p-4 space-y-3">
-      <button onclick="showSection('add')" class="w-full bg-white/20 py-2 rounded">➕ Add Question</button>
-      <button onclick="showSection('manage')" class="w-full bg-white/20 py-2 rounded">📂 Manage Questions</button>
-      <button onclick="showSection('results')" class="w-full bg-white/20 py-2 rounded">📊 View Results</button>
-      <button onclick="showSection('users')" class="w-full bg-white/20 py-2 rounded">👥 Manage Users</button>
+    <nav class="p-4 space-y-3 flex-1">
+      <button onclick="showSection('add')" class="nav-btn w-full py-2 px-3 rounded">➕ Add Question</button>
+      <button onclick="showSection('manage')" class="nav-btn w-full py-2 px-3 rounded">📂 Manage Questions</button>
+      <button onclick="showSection('results')" class="nav-btn w-full py-2 px-3 rounded">📊 View Results</button>
+      <button onclick="showSection('users')" class="nav-btn w-full py-2 px-3 rounded">👥 Manage Users</button>
     </nav>
     <div class="p-4 border-t border-white/20">
       <button onclick="logout()" class="w-full bg-red-600 py-2 rounded">🚪 Logout</button>
@@ -264,7 +165,7 @@ document.getElementById("toggle-bg").addEventListener("click",()=>{
     <section id="section-manage" class="glass p-6 rounded-lg shadow-lg hidden">
       <h3 class="text-xl font-bold mb-4">📂 Manage Questions</h3>
       <table class="w-full text-left border">
-        <thead><tr><th>Category</th><th>Question</th><th>Answer</th><th>Edit</th><th>Delete</th></tr></thead>
+        <thead><tr><th>Category</th><th>Question</th><th>Answer</th><th>Delete</th></tr></thead>
         <tbody id="questions-list"></tbody>
       </table>
     </section>
@@ -292,77 +193,46 @@ document.getElementById("toggle-bg").addEventListener("click",()=>{
       sections.forEach(sec=>document.getElementById("section-"+sec).classList.add("hidden"));
       document.getElementById("section-"+id).classList.remove("hidden");
     };
-    document.getElementById("menu-btn").addEventListener("click",()=>{document.getElementById("sidebar").classList.toggle("hidden");});
+    document.getElementById("menu-btn").addEventListener("click",()=>{document.getElementById("sidebar").classList.remove("hidden");});
+    document.getElementById("close-sidebar").addEventListener("click",()=>{document.getElementById("sidebar").classList.add("hidden");});
   </script>
+
+  <!-- Background Animation -->
   <script>
-const canvas=document.getElementById("bg-canvas");
-const ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
+    const canvas=document.getElementById("bg-canvas");
+    const ctx=canvas.getContext("2d");
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
 
-let stars=[];
-for(let i=0;i<150;i++){
-  stars.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    r:Math.random()*2,
-    dx:(Math.random()-0.5)*0.5,
-    dy:(Math.random()-0.5)*0.5
-  });
-}
-
-let planes=[];
-for(let i=0;i<2;i++){
-  planes.push({
-    x:-50,
-    y:Math.random()*canvas.height/2,
-    dx:2+Math.random()*2,
-    size:20
-  });
-}
-
-function draw(){
-  ctx.fillStyle="rgba(0,0,30,0.4)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // Stars
-  ctx.fillStyle="white";
-  stars.forEach(s=>{
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fill();
-    s.x+=s.dx;s.y+=s.dy;
-    if(s.x<0||s.x>canvas.width) s.dx*=-1;
-    if(s.y<0||s.y>canvas.height) s.dy*=-1;
-  });
-
-  // Planes
-  planes.forEach(p=>{
-    ctx.fillStyle="lightblue";
-    ctx.fillRect(p.x,p.y,p.size,3);
-    ctx.fillStyle="white";
-    ctx.fillRect(p.x-5,p.y+1,10,1);
-    p.x+=p.dx;
-    if(p.x>canvas.width+50){
-      p.x=-50;
-      p.y=Math.random()*canvas.height/2;
+    let stars=[], planes=[];
+    for(let i=0;i<150;i++){
+      stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2,dx:(Math.random()-0.5)*0.5,dy:(Math.random()-0.5)*0.5});
     }
-  });
-}
+    for(let i=0;i<2;i++){
+      planes.push({x:-50,y:Math.random()*canvas.height/2,dx:2+Math.random()*2,size:20});
+    }
 
-let animation=setInterval(draw,30);
-
-// Toggle Button
-document.getElementById("toggle-bg").addEventListener("click",()=>{
-  if(animation){
-    clearInterval(animation);
-    animation=null;
-    document.getElementById("toggle-bg").textContent="▶️ Start Animation";
-  }else{
-    animation=setInterval(draw,30);
-    document.getElementById("toggle-bg").textContent="✖️ Stop Animation";
-  }
-});
+    function draw(){
+      ctx.fillStyle="rgba(0,0,30,0.4)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle="white";
+      stars.forEach(s=>{
+        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+        s.x+=s.dx;s.y+=s.dy;
+        if(s.x<0||s.x>canvas.width) s.dx*=-1;
+        if(s.y<0||s.y>canvas.height) s.dy*=-1;
+      });
+      planes.forEach(p=>{
+        ctx.fillStyle="lightblue";ctx.fillRect(p.x,p.y,p.size,3);
+        ctx.fillStyle="white";ctx.fillRect(p.x-5,p.y+1,10,1);
+        p.x+=p.dx;if(p.x>canvas.width+50){p.x=-50;p.y=Math.random()*canvas.height/2;}
+      });
+    }
+    let animation=setInterval(draw,30);
+    document.getElementById("toggle-bg").addEventListener("click",()=>{
+      if(animation){clearInterval(animation);animation=null;document.getElementById("toggle-bg").textContent="▶️ Start Animation";}
+      else{animation=setInterval(draw,30);document.getElementById("toggle-bg").textContent="✖️ Stop Animation";}
+    });
   </script>
 </body>
 </html>
