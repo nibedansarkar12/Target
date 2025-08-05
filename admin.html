@@ -1,139 +1,75 @@
 <!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>Target Zone - Admin Panel</title>
+  <title>Target Zone Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-      color:white;
-      font-family:'Segoe UI',sans-serif;
-      overflow:hidden;
-    }
-    .sidebar {
-      background: linear-gradient(180deg,#1e3c72,#2a5298);
-      transition: transform 0.4s ease;
-    }
-    .glass {
       background-image: url('https://images.unsplash.com/photo-1503264116251-35a269479413');
       background-size: cover;
       background-position: center;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .glass {
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(8px);
-      color: black;
-    }
-    @keyframes glow {
-      from {box-shadow:0 0 5px #6a11cb;}
-      to {box-shadow:0 0 25px #2575fc;}
-    }
-    .rainbow {
-      background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00,#ee0979,#6a11cb,#2575fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight:bold;
-    }
-    .nav-btn {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      transition:all 0.3s;
-      background:rgba(255,255,255,0.1);
-    }
-    .nav-btn:hover {
-      background:linear-gradient(90deg,#ff7e5f,#feb47b,#6a11cb);
-      color:white;
-      transform:translateX(5px);
-    }
-    .modal {
-      position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);
-      display:flex;justify-content:center;align-items:center;z-index:999;
-    }
-    .modal img {
-      max-width:90%;max-height:90%;border:5px solid white;border-radius:10px;
+      border-radius: 10px;
+      padding: 20px;
     }
     #music-btn {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      z-index: 1000;
+      z-index: 999;
     }
   </style>
 </head>
-<body class="h-screen flex overflow-hidden">
-  <canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>  <aside id="sidebar" class="sidebar fixed md:static w-64 h-full text-white z-50 hidden md:flex flex-col">
-    <div class="p-5 flex justify-between items-center border-b border-white/20">
-      <div>
-        <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
-        <p id="admin-email" class="text-sm"></p>
+<body class="min-h-screen p-4">
+  <h1 class="text-3xl font-bold text-center mb-6">🎓 Target Zone Admin Panel</h1>  <div class="flex gap-4 flex-wrap">
+    <!-- Add Question Section -->
+    <div class="w-full md:w-1/2 glass">
+      <h2 class="text-xl font-semibold mb-2">➕ প্রশ্ন যুক্ত করুন</h2>
+      <select id="category" class="w-full p-2 mb-2 text-black">
+        <option value="">-- ক্যাটেগরি --</option>
+        <option value="ssc">SSC</option>
+        <option value="railways">Railways</option>
+        <option value="tet">TET</option>
+      </select>
+      <textarea id="question" class="w-full p-2 mb-2 text-black" rows="2" placeholder="প্রশ্ন লিখুন"></textarea>
+      <input id="photo" type="file" accept="image/*" class="mb-2">
+      <div class="grid grid-cols-2 gap-2">
+        <label class="text-sm">A <input id="option1" class="w-full p-1 text-black"><input type="radio" name="correct" value="0"></label>
+        <label class="text-sm">B <input id="option2" class="w-full p-1 text-black"><input type="radio" name="correct" value="1"></label>
+        <label class="text-sm">C <input id="option3" class="w-full p-1 text-black"><input type="radio" name="correct" value="2"></label>
+        <label class="text-sm">D <input id="option4" class="w-full p-1 text-black"><input type="radio" name="correct" value="3"></label>
       </div>
-      <button id="close-sidebar" class="md:hidden text-xl">❌</button>
-    </div>
-    <nav class="p-4 space-y-3 flex-1">
-      <button onclick="showSection('add')" class="nav-btn w-full py-2 px-3 rounded">➕ Add Question</button>
-      <button onclick="showSection('results')" class="nav-btn w-full py-2 px-3 rounded">📊 View Results</button>
-      <button onclick="showSection('users')" class="nav-btn w-full py-2 px-3 rounded">👥 Manage Users</button>
-    </nav>
-    <div class="p-4 border-t border-white/20">
-      <button onclick="logout()" class="w-full bg-red-600 py-2 rounded">🚪 Logout</button>
-    </div>
-  </aside>  <main class="flex-1 p-6 overflow-y-auto">
-    <div class="flex justify-between items-center mb-6">
-      <button id="menu-btn" class="md:hidden bg-yellow-400 px-3 py-2 rounded">☰</button>
-      <h2 class="rainbow text-3xl">🛠️ Admin Panel</h2>
-    </div><!-- Add Question Section -->
-<section id="section-add" class="glass p-6 rounded-lg shadow-lg hidden">
-  <form id="question-form">
-    <h3 class="text-xl font-bold mb-4">➕ Add New Question</h3>
-    <select id="category" class="w-full border rounded px-3 py-2 mb-3" onchange="loadQuestions(this.value)">
-      <option value="">--Select Category--</option>
-      <option value="ssc">SSC</option>
-      <option value="railways">Railways</option>
-      <option value="tet">TET</option>
-    </select>
-    <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
-    <input type="file" id="photo" accept="image/*" class="w-full mb-3">
-    <div class="grid grid-cols-2 gap-3">
-      <label><input type="radio" name="correct" value="0"> <input id="option1" class="w-full border rounded px-3 py-2" placeholder="Option A"></label>
-      <label><input type="radio" name="correct" value="1"> <input id="option2" class="w-full border rounded px-3 py-2" placeholder="Option B"></label>
-      <label><input type="radio" name="correct" value="2"> <input id="option3" class="w-full border rounded px-3 py-2" placeholder="Option C"></label>
-      <label><input type="radio" name="correct" value="3"> <input id="option4" class="w-full border rounded px-3 py-2" placeholder="Option D"></label>
-    </div>
-    <button type="button" onclick="addQuestion()" class="w-full bg-blue-600 text-white py-2 rounded mt-4">💾 Save Question</button>
-  </form>
-  <h3 class="text-lg font-semibold mt-6">📋 Added Questions</h3>
-  <table class="w-full text-left border mt-3">
-    <thead><tr><th>Question</th><th>Answer</th><th>Delete</th></tr></thead>
-    <tbody id="questions-list"></tbody>
-  </table>
-</section>
+      <button onclick="addQuestion()" class="bg-green-600 mt-2 px-4 py-2 rounded">💾 সংরক্ষণ</button>
+      <div class="mt-4">
+        <h3 class="font-semibold">📋 প্রশ্ন তালিকা</h3>
+        <table class="text-sm w-full" id="questions-list"></table>
+      </div>
+    </div><!-- Results Section -->
+<div class="w-full md:w-1/2 glass">
+  <h2 class="text-xl font-semibold mb-2">📊 রেজাল্ট</h2>
+  <button onclick="loadResults()" class="bg-blue-500 mb-2 px-3 py-1 rounded">🔄 রিফ্রেশ</button>
+  <ul id="results-list" class="text-sm"></ul>
+</div>
 
-<!-- Results Section -->
-<section id="section-results" class="glass p-6 rounded-lg shadow-lg hidden">
-  <h3 class="text-xl font-bold mb-4">📊 View Results</h3>
-  <canvas id="resultsChart" class="mb-6"></canvas>
-  <table class="w-full text-left border">
-    <thead><tr><th>Email</th><th>Exam</th><th>Score</th><th>Submitted</th></tr></thead>
-    <tbody id="results-list"></tbody>
-  </table>
-</section>
+<!-- Students Section -->
+<div class="w-full md:w-1/2 glass">
+  <h2 class="text-xl font-semibold mb-2">👥 ছাত্র তালিকা</h2>
+  <button onclick="loadStudents()" class="bg-blue-500 mb-2 px-3 py-1 rounded">🔄 লোড করুন</button>
+  <ul id="students-list" class="text-sm"></ul>
+</div>
 
-<!-- Users Section -->
-<section id="section-users" class="glass p-6 rounded-lg shadow-lg hidden">
-  <h3 class="text-xl font-bold mb-4">👥 Manage Users</h3>
-  <table class="w-full text-left border">
-    <thead><tr><th>Email</th><th>Name</th></tr></thead>
-    <tbody id="users-list"></tbody>
-  </table>
-</section>
-
-  </main>  <!-- Music + Firebase -->  <audio id="bg-music" loop autoplay>
+  </div>  <!-- Background Music -->  <audio id="bg-music" autoplay loop>
     <source src="https://cdn.pixabay.com/download/audio/2022/10/26/audio_9a7a41eb70.mp3" type="audio/mp3">
   </audio>
-  <button id="music-btn" class="bg-green-500 px-3 py-1 rounded">🔊 Play Sound</button>  <script type="module">
+  <button id="music-btn" class="bg-yellow-500 px-4 py-2 rounded">🔊 Play Sound</button>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -147,180 +83,74 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
     const storage = getStorage(app);
 
-    let currentCategory="";
+    window.addQuestion = async () => {
+      const cat = category.value;
+      const ques = question.value;
+      const opts = [option1.value, option2.value, option3.value, option4.value];
+      const correct = document.querySelector('input[name="correct"]:checked')?.value;
+      const photo = photo.files[0];
+      if (!cat || !ques || correct === undefined) return alert('❗ সব কিছু পূরণ করুন');
 
-    onAuthStateChanged(auth,user=>{
-      if(!user){ window.location.href="index.html"; }
-      else{ document.getElementById("admin-email").textContent="👤 "+user.email; }
-    });
-
-    window.logout=async()=>{ await signOut(auth); window.location.href="index.html"; };
-
-    // Add Question
-    window.addQuestion=async()=>{
-      const cat=document.getElementById("category").value;
-      currentCategory=cat;
-      const ques=document.getElementById("question").value;
-      const opts=[1,2,3,4].map(i=>document.getElementById("option"+i).value);
-      const correctIndex=document.querySelector('input[name="correct"]:checked')?.value;
-      const photoFile=document.getElementById("photo").files[0];
-      if(!ques||correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
-
-      let photoURL="";
-      if(photoFile){
-        const storageRef=ref(storage,`questions/${Date.now()}-${photoFile.name}`);
-        await uploadBytes(storageRef,photoFile);
-        photoURL=await getDownloadURL(storageRef);
+      let photoURL = "";
+      if (photo) {
+        const refPath = ref(storage, `questions/${Date.now()}-${photo.name}`);
+        await uploadBytes(refPath, photo);
+        photoURL = await getDownloadURL(refPath);
       }
 
-      await addDoc(collection(db,cat),{
-        question:ques,options:opts,
-        answer:opts[correctIndex],photo:photoURL,
-        createdAt:new Date()
+      await addDoc(collection(db, cat), {
+        question: ques,
+        options: opts,
+        answer: opts[correct],
+        photo: photoURL,
+        createdAt: new Date()
       });
-
-      alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
-      document.getElementById("question-form").reset();
+      alert("✅ প্রশ্ন সংরক্ষিত হয়েছে");
       loadQuestions(cat);
     };
 
-    // Load Questions
-    window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
+    window.loadQuestions = async (cat) => {
+      const data = await getDocs(collection(db, cat));
+      let html = "";
+      data.forEach(d => {
+        const q = d.data();
+        html += `<tr><td>${q.question}</td><td>${q.answer}</td></tr>`;
       });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
-    }
+      document.getElementById("questions-list").innerHTML = html;
+    };
 
-    // Delete Question
-    window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
-
-    // Modal Preview
-    window.openModal=(url)=>{
-      const modal=document.createElement("div");
-      modal.className="modal";
-      modal.innerHTML=`<img src="${url}" onclick="this.parentElement.remove()">`;
-      document.body.appendChild(modal);
-    }
-
-    // Show Section
-    window.showSection=async(id)=>{
-      document.querySelectorAll("section").forEach(sec=>sec.classList.add("hidden"));
-      document.getElementById("section-"+id).classList.remove("hidden");
-      if(id==="results") loadResults();
-      if(id==="users") loadUsers();
-    }
-
-    // Load Results
-    async function loadResults(){
-      const table=document.getElementById("results-list");
-      table.innerHTML="<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
-      const q=query(collection(db,"results"),orderBy("submittedAt","desc"));
-      const snapshot=await getDocs(q);
-      let rows="",correct=0,wrong=0,unattempted=0;
-      snapshot.forEach(docSnap=>{
-        const r=docSnap.data();
-        correct+=r.correct||0;
-        wrong+=r.wrong||0;
-        unattempted+=r.unattempted||0;
-        rows+=`<tr><td>${r.email}</td><td>${r.exam}</td><td>${r.score}/${r.total}</td><td>${r.submittedAt ? new Date(r.submittedAt.seconds*1000).toLocaleString():"N/A"}</td></tr>`;
+    window.loadResults = async () => {
+      const snap = await getDocs(collection(db, "results"));
+      let html = "";
+      snap.forEach(doc => {
+        const r = doc.data();
+        html += `<li>📧 ${r.email} | ✅ ${r.correct || 0}, ❌ ${r.wrong || 0}, ⏳ ${r.unattempted || 0}</li>`;
       });
-      table.innerHTML=rows||"<tr><td colspan='4'>কোনো রেজাল্ট নেই</td></tr>";
-      new Chart(document.getElementById("resultsChart"),{
-        type:"pie",
-        data:{labels:["Correct","Wrong","Unattempted"],datasets:[{data:[correct,wrong,unattempted],backgroundColor:["#4caf50","#f44336","#9e9e9e"]}]}
-      });
-    }
+      results-list.innerHTML = html || '<li>📭 কোনো রেজাল্ট নেই</li>';
+    };
 
-    // Load Users
-    async function loadUsers(){
-      const table=document.getElementById("users-list");
-      table.innerHTML="<tr><td colspan='2'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,"users"));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const u=docSnap.data();
-        rows+=`<tr><td>${u.email}</td><td>${u.name||"Unknown"}</td></tr>`;
+    window.loadStudents = async () => {
+      const snap = await getDocs(collection(db, "students"));
+      let html = "";
+      snap.forEach(doc => {
+        const s = doc.data();
+        html += `<li>👤 ${s.name || "Unknown"} - ${s.email}</li>`;
       });
-      table.innerHTML=rows||"<tr><td colspan='2'>কোনো ইউজার নেই</td></tr>";
-    }
+      document.getElementById("students-list").innerHTML = html || '<li>কোনো ছাত্র নেই</li>';
+    };
   </script>  <script>
-    // Sidebar toggle
-    document.getElementById("menu-btn").addEventListener("click",()=>{
-      document.getElementById("sidebar").classList.remove("hidden");
-    });
-    document.getElementById("close-sidebar").addEventListener("click",()=>{
-      document.getElementById("sidebar").classList.add("hidden");
-    });
-
-    // Music toggle
-    const music=document.getElementById("bg-music");
-    const musicBtn=document.getElementById("music-btn");
-    musicBtn.addEventListener("click",()=>{
-      if(music.muted){
-        music.muted=false;
+    const music = document.getElementById("bg-music");
+    const btn = document.getElementById("music-btn");
+    btn.onclick = () => {
+      if (music.paused) {
         music.play();
-        musicBtn.textContent="🔇 Mute Sound";
+        btn.textContent = "🔇 Mute Sound";
       } else {
-        music.muted=true;
-        musicBtn.textContent="🔊 Play Sound";
+        music.pause();
+        btn.textContent = "🔊 Play Sound";
       }
-    });
-
-    // Background animation
-    const canvas=document.getElementById("bg-canvas");
-    const ctx=canvas.getContext("2d");
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
-    let stars=[],planes=[];
-    for(let i=0;i<150;i++){
-      stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2,dx:(Math.random()-0.5)*0.5,dy:(Math.random()-0.5)*0.5});
-    }
-    for(let i=0;i<2;i++){
-      planes.push({x:-50,y:Math.random()*canvas.height/2,dx:2+Math.random()*2,size:20});
-    }
-    function draw(){
-      ctx.fillStyle="rgba(0,0,30,0.4)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle="white";
-      stars.forEach(s=>{
-        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0, Math.PI * 2);
-        ctx.fill();
-        s.x += s.dx;
-        s.y += s.dy;
-        if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
-        if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
-      });
-
-      planes.forEach(p => {
-        ctx.fillStyle = "lightblue";
-        ctx.fillRect(p.x, p.y, p.size, 3);
-        ctx.fillStyle = "white";
-        ctx.fillRect(p.x - 5, p.y + 1, 10, 1);
-        p.x += p.dx;
-        if (p.x > canvas.width + 50) {
-          p.x = -50;
-          p.y = Math.random() * canvas.height / 2;
-        }
-      });
-    }
-    setInterval(draw, 30);
-  </script>
-</body>
+    };
+  </script></body>
 </html>
