@@ -169,25 +169,29 @@
 };
 
     // Load Questions
-    window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
-      });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
-    }
+    window.loadQuestions = async (category) => {
+  const set = document.getElementById("set").value.trim();
+  if (!category || !set) return;
+
+  currentCategory = category;
+  const path = `${category}_sets/${set}/questions`;
+  const table = document.getElementById("questions-list");
+  table.innerHTML = "<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
+
+  const snapshot = await getDocs(collection(db, path));
+  let rows = "";
+  snapshot.forEach(docSnap => {
+    const q = docSnap.data();
+    rows += `
+      <tr>
+        <td>${q.question}<br>${q.photo ? `<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">` : ""}</td>
+        <td>${q.answer}</td>
+        <td><button onclick="deleteQuestion('${path}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
+      </tr>
+    `;
+  });
+  table.innerHTML = rows || "<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+};
 
     // Delete Question
     window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
