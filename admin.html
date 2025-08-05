@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="bn">
+<!DOCTYPE html>
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +15,20 @@
   <header class="text-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">🎯 Admin Dashboard - Target Zone</h1>
     <p class="text-gray-600">Manage your mock tests smartly</p>
-  </header>  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  </header>
+
+  <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Question Add Form -->
     <div class="card">
       <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
       <form id="questionForm">
+        <select id="examCategory" class="w-full mb-2 p-2 border rounded" required>
+          <option value="">পরীক্ষা নির্বাচন করুন</option>
+          <option value="wbcs">WBCS</option>
+          <option value="railways">Railways</option>
+          <option value="ssc">SSC</option>
+          <option value="tet">TET</option>
+        </select>
         <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন" class="w-full mb-2 p-2 border rounded" required>
         <div class="grid grid-cols-2 gap-2 mb-2">
           <input type="text" id="optionA" placeholder="Option A" class="p-2 border rounded" required>
@@ -32,32 +43,34 @@
           <option value="C">C</option>
           <option value="D">D</option>
         </select>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যোগ করুন</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
+          প্রশ্ন যোগ করুন
+        </button>
       </form>
       <div id="messageBox" class="text-center mt-4 font-semibold"></div>
     </div>
+
+    <!-- Export -->
     <div class="card">
       <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
       <a href="student-results.html" class="block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-center">📊 ছাত্রদের রেজাল্ট দেখুন</a>
     </div>
-  </main>  <section class="mt-8">
+  </main>
+
+  <!-- Question List -->
+  <section class="mt-8">
     <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
+    <select id="categoryFilter" class="w-full mb-4 p-2 border rounded">
+      <option value="wbcs">WBCS</option>
+      <option value="railways">Railways</option>
+      <option value="ssc">SSC</option>
+      <option value="tet">TET</option>
+    </select>
     <div id="questionList" class="space-y-4"></div>
-  </section>  <!-- Edit Modal -->  <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-      <h2 class="text-xl font-bold mb-4 text-blue-600">✏️ প্রশ্ন এডিট করুন</h2>
-      <label>প্রশ্ন:</label>
-      <input id="editQuestionText" type="text" class="w-full mb-2 p-2 border rounded" />
-      <label>অপশন (কমা দিয়ে লিখুন):</label>
-      <input id="editOptionsText" type="text" class="w-full mb-2 p-2 border rounded" />
-      <label>সঠিক উত্তর:</label>
-      <input id="editAnswerText" type="text" class="w-full mb-4 p-2 border rounded" />
-      <div class="flex justify-end gap-2">
-        <button onclick="closeEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
-        <button onclick="saveEdit()" class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
-      </div>
-    </div>
-  </div>  <script type="module">
+  </section>
+
+  <!-- Firebase -->
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -85,9 +98,11 @@
     const questionForm = document.getElementById("questionForm");
     const messageBox = document.getElementById("messageBox");
     const questionList = document.getElementById("questionList");
+    const categoryFilter = document.getElementById("categoryFilter");
 
     questionForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const category = document.getElementById("examCategory").value;
       const question = document.getElementById("questionText").value.trim();
       const options = [
         document.getElementById("optionA").value.trim(),
@@ -99,10 +114,10 @@
       const answer = options["ABCD".indexOf(correct)];
 
       try {
-        const snapshot = await getDocs(collection(db, "questions"));
+        const snapshot = await getDocs(collection(db, category));
         const newId = snapshot.size + 1;
 
-        await addDoc(collection(db, "questions"), {
+        await addDoc(collection(db, category), {
           id: newId,
           question,
           options,
@@ -124,14 +139,15 @@
     }
 
     async function loadQuestions() {
+      const category = categoryFilter.value;
       questionList.innerHTML = "লোড হচ্ছে...";
-      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const qRef = query(collection(db, category), orderBy("id"));
       const snapshot = await getDocs(qRef);
       const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-      renderQuestions(questions);
+      renderQuestions(questions, category);
     }
 
-    function renderQuestions(questions) {
+    function renderQuestions(questions, category) {
       questionList.innerHTML = "";
       questions.forEach(q => {
         const optionsHTML = q.options.map((opt, i) => `<li>${String.fromCharCode(65 + i)}. ${opt}</li>`).join("");
@@ -140,55 +156,23 @@
             <p><strong>(${q.id})</strong> ${q.question}</p>
             <ul class="list-disc ml-6">${optionsHTML}</ul>
             <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
-            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-            <button onclick="openEditModal('${q.docId}', \`${q.question}\`, \`${q.answer}\`, ${JSON.stringify(q.options)})" class="mt-2 ml-2 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+            <button onclick="deleteQuestion('${q.docId}','${category}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
           </div>
         `;
       });
     }
 
-    window.deleteQuestion = async function (docId) {
+    window.deleteQuestion = async function (docId, category) {
       if (confirm("আপনি কি নিশ্চিত এই প্রশ্নটি মুছে ফেলতে চান?")) {
-        await deleteDoc(doc(db, "questions", docId));
+        await deleteDoc(doc(db, category, docId));
         alert("✅ প্রশ্ন মুছে ফেলা হয়েছে");
         loadQuestions();
       }
     };
 
-    let currentEditId = "";
-
-    window.openEditModal = function (docId, question, answer, options) {
-      currentEditId = docId;
-      document.getElementById("editQuestionText").value = question;
-      document.getElementById("editAnswerText").value = answer;
-      document.getElementById("editOptionsText").value = options.join(", ");
-      document.getElementById("editModal").classList.remove("hidden");
-    };
-
-    window.closeEditModal = function () {
-      document.getElementById("editModal").classList.add("hidden");
-    };
-
-    window.saveEdit = async function () {
-      const newQuestion = document.getElementById("editQuestionText").value.trim();
-      const newAnswer = document.getElementById("editAnswerText").value.trim();
-      const newOptions = document.getElementById("editOptionsText").value.split(",").map(opt => opt.trim());
-
-      try {
-        await updateDoc(doc(db, "questions", currentEditId), {
-          question: newQuestion,
-          options: newOptions,
-          answer: newAnswer
-        });
-        alert("✅ প্রশ্ন আপডেট হয়েছে");
-        closeEditModal();
-        loadQuestions();
-      } catch (error) {
-        alert("❌ আপডেট ব্যর্থ হয়েছে");
-        console.error(error);
-      }
-    };
+    categoryFilter.addEventListener("change", loadQuestions);
 
     loadQuestions();
-  </script></body>
+  </script>
+</body>
 </html>
