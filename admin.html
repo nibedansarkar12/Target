@@ -6,21 +6,20 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
-      background-image: url('https://images.unsplash.com/photo-1503264116251-35a269479413');
+      background: url('https://images.unsplash.com/photo-1528460033278-a6ba57020470') no-repeat center center fixed;
       background-size: cover;
-      background-position: center;
       color: #f0f0f0;
       font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
     }
     .sidebar {
-      background: linear-gradient(180deg,#1e3c72,#2a5298);
+      background: rgba(30, 60, 114, 0.9);
     }
     .glass {
       background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(6px);
       border-radius: 10px;
       padding: 1rem;
+      animation: fadein 0.4s ease-in-out;
     }
     .nav-btn {
       background: rgba(255,255,255,0.1);
@@ -35,11 +34,13 @@
       -webkit-text-fill-color: transparent;
       font-weight: bold;
     }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
-<body class="flex h-screen">
-  <!-- Sidebar -->
-  <aside class="sidebar w-64 p-4 text-white hidden md:block">
+<body class="flex flex-col md:flex-row min-h-screen">  <!-- Sidebar -->  <aside class="sidebar w-full md:w-64 p-4 text-white md:block">
     <h1 class="rainbow text-2xl mb-4">🌈 Target Zone</h1>
     <nav class="space-y-2">
       <button onclick="showSection('add')" class="nav-btn w-full px-3 py-2 rounded">➕ প্রশ্ন যুক্ত করুন</button>
@@ -85,12 +86,9 @@
   <ul id="students-list" class="text-sm mt-2"></ul>
 </section>
 
-  </main>  <!-- Music -->  <audio id="bg-music" loop autoplay>
-    <source src="https://cdn.pixabay.com/download/audio/2022/10/26/audio_9a7a41eb70.mp3" type="audio/mp3">
-  </audio>
-  <button id="music-btn" class="fixed bottom-4 right-4 bg-yellow-500 px-3 py-1 rounded">🔊 Play Sound</button>  <script type="module">
+  </main>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -138,7 +136,7 @@
         const r = doc.data();
         html += `<li>📧 ${r.email} | ✅ ${r.correct || 0}, ❌ ${r.wrong || 0}, ⏳ ${r.unattempted || 0}</li>`;
       });
-      results-list.innerHTML = html || '<li>📭 কোনো রেজাল্ট নেই</li>';
+      document.getElementById("results-list").innerHTML = html || '<li>📭 কোনো রেজাল্ট নেই</li>';
     };
 
     window.loadStudents = async () => {
@@ -148,24 +146,16 @@
         const s = doc.data();
         html += `<li>👤 ${s.name || "Unknown"} - ${s.email}</li>`;
       });
-      students-list.innerHTML = html || '<li>📭 কোনো ছাত্র নেই</li>';
+      document.getElementById("students-list").innerHTML = html || '<li>📭 কোনো ছাত্র নেই</li>';
     };
   </script>  <script>
-    const music = document.getElementById("bg-music");
-    const btn = document.getElementById("music-btn");
-    btn.onclick = () => {
-      if (music.paused) {
-        music.play();
-        btn.textContent = "🔇 Mute Sound";
-      } else {
-        music.pause();
-        btn.textContent = "🔊 Play Sound";
-      }
-    };
-
     function showSection(id) {
       document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
-      document.getElementById("section-" + id).classList.remove("hidden");
+      const target = document.getElementById("section-" + id);
+      if (target) {
+        target.classList.remove("hidden");
+        target.classList.add("animate-fadein");
+      }
     }
   </script></body>
 </html>
