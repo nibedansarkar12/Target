@@ -144,6 +144,80 @@
 </head>
 <body class="h-screen flex overflow-hidden">
   <!-- Sidebar -->
+  <!-- Canvas Background -->
+<canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>
+<button id="toggle-bg" class="fixed top-4 right-4 bg-red-500 text-white px-3 py-1 rounded">✖️ Stop Animation</button>
+
+<script>
+const canvas=document.getElementById("bg-canvas");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let stars=[];
+for(let i=0;i<150;i++){
+  stars.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*2,
+    dx:(Math.random()-0.5)*0.5,
+    dy:(Math.random()-0.5)*0.5
+  });
+}
+
+let planes=[];
+for(let i=0;i<2;i++){
+  planes.push({
+    x:-50,
+    y:Math.random()*canvas.height/2,
+    dx:2+Math.random()*2,
+    size:20
+  });
+}
+
+function draw(){
+  ctx.fillStyle="rgba(0,0,30,0.4)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Stars
+  ctx.fillStyle="white";
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+    s.x+=s.dx;s.y+=s.dy;
+    if(s.x<0||s.x>canvas.width) s.dx*=-1;
+    if(s.y<0||s.y>canvas.height) s.dy*=-1;
+  });
+
+  // Planes
+  planes.forEach(p=>{
+    ctx.fillStyle="lightblue";
+    ctx.fillRect(p.x,p.y,p.size,3);
+    ctx.fillStyle="white";
+    ctx.fillRect(p.x-5,p.y+1,10,1);
+    p.x+=p.dx;
+    if(p.x>canvas.width+50){
+      p.x=-50;
+      p.y=Math.random()*canvas.height/2;
+    }
+  });
+}
+
+let animation=setInterval(draw,30);
+
+// Stop Animation
+document.getElementById("toggle-bg").addEventListener("click",()=>{
+  if(animation){
+    clearInterval(animation);
+    animation=null;
+    document.getElementById("toggle-bg").textContent="▶️ Start Animation";
+  }else{
+    animation=setInterval(draw,30);
+    document.getElementById("toggle-bg").textContent="✖️ Stop Animation";
+  }
+});
+      </script>
   <aside id="sidebar" class="sidebar fixed md:static w-64 h-full text-white z-50 hidden md:block">
     <div class="p-5 text-center border-b border-white/20">
       <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
@@ -219,6 +293,76 @@
       document.getElementById("section-"+id).classList.remove("hidden");
     };
     document.getElementById("menu-btn").addEventListener("click",()=>{document.getElementById("sidebar").classList.toggle("hidden");});
+  </script>
+  <script>
+const canvas=document.getElementById("bg-canvas");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let stars=[];
+for(let i=0;i<150;i++){
+  stars.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*2,
+    dx:(Math.random()-0.5)*0.5,
+    dy:(Math.random()-0.5)*0.5
+  });
+}
+
+let planes=[];
+for(let i=0;i<2;i++){
+  planes.push({
+    x:-50,
+    y:Math.random()*canvas.height/2,
+    dx:2+Math.random()*2,
+    size:20
+  });
+}
+
+function draw(){
+  ctx.fillStyle="rgba(0,0,30,0.4)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Stars
+  ctx.fillStyle="white";
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+    s.x+=s.dx;s.y+=s.dy;
+    if(s.x<0||s.x>canvas.width) s.dx*=-1;
+    if(s.y<0||s.y>canvas.height) s.dy*=-1;
+  });
+
+  // Planes
+  planes.forEach(p=>{
+    ctx.fillStyle="lightblue";
+    ctx.fillRect(p.x,p.y,p.size,3);
+    ctx.fillStyle="white";
+    ctx.fillRect(p.x-5,p.y+1,10,1);
+    p.x+=p.dx;
+    if(p.x>canvas.width+50){
+      p.x=-50;
+      p.y=Math.random()*canvas.height/2;
+    }
+  });
+}
+
+let animation=setInterval(draw,30);
+
+// Toggle Button
+document.getElementById("toggle-bg").addEventListener("click",()=>{
+  if(animation){
+    clearInterval(animation);
+    animation=null;
+    document.getElementById("toggle-bg").textContent="▶️ Start Animation";
+  }else{
+    animation=setInterval(draw,30);
+    document.getElementById("toggle-bg").textContent="✖️ Stop Animation";
+  }
+});
   </script>
 </body>
 </html>
