@@ -87,8 +87,8 @@
           if (!rawAnswer || rawAnswer.trim() === "") {
             unattempted++;
           } else {
-            const given = (rawAnswer || "").trim();
-            const actual = (q.answer || "").trim();
+            const given = rawAnswer.toString().trim();
+            const actual = (q.answer || "").toString().trim();
 
             if (given === actual) {
               correct++;
