@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Target Zone</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
@@ -35,26 +35,26 @@
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যোগ করুন</button>
       </form>
       <div id="messageBox" class="text-center mt-4 font-semibold"></div>
-    </div><div class="card">
-  <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
-  <a href="student-results.html" class="block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-center">📊 ছাত্রদের রেজাল্ট দেখুন</a>
-</div>
-
+    </div>
+    <div class="card">
+      <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
+      <a href="student-results.html" class="block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-center">📊 ছাত্রদের রেজাল্ট দেখুন</a>
+    </div>
   </main>  <section class="mt-8">
     <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
     <div id="questionList" class="space-y-4"></div>
-  </section>  <!-- Edit Modal -->  <div id="editModal" class="modal hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-md w-[90%] max-w-md">
-      <h2 class="text-xl font-semibold mb-4 text-blue-700">✏️ প্রশ্ন Edit করুন</h2>
-      <label class="block mb-1 font-medium">প্রশ্ন:</label>
-      <input id="editQuestionText" type="text" class="w-full border px-3 py-2 rounded mb-3" />
-      <label class="block mb-1 font-medium">সঠিক উত্তর:</label>
-      <input id="editAnswerText" type="text" class="w-full border px-3 py-2 rounded mb-3" />
-      <label class="block mb-1 font-medium">অপশন (কমা দিয়ে লিখুন):</label>
-      <input id="editOptionsText" type="text" class="w-full border px-3 py-2 rounded mb-4" />
-      <div class="flex justify-end space-x-3">
-        <button onclick="closeEditModal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
-        <button onclick="saveEdit()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Save</button>
+  </section>  <!-- Edit Modal -->  <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4 text-blue-600">✏️ প্রশ্ন এডিট করুন</h2>
+      <label>প্রশ্ন:</label>
+      <input id="editQuestionText" type="text" class="w-full mb-2 p-2 border rounded" />
+      <label>অপশন (কমা দিয়ে লিখুন):</label>
+      <input id="editOptionsText" type="text" class="w-full mb-2 p-2 border rounded" />
+      <label>সঠিক উত্তর:</label>
+      <input id="editAnswerText" type="text" class="w-full mb-4 p-2 border rounded" />
+      <div class="flex justify-end gap-2">
+        <button onclick="closeEditModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+        <button onclick="saveEdit()" class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
       </div>
     </div>
   </div>  <script type="module">
@@ -86,54 +86,7 @@
     const messageBox = document.getElementById("messageBox");
     const questionList = document.getElementById("questionList");
 
-    function showMessage(msg, isError = false) {
-      messageBox.textContent = msg;
-      messageBox.style.color = isError ? 'red' : 'green';
-      setTimeout(() => messageBox.textContent = '', 3000);
-    }
-
-    async function loadQuestions() {
-      questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
-      const qRef = query(collection(db, "questions"), orderBy("id"));
-      const snapshot = await getDocs(qRef);
-      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-      renderQuestions(questions);
-    }
-
-    function renderQuestions(questions) {
-      questionList.innerHTML = "";
-      questions.forEach(q => {
-        const optionsHTML = q.options.map((opt, i) => {
-          const label = String.fromCharCode(65 + i);
-          return `<li>${label}. ${opt}</li>`;
-        }).join("");
-
-        questionList.innerHTML += `
-          <div class="bg-white shadow rounded p-4">
-            <p><strong>(${q.id})</strong> ${q.question}</p>
-            <ul class="list-disc ml-6">${optionsHTML}</ul>
-            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
-            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-            <button onclick="openEditModal('${q.docId}', \`${q.question}\`, \`${q.answer}\`, ${JSON.stringify(q.options)})" class="mt-2 ml-2 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
-          </div>
-        `;
-      });
-    }
-
-    window.deleteQuestion = async function (docId) {
-      if (confirm("আপনি কি নিশ্চিত এই প্রশ্নটি মুছে ফেলতে চান?")) {
-        try {
-          await deleteDoc(doc(db, "questions", docId));
-          alert("✅ প্রশ্ন মুছে ফেলা হয়েছে");
-          loadQuestions();
-        } catch (error) {
-          console.error("❌ ডিলিট করতে সমস্যা:", error);
-          alert("❌ প্রশ্ন ডিলিট করা যায়নি");
-        }
-      }
-    };
-
-    questionForm.addEventListener('submit', async function(e) {
+    questionForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const question = document.getElementById("questionText").value.trim();
       const options = [
@@ -156,7 +109,7 @@
           answer
         });
 
-        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
+        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
         questionForm.reset();
         loadQuestions();
       } catch (error) {
@@ -164,42 +117,77 @@
       }
     });
 
+    function showMessage(msg, isError = false) {
+      messageBox.textContent = msg;
+      messageBox.style.color = isError ? "red" : "green";
+      setTimeout(() => (messageBox.textContent = ""), 3000);
+    }
+
+    async function loadQuestions() {
+      questionList.innerHTML = "লোড হচ্ছে...";
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+      renderQuestions(questions);
+    }
+
+    function renderQuestions(questions) {
+      questionList.innerHTML = "";
+      questions.forEach(q => {
+        const optionsHTML = q.options.map((opt, i) => `<li>${String.fromCharCode(65 + i)}. ${opt}</li>`).join("");
+        questionList.innerHTML += `
+          <div class="bg-white shadow rounded p-4">
+            <p><strong>(${q.id})</strong> ${q.question}</p>
+            <ul class="list-disc ml-6">${optionsHTML}</ul>
+            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
+            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+            <button onclick="openEditModal('${q.docId}', \`${q.question}\`, \`${q.answer}\`, ${JSON.stringify(q.options)})" class="mt-2 ml-2 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+          </div>
+        `;
+      });
+    }
+
+    window.deleteQuestion = async function (docId) {
+      if (confirm("আপনি কি নিশ্চিত এই প্রশ্নটি মুছে ফেলতে চান?")) {
+        await deleteDoc(doc(db, "questions", docId));
+        alert("✅ প্রশ্ন মুছে ফেলা হয়েছে");
+        loadQuestions();
+      }
+    };
+
     let currentEditId = "";
 
-    function openEditModal(docId, question, answer, options) {
+    window.openEditModal = function (docId, question, answer, options) {
       currentEditId = docId;
       document.getElementById("editQuestionText").value = question;
       document.getElementById("editAnswerText").value = answer;
       document.getElementById("editOptionsText").value = options.join(", ");
       document.getElementById("editModal").classList.remove("hidden");
-    }
-    window.openEditModal = openEditModal;
+    };
 
-    function closeEditModal() {
+    window.closeEditModal = function () {
       document.getElementById("editModal").classList.add("hidden");
-    }
-    window.closeEditModal = closeEditModal;
+    };
 
-    async function saveEdit() {
+    window.saveEdit = async function () {
       const newQuestion = document.getElementById("editQuestionText").value.trim();
       const newAnswer = document.getElementById("editAnswerText").value.trim();
-      const newOptions = document.getElementById("editOptionsText").value.split(',').map(opt => opt.trim());
+      const newOptions = document.getElementById("editOptionsText").value.split(",").map(opt => opt.trim());
 
       try {
         await updateDoc(doc(db, "questions", currentEditId), {
           question: newQuestion,
-          answer: newAnswer,
-          options: newOptions
+          options: newOptions,
+          answer: newAnswer
         });
-        alert("✅ প্রশ্ন আপডেট হয়েছে!");
+        alert("✅ প্রশ্ন আপডেট হয়েছে");
         closeEditModal();
         loadQuestions();
       } catch (error) {
-        alert("❌ প্রশ্ন আপডেট ব্যর্থ");
+        alert("❌ আপডেট ব্যর্থ হয়েছে");
         console.error(error);
       }
-    }
-    window.saveEdit = saveEdit;
+    };
 
     loadQuestions();
   </script></body>
