@@ -164,7 +164,7 @@
       }
     });
 
-    // Edit Functions
+    // Edit Modal Functions
     let currentEditId = "";
 
     function openEditModal(docId, question, answer, options) {
@@ -184,7 +184,7 @@
     async function saveEdit() {
       const newQuestion = document.getElementById("editQuestionText").value.trim();
       const newAnswer = document.getElementById("editAnswerText").value.trim();
-      const newOptions = document.getElementById("editOptionsText").value.split(",").map(opt => opt.trim());
+      const newOptions = document.getElementById("editOptionsText").value.split(',').map(opt => opt.trim());
 
       try {
         await updateDoc(doc(db, "questions", currentEditId), {
