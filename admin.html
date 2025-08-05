@@ -43,10 +43,7 @@
       <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
       <button onclick="generateStudentReports()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full">Generate Student Reports (PDF)</button>
     </div>
-  </main>  <section class="mt-8">
-    <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
-    <div id="questionList" class="space-y-4"></div>
-  </section>  <script type="module">
+  </main>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -73,52 +70,8 @@
       }
     });
 
-    const questionForm = document.getElementById('questionForm');
-    const messageBox = document.getElementById('messageBox');
-    const questionList = document.getElementById('questionList');
-
-    function showMessage(msg, isError = false) {
-      messageBox.textContent = msg;
-      messageBox.style.color = isError ? 'red' : 'green';
-      setTimeout(() => messageBox.textContent = '', 3000);
-    }
-
-    async function loadQuestions() {
-      questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
-      const qRef = query(collection(db, "questions"), orderBy("id"));
-      const snapshot = await getDocs(qRef);
-      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-      renderQuestions(questions);
-    }
-
-    function renderQuestions(questions) {
-      questionList.innerHTML = "";
-      questions.forEach(q => {
-        const optionsHTML = q.options.map((opt, i) => {
-          const label = String.fromCharCode(65 + i);
-          return `<li>${label}. ${opt}</li>`;
-        }).join("");
-
-        questionList.innerHTML += `
-          <div class="bg-white shadow rounded p-4">
-            <p><strong>(${q.id})</strong> ${q.question}</p>
-            <ul class="list-disc ml-6">${optionsHTML}</ul>
-            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
-            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-          </div>
-        `;
-      });
-    }
-
-    window.deleteQuestion = async function (docId) {
-      if (confirm("আপনি কি নিশ্চিত মুছতে চান?")) {
-        await deleteDoc(doc(db, "questions", docId));
-        showMessage("প্রশ্ন মুছে ফেলা হয়েছে");
-        loadQuestions();
-      }
-    };
-
-    questionForm.addEventListener('submit', async function(e) {
+    const questionForm = document.getElementById("questionForm");
+    questionForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       const question = document.getElementById("questionText").value.trim();
       const options = [
@@ -128,104 +81,91 @@
         document.getElementById("optionD").value.trim()
       ];
       const correct = document.getElementById("correctOption").value;
-      const answer = options["ABCD".indexOf(correct)];
+      const correctIndex = "ABCD".indexOf(correct);
+      const answer = options[correctIndex];
 
-      try {
-        const snapshot = await getDocs(collection(db, "questions"));
-        const newId = snapshot.size + 1;
+      await addDoc(collection(db, "questions"), {
+        id: Date.now(),
+        question,
+        options,
+        answer,
+        correctIndex
+      });
 
-        await addDoc(collection(db, "questions"), {
-          id: newId,
-          question,
-          options,
-          answer
-        });
-
-        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
-        questionForm.reset();
-        loadQuestions();
-      } catch (error) {
-        showMessage("❌ ব্যর্থ: " + error.message, true);
-      }
+      questionForm.reset();
+      alert("✅ প্রশ্ন যোগ হয়েছে!");
     });
 
     window.generateStudentReports = async function () {
-  const { jsPDF } = window.jspdf;
-  const resultSnapshot = await getDocs(collection(db, "results"));
-  const qSnapshot = await getDocs(collection(db, "questions"));
-  const allQuestions = qSnapshot.docs.map(doc => doc.data());
+      const { jsPDF } = window.jspdf;
+      const resultSnapshot = await getDocs(collection(db, "results"));
+      const qSnapshot = await getDocs(collection(db, "questions"));
+      const allQuestions = qSnapshot.docs.map(doc => doc.data());
 
-  if (resultSnapshot.empty) {
-    alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
-    return;
-  }
-
-  for (const docSnap of resultSnapshot.docs) {
-    const data = docSnap.data();
-    const userAnswers = data.answers || {};
-    let correct = 0, wrong = 0, unattempted = 0, score = 0;
-
-    const pdf = new jsPDF();
-    pdf.setFontSize(16);
-    pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
-    pdf.setFontSize(12);
-    pdf.text(`📧 Email: ${data.email}`, 20, 40);
-
-    // calculate score
-    allQuestions.forEach((q, i) => {
-      const selectedIndex = userAnswers[i] ?? userAnswers[String(i)];
-      const correctIndex = q.options.findIndex(opt => opt.trim() === q.answer?.trim());
-
-      if (selectedIndex === undefined || selectedIndex === null || selectedIndex === "") {
-        unattempted++;
-      } else if (parseInt(selectedIndex) === correctIndex) {
-        correct++;
-        score += 2;
-      } else {
-        wrong++;
-        score -= 0.25;
-      }
-    });
-
-    pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
-    pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
-    pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
-    pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
-
-    // Answer list
-    let y = 100;
-    allQuestions.forEach((q, i) => {
-      if (y > 270) {
-        pdf.addPage();
-        y = 20;
+      if (resultSnapshot.empty) {
+        alert("⛔ কোনো রেজাল্ট পাওয়া যায়নি!");
+        return;
       }
 
-      const selectedIndex = userAnswers[i] ?? userAnswers[String(i)];
-      let chosenLabel = "Not Answered";
+      for (const docSnap of resultSnapshot.docs) {
+        const data = docSnap.data();
+        const userAnswers = data.answers || {};
+        let correct = 0, wrong = 0, unattempted = 0, score = 0;
 
-      if (selectedIndex !== undefined && selectedIndex !== null && selectedIndex !== "") {
-        const idx = parseInt(selectedIndex);
-        if (!isNaN(idx) && idx >= 0 && idx < q.options.length) {
-          chosenLabel = String.fromCharCode(65 + idx); // A, B, C, D
+        allQuestions.forEach((q, i) => {
+          let correctIndex = q.correctIndex;
+          if (correctIndex === undefined) {
+            correctIndex = q.options.findIndex(opt =>
+              opt.trim().toLowerCase() === q.answer?.trim().toLowerCase()
+            );
+          }
+
+          const selectedIndex = parseInt(userAnswers[i] ?? userAnswers[String(i)]);
+
+          if (isNaN(selectedIndex)) {
+            unattempted++;
+          } else if (selectedIndex === correctIndex) {
+            correct++;
+            score += 2;
+          } else {
+            wrong++;
+            score -= 0.25;
+          }
+        });
+
+        const pdf = new jsPDF();
+        pdf.setFontSize(16);
+        pdf.text("🎯 Target Zone - Student Quiz Report", 20, 20);
+        pdf.setFontSize(12);
+        pdf.text(`📧 Email: ${data.email}`, 20, 40);
+        pdf.text(`✅ Correct Answers: ${correct}`, 20, 50);
+        pdf.text(`❌ Wrong Answers: ${wrong}`, 20, 60);
+        pdf.text(`⚪ Unattempted: ${unattempted}`, 20, 70);
+        pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
+
+        let y = 100;
+        allQuestions.forEach((q, i) => {
+          if (y > 270) {
+            pdf.addPage();
+            y = 20;
+          }
+          const selectedIndex = parseInt(userAnswers[i] ?? userAnswers[String(i)]);
+          const label = isNaN(selectedIndex) ? "Not Answered" : String.fromCharCode(65 + selectedIndex);
+          pdf.text(`${i + 1}. Chosen Option: ${label}`, 20, y);
+          y += 8;
+        });
+
+        try {
+          pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
+        } catch (err) {
+          console.error("PDF Save Failed:", err);
+          const blob = pdf.output("blob");
+          const url = URL.createObjectURL(blob);
+          window.open(url);
         }
       }
 
-      pdf.text(`${i + 1}. Chosen Option: ${chosenLabel}`, 20, y);
-      y += 8;
-    });
-
-    try {
-      pdf.save(`${data.email.replace(/[@.]/g, "_")}_report.pdf`);
-    } catch (err) {
-      console.error("PDF Save Failed:", err);
-      const blob = pdf.output("blob");
-      const url = URL.createObjectURL(blob);
-      window.open(url);
-    }
-  }
-
-  alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
-};
-    loadQuestions();
+      alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
+    };
   </script></body>
 </html>
