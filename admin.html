@@ -185,7 +185,8 @@
       pdf.save("questions.pdf");
     };
 
-    window.generateStudentReports = async function () {
+    
+};window.generateStudentReports = async function () {
   const { jsPDF } = window.jspdf;
   const resultSnapshot = await getDocs(collection(db, "results"));
   const qSnapshot = await getDocs(collection(db, "questions"));
@@ -202,10 +203,19 @@
     let correct = 0, wrong = 0, unattempted = 0, score = 0;
 
     allQuestions.forEach((q, i) => {
-      const userAns = userAnswers[i] ?? userAnswers[String(i)];
-      if (userAns === undefined) unattempted++;
-      else if (userAns === q.answer) { correct++; score += 2; }
-      else { wrong++; score -= 0.25; }
+      const rawUserAns = userAnswers[i] ?? userAnswers[String(i)];
+      const userAns = rawUserAns?.trim();
+      const correctAns = q.answer?.trim();
+
+      if (userAns === undefined) {
+        unattempted++;
+      } else if (userAns === correctAns) {
+        correct++;
+        score += 2;
+      } else {
+        wrong++;
+        score -= 0.25;
+      }
     });
 
     const pdf = new jsPDF();
@@ -219,12 +229,18 @@
     pdf.text(`🏆 Score: ${score} / ${allQuestions.length * 2}`, 20, 80);
 
     let y = 100;
+
     allQuestions.forEach((q, i) => {
       if (y > 270) { pdf.addPage(); y = 20; }
-      const userAns = userAnswers[i] ?? userAnswers[String(i)];
-      const chosenLabel = userAns
-        ? `${String.fromCharCode(65 + q.options.indexOf(userAns))}`
+
+      const rawUserAns = userAnswers[i] ?? userAnswers[String(i)];
+      const cleanUserAns = rawUserAns?.trim();
+
+      const index = q.options.findIndex(opt => opt.trim() === cleanUserAns);
+      const chosenLabel = index !== -1
+        ? `${String.fromCharCode(65 + index)}`
         : "Not Answered";
+
       pdf.text(`${i + 1}. Chosen Option: ${chosenLabel}`, 20, y);
       y += 8;
     });
