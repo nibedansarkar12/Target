@@ -1,97 +1,67 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!DOCTYPE html><html lang="bn">
 <head>
   <meta charset="UTF-8">
   <title>Target Zone Mock Tests</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { background: linear-gradient(135deg, #6a11cb, #2575fc); font-family: 'Segoe UI', sans-serif; }
-    .card { transition: transform 0.2s ease-in-out; }
-    .card:hover { transform: scale(1.03); }
-    .dark { background: #1e293b; color:white; }
+    body {
+      background: radial-gradient(#1e3c72, #2a5298);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+    #stars, #planes {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .floating-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    #quiz-container input[type="radio"] {
+      margin-right: 8px;
+    }
   </style>
 </head>
-<body class="p-4 text-gray-900">
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="max-w-7xl mx-auto">
-    <h1 class="text-3xl font-bold text-white text-center mb-6">🎯 Target Zone Mock Tests</h1>
-    <p id="student-email" class="text-center text-white mb-6">লোড হচ্ছে...</p>
-    <div class="flex justify-between mb-4">
-      <button onclick="showStudentDashboard()" class="bg-yellow-500 text-white px-4 py-2 rounded">📊 My Results</button>
-      <button onclick="toggleDarkMode()" class="bg-gray-700 text-white px-4 py-2 rounded">🌙 Dark Mode</button>
+<body class="relative min-h-screen overflow-hidden">
+  <canvas id="stars"></canvas>
+  <canvas id="planes"></canvas>  <div id="dashboard" class="relative z-10 text-center py-10">
+    <h1 class="text-4xl font-extrabold mb-4 text-white">🎯 Target Zone Mock Tests</h1>
+    <p class="mb-6 text-gray-200">নির্বাচন করুন আপনি কোন বিষয়ের পরীক্ষা দিতে চান:</p>
+    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-6 max-w-6xl mx-auto"></div>
+  </div>  <div id="quiz-container" class="hidden max-w-4xl mx-auto bg-white rounded-lg shadow p-6 relative z-10 text-gray-800">
+    <h2 id="quiz-header" class="text-2xl font-bold text-center mb-6">Mock Test</h2>
+    <div class="flex justify-end mb-4">
+      <span id="timer" class="bg-blue-700 text-white px-4 py-1 rounded text-lg font-semibold">80:00</span>
     </div>
-    <h2 class="text-xl text-white mb-4">একটি পরীক্ষা নির্বাচন করুন:</h2>
-    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
-  </div> <!-- Dashboard শেষ -->
-
-  <!-- Quiz Container -->
-  <div id="quiz-container" class="hidden max-w-7xl mx-auto bg-white rounded-lg shadow p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 id="quiz-header" class="text-xl font-semibold"></h2>
-      <span id="timer" class="bg-blue-600 text-white px-3 py-1 rounded font-bold">80:00</span>
+    <div class="mb-6">
+      <p id="question-text" class="text-lg font-semibold">প্রশ্ন 1: প্রশ্ন লোড হচ্ছে...</p>
+      <ul id="options-list" class="space-y-3 mt-4"></ul>
     </div>
-    <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
-      <div id="progress-bar" class="bg-green-500 h-3 rounded-full" style="width:0%"></div>
+    <div class="flex justify-center gap-4 mb-6">
+      <button id="mark-review-btn" class="bg-yellow-500 text-white px-4 py-2 rounded shadow">🔖 মার্ক করে রাখো</button>
+      <button id="prev-btn" class="bg-gray-600 text-white px-4 py-2 rounded shadow">⬅ পূর্ববর্তী</button>
+      <button id="next-btn" class="bg-blue-600 text-white px-4 py-2 rounded shadow">পরবর্তী ➡</button>
     </div>
-    <div id="stats" class="flex justify-between text-sm text-gray-600 mb-4"></div>
-    <div class="grid grid-cols-4 gap-6">
-      <!-- Question Area -->
-      <div class="col-span-3">
-        <div id="section-tabs" class="flex gap-3 mb-4"></div>
-        <p id="question-text" class="text-lg font-semibold mb-3"></p>
-        <ul id="options-list" class="space-y-3"></ul>
-        <div class="flex justify-between mt-6">
-          <button id="clear-response-btn" class="bg-gray-500 text-white px-4 py-2 rounded">🗑 Clear</button>
-          <button id="mark-review-btn" class="bg-yellow-500 text-white px-4 py-2 rounded">🔖 Mark for Review</button>
-          <div>
-            <button id="prev-btn" class="bg-gray-400 text-white px-4 py-2 rounded">⬅ পূর্ববর্তী</button>
-            <button id="next-btn" class="bg-blue-600 text-white px-4 py-2 rounded">পরবর্তী ➡</button>
-          </div>
-        </div>
-        <button id="submit-btn" class="bg-red-600 text-white px-4 py-2 rounded mt-6 w-full">📤 Submit Test</button>
-      </div>
-
-      <!-- Question Palette -->
-      <div class="bg-gray-100 rounded p-4">
-        <h3 class="font-bold mb-2">🗂️ Question Palette</h3>
-        <div id="palette" class="grid grid-cols-5 gap-2"></div>
-        <p class="text-xs text-gray-600 mt-2">🟢 Attempted | 🟠 Review | ⚪ Unattempted</p>
-      </div>
+    <div id="palette" class="grid grid-cols-8 sm:grid-cols-10 gap-2 justify-center mb-6"></div>
+    <div class="flex justify-center mb-6">
+      <button id="submit-btn" class="bg-red-600 text-white px-6 py-2 rounded shadow">📤 পরীক্ষাটি জমা দিন</button>
     </div>
-  </div> <!-- Quiz Container শেষ -->
-
-  <!-- Result -->
-  <div id="result-box" class="hidden max-w-7xl mx-auto bg-white rounded-lg shadow p-6 mt-6">
-    <h2 class="text-2xl font-bold mb-4">📊 আপনার ফলাফল</h2>
-    <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
-      <div id="score-bar" class="bg-green-500 h-4 rounded-full" style="width:0%"></div>
+    <div class="bg-gray-100 p-4 rounded shadow text-gray-800">
+      <h3 class="text-lg font-semibold mb-2">নির্দেশিকা:</h3>
+      <p class="text-sm">🟢 Attempted | 🟠 Review | ⚪ Unattempted</p>
     </div>
-    <div id="result-summary" class="mb-4"></div>
-    <canvas id="resultChart" width="400" height="200" class="mb-6"></canvas>
-    <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">⬇️ Download PDF</button>
-    <h3 class="text-lg font-semibold">🔎 প্রশ্নভিত্তিক রিভিউ</h3>
-    <div id="review-questions" class="space-y-4 mt-2"></div>
-  </div> <!-- Result শেষ -->
-
-  <!-- Student Dashboard -->
-  <div id="student-dashboard" class="hidden max-w-7xl mx-auto bg-white rounded-lg shadow p-6 mt-6">
-    <h2 class="text-2xl font-bold mb-4">📚 My Results</h2>
-    <canvas id="progressGraph" width="400" height="200" class="mb-6"></canvas>
-    <div id="results-list"></div>
-    <button onclick="backToDashboard()" class="bg-gray-600 text-white px-4 py-2 rounded mt-4">⬅ Back</button>
-  </div> <!-- Student Dashboard শেষ -->
-
-  <!-- Firebase Config + Scripts -->
-  <script type="module">
+  </div>  <footer class="bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-center text-white text-sm fixed bottom-0 w-full z-10 shadow-lg">
+    📌 উন্নত প্রস্তুতির জন্য — SSC | Railways | TET | WB SET | WBJEE | Madhyamik — সব কিছু এক জায়গায়
+  </footer>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    // 🔥 Firebase Config (তোমার আগের ফাইলের মতো)
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -103,277 +73,150 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    const studentEmail=document.getElementById("student-email");
-    const examCards=document.getElementById("exam-cards");
-
-    onAuthStateChanged(auth,user=>{
-      if(user){ studentEmail.textContent=`👤 ${user.email}`; }
-      else{ alert("আপনি লগইন করেননি!"); window.location.href="index.html"; }
-    });
-
-    // Exam Cards
-    const exams=[
-      {id:"ssc",name:"SSC Exams",desc:"CGL, CHSL, GD, MTS"},
-      {id:"railways",name:"Railways",desc:"NTPC, Group-D, JE"},
-      {id:"tet",name:"TET Exams",desc:"Primary & Upper Primary"},
-      {id:"wbset",name:"WB SET",desc:"Paper I & II"},
-      {id:"wbjee",name:"WBJEE",desc:"Engineering & Medical"},
-      {id:"madhyamik",name:"Madhyamik / HS",desc:"Board MCQ Practice"}
+    const exams = [
+      {id:"ssc", name:"SSC Exams", desc:"CGL, CHSL, GD, MTS"},
+      {id:"railways", name:"Railways", desc:"NTPC, Group-D, JE"},
+      {id:"tet", name:"TET Exams", desc:"Primary & Upper Primary"},
+      {id:"wbset", name:"WB SET", desc:"Paper I & II"},
+      {id:"wbjee", name:"WBJEE", desc:"Engineering & Medical"},
+      {id:"madhyamik", name:"Madhyamik / HS", desc:"Board MCQ Practice"}
     ];
 
-    examCards.innerHTML=exams.map(ex=>`
-      <div class="card bg-white rounded-lg shadow p-5 cursor-pointer" onclick="openExam('${ex.id}')">
-        <h2 class="text-xl font-semibold">${ex.name}</h2>
-        <p class="text-gray-600 mt-2">${ex.desc}</p>
+    const dashboard = document.getElementById("dashboard");
+    const quizContainer = document.getElementById("quiz-container");
+    const examCards = document.getElementById("exam-cards");
+
+    examCards.innerHTML = exams.map(ex => `
+      <div class="bg-white text-gray-800 rounded-lg shadow-lg p-5 cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:bg-indigo-100 floating-btn"
+           onclick="startExam('${ex.id}', '${ex.name}')">
+        <h2 class="text-xl font-bold">${ex.name}</h2>
+        <p class="text-sm mt-2 text-gray-600">${ex.desc}</p>
       </div>
     `).join("");
 
-    // Dark Mode
-    window.toggleDarkMode=function(){document.body.classList.toggle("dark");}
-    // 🔹 Exam Marking Schemes
-    const markingSchemes = {
-      "ssc": { correct:2, wrong:0.5 },
-      "railways": { correct:1, wrong:0.25 },
-      "tet": { correct:1, wrong:0.25 },
-      "wbset": { correct:2, wrong:0 },
-      "wbjee": { correct:2, wrong:0.5 },
-      "madhyamik": { correct:1, wrong:0 }
-    };
+    let currentExam = "", questions = [], currentQuestion = 0, answers = {}, reviewed = {}, timeLeft = 80*60;
 
-    // 🔹 DOM Elements
-    const dashboard=document.getElementById("dashboard");
-    const quizContainer=document.getElementById("quiz-container");
-    const resultBox=document.getElementById("result-box");
-    const studentDashboard=document.getElementById("student-dashboard");
-    const quizHeader=document.getElementById("quiz-header");
-    const timerElement=document.getElementById("timer");
-    const progressBar=document.getElementById("progress-bar");
-    const stats=document.getElementById("stats");
-    const questionText=document.getElementById("question-text");
-    const optionsList=document.getElementById("options-list");
-    const palette=document.getElementById("palette");
-    const prevBtn=document.getElementById("prev-btn");
-    const nextBtn=document.getElementById("next-btn");
-    const markReviewBtn=document.getElementById("mark-review-btn");
-    const clearResponseBtn=document.getElementById("clear-response-btn");
-    const submitBtn=document.getElementById("submit-btn");
-    const resultSummary=document.getElementById("result-summary");
-    const reviewQuestions=document.getElementById("review-questions");
-    const scoreBar=document.getElementById("score-bar");
-    const resultsList=document.getElementById("results-list");
-    const sectionTabs=document.getElementById("section-tabs");
-
-    // 🔹 Quiz Variables
-    let currentExam="",questions=[],currentQuestion=0,answers={},reviewed={},timeLeft=80*60,timer,currentUser=null;
-
-    // 🔹 User Check
-    onAuthStateChanged(auth,user=>{
-      if(user){ currentUser=user; studentEmail.textContent=`👤 ${user.email}`; }
-      else{ alert("আপনি লগইন করেননি!"); window.location.href="index.html"; }
-    });
-
-    // 🔹 Open Exam
-    window.openExam=async function(exam){
-      currentExam=exam;
+    window.startExam = async function(examId, examName) {
+      currentExam = examId;
       dashboard.classList.add("hidden");
       quizContainer.classList.remove("hidden");
-      quizHeader.textContent=`${exam.toUpperCase()} Mock Test`;
+      document.getElementById("quiz-header").textContent = examName + " Mock Test";
       await loadQuestions();
     }
 
-    // 🔹 Load Questions from Firestore
-    async function loadQuestions(){
-      const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js");
-      const q=query(collection(db,currentExam),orderBy("id"));
-      const snapshot=await getDocs(q);
-      questions=snapshot.docs.map(doc=>doc.data());
+    async function loadQuestions() {
+      const q = query(collection(db, currentExam), orderBy("id"));
+      const snapshot = await getDocs(q);
+      questions = snapshot.docs.map(doc => doc.data());
       buildPalette();
-      buildSectionTabs();
       showQuestion();
       startTimer();
     }
 
-    // 🔹 Build Question Palette
-    function buildPalette(){
-      palette.innerHTML="";
-      for(let i=0;i<questions.length;i++){
-        const btn=document.createElement("button");
-        btn.textContent=i+1;
-        btn.className="palette-btn unattempted";
-        btn.onclick=()=>{currentQuestion=i;showQuestion();};
+    function buildPalette() {
+      const palette = document.getElementById("palette");
+      palette.innerHTML = "";
+      for (let i = 0; i < questions.length; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.className = "unattempted";
+        btn.onclick = () => { currentQuestion = i; showQuestion(); };
         palette.appendChild(btn);
       }
     }
 
-    // 🔹 Build Section Tabs
-    function buildSectionTabs(){
-      sectionTabs.innerHTML="";
-      const sections=[...new Set(questions.map(q=>q.section||"General"))];
-      sections.forEach(section=>{
-        const btn=document.createElement("button");
-        btn.textContent=section;
-        btn.className="bg-blue-500 text-white px-3 py-1 rounded";
-        btn.onclick=()=>{questions=questions.filter(q=>q.section===section||!q.section);currentQuestion=0;showQuestion();};
-        sectionTabs.appendChild(btn);
-      });
-    }
-
-    // 🔹 Timer
-    function startTimer(){
-      timer=setInterval(()=>{
-        if(timeLeft<=0){clearInterval(timer);submitQuiz();}
-        else{
-          timeLeft--;
-          const min=Math.floor(timeLeft/60);
-          const sec=timeLeft%60;
-          timerElement.textContent=`${min}:${sec.toString().padStart(2,"0")}`;
-          if(timeLeft<=300) timerElement.classList.add("warning");
-        }
-      },1000);
-    }
-
-    // 🔹 Update Stats + Progress Bar
-    function updateStats(){
-      const attempted=Object.keys(answers).length;
-      const unattempted=questions.length-attempted;
-      const progress=(attempted/questions.length)*100;
-      progressBar.style.width=progress+"%";
-      stats.innerHTML=`<span>✅ Attempted: ${attempted}</span><span>⚪ Unattempted: ${unattempted}</span>`;
-      [...palette.children].forEach((btn,i)=>{
-        btn.className="palette-btn unattempted";
-        if(answers[i]) btn.classList.add("attempted");
-        if(reviewed[i]) btn.classList.add("review");
-      });
-    }
-
-    // 🔹 Show Question
-    function showQuestion(){
-      const q=questions[currentQuestion];
-      if(!q)return;
-      questionText.textContent=`প্রশ্ন ${currentQuestion+1}: ${q.question}`;
-      optionsList.innerHTML="";
-      q.options.forEach(option=>{
-        const li=document.createElement("li");
-        li.classList.add("p-2","rounded","border","cursor-pointer","hover:bg-gray-100");
-        const input=document.createElement("input");
-        input.type="radio";input.name="option";input.value=option;
-        if(answers[currentQuestion]===option) input.checked=true;
-        input.addEventListener("change",()=>{answers[currentQuestion]=option;updateStats();});
-        li.appendChild(input);li.append(option);
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("question-text").textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
+      const optionsList = document.getElementById("options-list");
+      optionsList.innerHTML = "";
+      q.options.forEach(option => {
+        const li = document.createElement("li");
+        li.classList.add("p-2", "rounded", "border", "cursor-pointer", "hover:bg-gray-100");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "option";
+        input.value = option;
+        if (answers[currentQuestion] === option) input.checked = true;
+        input.addEventListener("change", () => {
+          answers[currentQuestion] = option;
+          updatePalette();
+        });
+        li.appendChild(input);
+        li.append(option);
         optionsList.appendChild(li);
       });
-      updateStats();
+      updatePalette();
     }
 
-    // 🔹 Navigation + Controls
-    prevBtn.onclick=()=>{if(currentQuestion>0){currentQuestion--;showQuestion();}};
-    nextBtn.onclick=()=>{if(currentQuestion<questions.length-1){currentQuestion++;showQuestion();}};
-    markReviewBtn.onclick=()=>{reviewed[currentQuestion]=true;updateStats();};
-    clearResponseBtn.onclick=()=>{delete answers[currentQuestion];showQuestion();};
-    submitBtn.onclick=submitQuiz;
-
-    // 🔹 Submit Quiz
-    async function submitQuiz(){
-      clearInterval(timer);
-      let correct=0,wrong=0,unattempted=0,score=0;
-      const scheme = markingSchemes[currentExam] || {correct:1, wrong:0};
-      questions.forEach((q,i)=>{
-        const given=answers[i];
-        if(!given) unattempted++;
-        else if(given===q.answer){correct++;score+=scheme.correct;}
-        else{wrong++;score-=scheme.wrong;}
-      });
-
-      // Save Result
-      const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js");
-      if(currentUser){
-        await setDoc(doc(db,"results",`${currentUser.uid}-${currentExam}-${Date.now()}`),{
-          exam:currentExam,email:currentUser.email,
-          answers,correct,wrong,unattempted,
-          score,total:questions.length*scheme.correct,
-          submittedAt:serverTimestamp()
-        });
-      }
-
-      // Show Result Page
-      quizContainer.classList.add("hidden");
-      resultBox.classList.remove("hidden");
-      const percent=(score/(questions.length*scheme.correct))*100;
-      scoreBar.style.width=percent+"%";
-      resultSummary.innerHTML=`
-        ✅ সঠিক: ${correct}<br>
-        ❌ ভুল: ${wrong}<br>
-        ⚪ অনুত্তরিত: ${unattempted}<br>
-        🏆 প্রাপ্ত নম্বর: ${score}/${questions.length*scheme.correct}
-      `;
-      reviewQuestions.innerHTML=questions.map((q,i)=>`
-        <div class="p-3 border rounded ${answers[i]===q.answer?'bg-green-100':'bg-red-100'}">
-          <b>প্রশ্ন ${i+1}: ${q.question}</b><br>
-          আপনার উত্তর: ${answers[i]||"❌ দেওয়া হয়নি"}<br>
-          সঠিক উত্তর: ${q.answer}
-        </div>
-      `).join("");
-
-      // Chart
-      new Chart(document.getElementById("resultChart"),{
-        type:"pie",
-        data:{labels:["Correct","Wrong","Unattempted"],
-              datasets:[{data:[correct,wrong,unattempted],
-                         backgroundColor:["#4caf50","#f44336","#9e9e9e"]}]}
+    function updatePalette() {
+      [...document.getElementById("palette").children].forEach((btn, i) => {
+        btn.className = "unattempted";
+        if (answers[i]) btn.classList.add("attempted");
+        if (reviewed[i]) btn.classList.add("review");
       });
     }
 
-    // 🔹 Student Dashboard
-    window.showStudentDashboard=async function(){
-      dashboard.classList.add("hidden");
-      studentDashboard.classList.remove("hidden");
-      loadResults();
+    function startTimer() {
+      setInterval(() => {
+        if (timeLeft <= 0) return;
+        timeLeft--;
+        const min = Math.floor(timeLeft / 60);
+        const sec = timeLeft % 60;
+        document.getElementById("timer").textContent = `${min}:${sec.toString().padStart(2, "0")}`;
+      }, 1000);
     }
 
-    async function loadResults(){
-      const { collection, getDocs, query, orderBy } = await import("https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js");
-      resultsList.innerHTML="লোড হচ্ছে...";
-      const q=query(collection(db,"results"),orderBy("submittedAt","desc"));
-      const snapshot=await getDocs(q);
-      let html="",scores=[];
-      snapshot.forEach(docSnap=>{
-        const res=docSnap.data();
-        if(res.email===currentUser.email){
-          const percent=((res.score/res.total)*100).toFixed(0);
-          scores.push(percent);
-          html+=`
-            <div class="p-4 border rounded mb-3">
-              <b>${res.exam.toUpperCase()}</b> - 🏆 ${res.score}/${res.total} (${percent}%)<br>
-              ✅ ${res.correct}, ❌ ${res.wrong}, ⚪ ${res.unattempted}
-            </div>
-          `;
+    document.getElementById("prev-btn").onclick = () => {
+      if (currentQuestion > 0) currentQuestion--;
+      showQuestion();
+    };
+    document.getElementById("next-btn").onclick = () => {
+      if (currentQuestion < questions.length - 1) currentQuestion++;
+      showQuestion();
+    };
+    document.getElementById("mark-review-btn").onclick = () => {
+      reviewed[currentQuestion] = true;
+      updatePalette();
+    };
+    document.getElementById("submit-btn").onclick = () => {
+      alert("✅ পরীক্ষাটি জমা হয়েছে। ফলাফল মডিউল পরবর্তীতে যুক্ত হবে।");
+    };
+
+    // Background animation
+    const starsCanvas = document.getElementById("stars");
+    const planesCanvas = document.getElementById("planes");
+    const starsCtx = starsCanvas.getContext("2d");
+    const planesCtx = planesCanvas.getContext("2d");
+    starsCanvas.width = planesCanvas.width = window.innerWidth;
+    starsCanvas.height = planesCanvas.height = window.innerHeight;
+    let stars = [], planes = [];
+    for (let i = 0; i < 120; i++) {
+      stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*2 });
+    }
+    for (let i = 0; i < 2; i++) {
+      planes.push({ x: -50, y: Math.random()*starsCanvas.height/2, dx: 2+Math.random()*2 });
+    }
+    function drawBackground() {
+      starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
+      starsCtx.fillStyle = "white";
+      stars.forEach(s => {
+        starsCtx.beginPath();
+        starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        starsCtx.fill();
+      });
+      planesCtx.clearRect(0,0,planesCanvas.width,planesCanvas.height);
+      planes.forEach(p => {
+        planesCtx.fillStyle = "lightblue";
+        planesCtx.fillRect(p.x, p.y, 40, 3);
+        p.x += p.dx;
+        if (p.x > planesCanvas.width + 100) {
+          p.x = -50;
+          p.y = Math.random()*planesCanvas.height/2;
         }
       });
-      resultsList.innerHTML=html||"<p>কোনো টেস্ট দেওয়া হয়নি।</p>";
-
-      new Chart(document.getElementById("progressGraph"),{
-        type:"line",
-        data:{labels:scores.map((_,i)=>`Test ${i+1}`),
-              datasets:[{label:"Progress (%)",data:scores,borderColor:"#4caf50"}]}
-      });
     }
-
-    // 🔹 Back to Dashboard
-    window.backToDashboard=function(){
-      studentDashboard.classList.add("hidden");
-      dashboard.classList.remove("hidden");
-    }
-
-    // 🔹 PDF Download
-    window.downloadPDF=function(){
-      const { jsPDF } = window.jspdf;
-      const doc=new jsPDF();
-      doc.text("Target Zone Mock Test Result",20,20);
-      doc.text(resultSummary.innerText,20,40);
-      doc.save("result.pdf");
-          }
-  </script>
-</body>
+    setInterval(drawBackground, 30);
+  </script></body>
 </html>
