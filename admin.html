@@ -46,13 +46,16 @@
     <div class="flex justify-between items-center mb-6">
       <button id="menu-btn" class="md:hidden bg-yellow-400 px-3 py-2 rounded">☰</button>
       <h2 class="rainbow text-3xl">🛠️ Admin Panel</h2>
-      <audio autoplay loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_f40541e0f5.mp3" type="audio/mp3">
-      </audio>
+      <div class="flex items-center gap-3">
+        <audio id="bg-music" loop muted autoplay>
+          <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_f40541e0f5.mp3" type="audio/mp3">
+        </audio>
+        <button id="music-btn" class="bg-green-500 px-3 py-1 rounded">🔊 Play Sound</button>
+      </div>
     </div>
 
     <!-- Add Question -->
-    <section id="section-add" class="glass p-6 rounded-lg shadow-lg">
+    <section id="section-add" class="glass p-6 rounded-lg shadow-lg hidden">
       <form id="question-form">
         <h3 class="text-xl font-bold mb-4">➕ Add New Question</h3>
         <select id="category" class="w-full border rounded px-3 py-2 mb-3" onchange="loadQuestions(this.value)">
@@ -71,8 +74,6 @@
         </div>
         <button type="button" onclick="addQuestion()" class="w-full bg-blue-600 text-white py-2 rounded mt-4">💾 Save Question</button>
       </form>
-
-      <!-- Show Questions -->
       <h3 class="text-lg font-semibold mt-6">📋 Added Questions</h3>
       <table class="w-full text-left border mt-3">
         <thead><tr><th>Question</th><th>Answer</th><th>Delete</th></tr></thead>
@@ -100,10 +101,10 @@
     </section>
   </main>
 
-  <!-- Firebase & Script -->
+  <!-- Firebase & Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
@@ -190,7 +191,7 @@
       document.body.appendChild(modal);
     }
 
-    // Load Results with Pie Chart
+    // Show Section
     window.showSection=async(id)=>{
       document.querySelectorAll("section").forEach(sec=>sec.classList.add("hidden"));
       document.getElementById("section-"+id).classList.remove("hidden");
@@ -198,15 +199,19 @@
       if(id==="users") loadUsers();
     }
 
+    // Load Results with Pie Chart
     async function loadResults(){
       const table=document.getElementById("results-list");
       table.innerHTML="<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,"results"));
+      const q=query(collection(db,"results"),orderBy("submittedAt","desc"));
+      const snapshot=await getDocs(q);
       let rows="",correct=0,wrong=0,unattempted=0;
       snapshot.forEach(docSnap=>{
         const r=docSnap.data();
-        correct+=r.correct||0; wrong+=r.wrong||0; unattempted+=r.unattempted||0;
-        rows+=`<tr><td>${r.email}</td><td>${r.exam}</td><td>${r.score}/${r.total}</td><td>${new Date(r.submittedAt?.seconds*1000||Date.now()).toLocaleString()}</td></tr>`;
+        correct+=r.correct||0;
+        wrong+=r.wrong||0;
+        unattempted+=r.unattempted||0;
+        rows+=`<tr><td>${r.email}</td><td>${r.exam}</td><td>${r.score}/${r.total}</td><td>${r.submittedAt ? new Date(r.submittedAt.seconds*1000).toLocaleString():"N/A"}</td></tr>`;
       });
       table.innerHTML=rows||"<tr><td colspan='4'>কোনো রেজাল্ট নেই</td></tr>";
       new Chart(document.getElementById("resultsChart"),{
@@ -215,6 +220,7 @@
       });
     }
 
+    // Load Users
     async function loadUsers(){
       const table=document.getElementById("users-list");
       table.innerHTML="<tr><td colspan='2'>লোড হচ্ছে...</td></tr>";
@@ -226,6 +232,14 @@
       });
       table.innerHTML=rows||"<tr><td colspan='2'>কোনো ইউজার নেই</td></tr>";
     }
+
+    // Music Toggle
+    const music=document.getElementById("bg-music");
+    const musicBtn=document.getElementById("music-btn");
+    musicBtn.addEventListener("click",()=>{
+      if(music.muted){ music.muted=false; music.play(); musicBtn.textContent="🔇 Mute Sound"; }
+      else{ music.muted=true; musicBtn.textContent="🔊 Play Sound"; }
+    });
   </script>
 
   <script>
