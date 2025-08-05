@@ -24,7 +24,11 @@
       <button onclick="showStudentDashboard()" class="bg-yellow-500 text-white px-4 py-2 rounded">📊 My Results</button>
       <button onclick="toggleDarkMode()" class="bg-gray-700 text-white px-4 py-2 rounded">🌙 Dark Mode</button>
     </div>
-    <!-- Quiz Container -->
+    <h2 class="text-xl text-white mb-4">একটি পরীক্ষা নির্বাচন করুন:</h2>
+    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+  </div> <!-- Dashboard শেষ -->
+
+  <!-- Quiz Container -->
   <div id="quiz-container" class="hidden max-w-7xl mx-auto bg-white rounded-lg shadow p-6">
     <div class="flex justify-between items-center mb-4">
       <h2 id="quiz-header" class="text-xl font-semibold"></h2>
@@ -58,17 +62,36 @@
         <p class="text-xs text-gray-600 mt-2">🟢 Attempted | 🟠 Review | ⚪ Unattempted</p>
       </div>
     </div>
-  </div>
-    <h2 class="text-xl text-white mb-4">একটি পরীক্ষা নির্বাচন করুন:</h2>
-    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
-  </div>
+  </div> <!-- Quiz Container শেষ -->
 
+  <!-- Result -->
+  <div id="result-box" class="hidden max-w-7xl mx-auto bg-white rounded-lg shadow p-6 mt-6">
+    <h2 class="text-2xl font-bold mb-4">📊 আপনার ফলাফল</h2>
+    <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
+      <div id="score-bar" class="bg-green-500 h-4 rounded-full" style="width:0%"></div>
+    </div>
+    <div id="result-summary" class="mb-4"></div>
+    <canvas id="resultChart" width="400" height="200" class="mb-6"></canvas>
+    <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">⬇️ Download PDF</button>
+    <h3 class="text-lg font-semibold">🔎 প্রশ্নভিত্তিক রিভিউ</h3>
+    <div id="review-questions" class="space-y-4 mt-2"></div>
+  </div> <!-- Result শেষ -->
+
+  <!-- Student Dashboard -->
+  <div id="student-dashboard" class="hidden max-w-7xl mx-auto bg-white rounded-lg shadow p-6 mt-6">
+    <h2 class="text-2xl font-bold mb-4">📚 My Results</h2>
+    <canvas id="progressGraph" width="400" height="200" class="mb-6"></canvas>
+    <div id="results-list"></div>
+    <button onclick="backToDashboard()" class="bg-gray-600 text-white px-4 py-2 rounded mt-4">⬅ Back</button>
+  </div> <!-- Student Dashboard শেষ -->
+
+  <!-- Firebase Config + Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // 🔥 তোমার আগের ফাইলের config ব্যবহার করছি
+    // 🔥 Firebase Config (তোমার আগের ফাইলের মতো)
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
