@@ -1,21 +1,48 @@
-<!DOCTYPE html><html lang="bn">
+<!DOCTYPE html>
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Results - Target Zone</title>
+  <title>📊 স্টুডেন্ট রেজাল্টস - Target Zone</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
-    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
-    .card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+    body {
+      background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background: #e0f2f1;
+      color: #00695c;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body class="p-6">
-  <header class="text-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">📊 স্টুডেন্ট রেজাল্টস</h1>
-    <p class="text-gray-600">সকল পরীক্ষার্থীর স্কোর এখানে দেখুন</p>
-  </header>  <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="resultsContainer">
-    <!-- Results will be dynamically injected here -->
-  </main>  <script type="module">
+  <header class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 স্টুডেন্ট রেজাল্টস</h1>
+    <p class="text-gray-600 text-lg">Target Zone - Success Batch</p>
+    <hr class="mt-4 border-t-2 border-blue-400 w-32 mx-auto">
+  </header>
+
+  <main class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="resultsContainer">
+    <!-- Results will be injected here -->
+  </main>
+
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -60,10 +87,7 @@
           if (!rawAnswer) {
             unattempted++;
           } else {
-            const correctIndex = q.options.findIndex(opt => opt.trim() === q.answer?.trim());
-            const chosenIndex = q.options.findIndex(opt => opt.trim() === rawAnswer?.trim());
-
-            if (chosenIndex === correctIndex) {
+            if ((rawAnswer?.trim() || "") === (q.answer?.trim() || "")) {
               correct++;
               score += 2;
             } else {
@@ -76,10 +100,13 @@
         const card = `
           <div class="card">
             <h2 class="text-lg font-semibold text-gray-800 mb-2">📧 ${data.email}</h2>
-            <p>✅ সঠিক উত্তর: <strong>${correct}</strong></p>
-            <p>❌ ভুল উত্তর: <strong>${wrong}</strong></p>
-            <p>⚪ অনুত্তরিত: <strong>${unattempted}</strong></p>
-            <p class="mt-2">🏆 প্রাপ্ত নম্বর: <strong>${score} / ${allQuestions.length * 2}</strong></p>
+            <div class="text-sm text-gray-700 space-y-1">
+              <p>✅ <span class="badge">সঠিক: ${correct}</span></p>
+              <p>❌ <span class="badge bg-red-100 text-red-700">ভুল: ${wrong}</span></p>
+              <p>⚪ <span class="badge bg-gray-100 text-gray-700">অনুত্তরিত: ${unattempted}</span></p>
+              <p>🏆 <span class="badge bg-blue-100 text-blue-700">প্রাপ্ত নম্বর: ${score} / ${allQuestions.length * 2}</span></p>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">🕒 জমা দিয়েছিল: ${new Date(data.submittedAt?.seconds * 1000).toLocaleString('bn-BD')}</p>
           </div>
         `;
 
@@ -88,5 +115,6 @@
     }
 
     loadResults();
-  </script></body>
+  </script>
+</body>
 </html>
