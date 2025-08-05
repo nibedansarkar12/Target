@@ -43,7 +43,10 @@
       <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
       <button onclick="generateStudentReports()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full">Generate Student Reports (PDF)</button>
     </div>
-  </main>  <script type="module">
+  </main>  <section class="mt-8">
+    <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
+    <div id="questionList" class="space-y-4"></div>
+  </section>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -67,6 +70,82 @@
       if (!user || user.email !== "nibedansarkar12@gmail.com") {
         alert("⚠️ আপনি অ্যাডমিন না, এই পেজ অ্যাক্সেস করা যাবে না!");
         window.location.href = "index.html";
+      }
+    });
+
+    const questionForm = document.getElementById('questionForm');
+    const messageBox = document.getElementById('messageBox');
+    const questionList = document.getElementById('questionList');
+
+    function showMessage(msg, isError = false) {
+      messageBox.textContent = msg;
+      messageBox.style.color = isError ? 'red' : 'green';
+      setTimeout(() => messageBox.textContent = '', 3000);
+    }
+
+    async function loadQuestions() {
+      questionList.innerHTML = "<p class='text-gray-600'>লোড হচ্ছে...</p>";
+      const qRef = query(collection(db, "questions"), orderBy("id"));
+      const snapshot = await getDocs(qRef);
+      const questions = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+      renderQuestions(questions);
+    }
+
+    function renderQuestions(questions) {
+      questionList.innerHTML = "";
+      questions.forEach(q => {
+        const optionsHTML = q.options.map((opt, i) => {
+          const label = String.fromCharCode(65 + i);
+          return `<li>${label}. ${opt}</li>`;
+        }).join("");
+
+        questionList.innerHTML += `
+          <div class="bg-white shadow rounded p-4">
+            <p><strong>(${q.id})</strong> ${q.question}</p>
+            <ul class="list-disc ml-6">${optionsHTML}</ul>
+            <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
+            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    window.deleteQuestion = async function (docId) {
+      if (confirm("আপনি কি নিশ্চিত মুছতে চান?")) {
+        await deleteDoc(doc(db, "questions", docId));
+        showMessage("প্রশ্ন মুছে ফেলা হয়েছে");
+        loadQuestions();
+      }
+    };
+
+    questionForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const question = document.getElementById("questionText").value.trim();
+      const options = [
+        document.getElementById("optionA").value.trim(),
+        document.getElementById("optionB").value.trim(),
+        document.getElementById("optionC").value.trim(),
+        document.getElementById("optionD").value.trim()
+      ];
+      const correct = document.getElementById("correctOption").value;
+      const answer = options["ABCD".indexOf(correct)];
+
+      try {
+        const snapshot = await getDocs(collection(db, "questions"));
+        const newId = snapshot.size + 1;
+
+        await addDoc(collection(db, "questions"), {
+          id: newId,
+          question,
+          options,
+          answer
+        });
+
+        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
+        questionForm.reset();
+        loadQuestions();
+      } catch (error) {
+        showMessage("❌ ব্যর্থ: " + error.message, true);
       }
     });
 
@@ -138,5 +217,7 @@
 
       alert("✅ সকল স্টুডেন্টের রিপোর্ট ডাউনলোড হয়েছে!");
     };
+
+    loadQuestions();
   </script></body>
 </html>
