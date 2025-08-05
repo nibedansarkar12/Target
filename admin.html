@@ -186,7 +186,7 @@
     };
 
     
-};window.generateStudentReports = async function () {
+window.generateStudentReports = async function () {
   const { jsPDF } = window.jspdf;
   const resultSnapshot = await getDocs(collection(db, "results"));
   const qSnapshot = await getDocs(collection(db, "questions"));
