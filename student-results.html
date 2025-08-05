@@ -81,13 +81,16 @@
 
         let correct = 0, wrong = 0, unattempted = 0, score = 0;
 
-        allQuestions.forEach((q, i) => {
-          const rawAnswer = userAnswers[i] ?? userAnswers[String(i)];
+        allQuestions.forEach((q, index) => {
+          const rawAnswer = userAnswers[index] ?? userAnswers[String(index)];
 
-          if (!rawAnswer) {
+          if (!rawAnswer || rawAnswer.trim() === "") {
             unattempted++;
           } else {
-            if ((rawAnswer?.trim() || "") === (q.answer?.trim() || "")) {
+            const given = (rawAnswer || "").trim().toLowerCase();
+            const actual = (q.answer || "").trim().toLowerCase();
+
+            if (given === actual) {
               correct++;
               score += 2;
             } else {
