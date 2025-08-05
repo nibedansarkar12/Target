@@ -1,86 +1,39 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mock Test Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Target Zone Mock Tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 30px;
-      color: #fff;
-    }
-    .dashboard, .quiz-container {
-      max-width: 800px;
-      width: 100%;
-      background: white;
-      color: #333;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-    }
-    .quiz-container { display: none; }
-    .btn {
-      background: #4CAF50;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      margin: 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .btn:hover { opacity: 0.9; }
-    .options li {
-      margin-bottom: 12px;
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 6px;
-    }
-    .options li.correct { background: #d4edda; }
-    .options li.wrong { background: #f8d7da; }
-    .result-box { margin-top: 20px; padding: 15px; background: #eef3f9; border-radius: 8px; }
+    body { background: linear-gradient(135deg, #6a11cb, #2575fc); font-family: 'Segoe UI', sans-serif; }
+    .card { transition: transform 0.2s ease-in-out; }
+    .card:hover { transform: scale(1.03); }
+    .dark { background: #1e293b; color:white; }
   </style>
 </head>
-<body>
+<body class="p-4 text-gray-900">
+
   <!-- Dashboard -->
-  <div class="dashboard" id="dashboard">
-    <h2>🎯 মক টেস্ট ড্যাশবোর্ড</h2>
-    <p id="student-email">লোড হচ্ছে...</p>
-    <h3>একটি পরীক্ষা নির্বাচন করুন:</h3>
-    <button class="btn" onclick="startQuiz('wbcs')">WBCS</button>
-    <button class="btn" onclick="startQuiz('railways')">Railways</button>
-    <button class="btn" onclick="startQuiz('ssc')">SSC</button>
-    <button class="btn" onclick="startQuiz('tet')">TET</button>
-  </div>
-
-  <!-- Quiz -->
-  <div class="quiz-container" id="quiz-container">
-    <h2 id="quiz-title"></h2>
-    <p id="timer">80:00</p>
-    <div class="question-box">
-      <div class="question" id="question-text">Loading...</div>
-      <ul class="options" id="options-list"></ul>
+  <div id="dashboard" class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-white text-center mb-6">🎯 Target Zone Mock Tests</h1>
+    <p id="student-email" class="text-center text-white mb-6">লোড হচ্ছে...</p>
+    <div class="flex justify-between mb-4">
+      <button onclick="showStudentDashboard()" class="bg-yellow-500 text-white px-4 py-2 rounded">📊 My Results</button>
+      <button onclick="toggleDarkMode()" class="bg-gray-700 text-white px-4 py-2 rounded">🌙 Dark Mode</button>
     </div>
-    <button class="btn" id="prev-btn">Prev</button>
-    <button class="btn" id="next-btn">Next</button>
-    <button class="btn" id="submit-btn">Submit</button>
-    <div class="result-box" id="result-box" style="display:none;"></div>
+    <h2 class="text-xl text-white mb-4">একটি পরীক্ষা নির্বাচন করুন:</h2>
+    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, serverTimestamp, query, orderBy } 
-      from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+    // 🔥 তোমার আগের ফাইলের config ব্যবহার করছি
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -94,160 +47,33 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    const dashboard = document.getElementById("dashboard");
-    const quizContainer = document.getElementById("quiz-container");
-    const studentEmail = document.getElementById("student-email");
-    const questionText = document.getElementById("question-text");
-    const optionsList = document.getElementById("options-list");
-    const resultBox = document.getElementById("result-box");
-    const quizTitle = document.getElementById("quiz-title");
-    const timerElement = document.getElementById("timer");
+    const studentEmail=document.getElementById("student-email");
+    const examCards=document.getElementById("exam-cards");
 
-    const prevBtn = document.getElementById("prev-btn");
-    const nextBtn = document.getElementById("next-btn");
-    const submitBtn = document.getElementById("submit-btn");
-
-    let questions = [];
-    let currentQuestion = 0;
-    let answers = {};
-    let currentUser = null;
-    let selectedExam = "";
-    let timeLeft = 80 * 60;
-    let timer;
-
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        studentEmail.textContent = `👤 ${user.email}`;
-        currentUser = user;
-      } else {
-        alert("আপনি লগইন করেননি!");
-        window.location.href = "index.html";
-      }
+    onAuthStateChanged(auth,user=>{
+      if(user){ studentEmail.textContent=`👤 ${user.email}`; }
+      else{ alert("আপনি লগইন করেননি!"); window.location.href="index.html"; }
     });
 
-    async function startQuiz(examName) {
-      selectedExam = examName;
-      quizTitle.textContent = `${examName.toUpperCase()} Mock Test`;
-      dashboard.style.display = "none";
-      quizContainer.style.display = "block";
-      loadQuestions();
-    }
+    // Exam Cards
+    const exams=[
+      {id:"ssc",name:"SSC Exams",desc:"CGL, CHSL, GD, MTS"},
+      {id:"railways",name:"Railways",desc:"NTPC, Group-D, JE"},
+      {id:"tet",name:"TET Exams",desc:"Primary & Upper Primary"},
+      {id:"wbset",name:"WB SET",desc:"Paper I & II"},
+      {id:"wbjee",name:"WBJEE",desc:"Engineering & Medical"},
+      {id:"madhyamik",name:"Madhyamik / HS",desc:"Board MCQ Practice"}
+    ];
 
-    async function loadQuestions() {
-      const q = query(collection(db, selectedExam), orderBy("id"));
-      const snapshot = await getDocs(q);
-      questions = snapshot.docs.map(doc => doc.data());
-      showQuestion();
-      startTimer();
-    }
+    examCards.innerHTML=exams.map(ex=>`
+      <div class="card bg-white rounded-lg shadow p-5 cursor-pointer" onclick="openExam('${ex.id}')">
+        <h2 class="text-xl font-semibold">${ex.name}</h2>
+        <p class="text-gray-600 mt-2">${ex.desc}</p>
+      </div>
+    `).join("");
 
-    function startTimer() {
-      timer = setInterval(() => {
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          submitQuiz();
-        } else {
-          timeLeft--;
-          const minutes = Math.floor(timeLeft / 60);
-          const seconds = timeLeft % 60;
-          timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-        }
-      }, 1000);
-    }
-
-    function showQuestion() {
-      const q = questions[currentQuestion];
-      if (!q) return;
-
-      questionText.textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
-      optionsList.innerHTML = "";
-
-      q.options.forEach((option, idx) => {
-        const li = document.createElement("li");
-        const input = document.createElement("input");
-        input.type = "radio";
-        input.name = "option";
-        input.value = option;
-        if (answers[currentQuestion] === option) input.checked = true;
-
-        input.addEventListener("change", () => {
-          answers[currentQuestion] = option;
-        });
-
-        li.appendChild(input);
-        li.append(option);
-        optionsList.appendChild(li);
-      });
-    }
-
-    prevBtn.addEventListener("click", () => {
-      if (currentQuestion > 0) {
-        currentQuestion--;
-        showQuestion();
-      }
-    });
-
-    nextBtn.addEventListener("click", () => {
-      if (currentQuestion < questions.length - 1) {
-        currentQuestion++;
-        showQuestion();
-      }
-    });
-
-    submitBtn.addEventListener("click", () => {
-      submitQuiz();
-    });
-
-    async function submitQuiz() {
-      clearInterval(timer);
-      let correct = 0, wrong = 0, unattempted = 0, score = 0;
-
-      questions.forEach((q, index) => {
-        const given = answers[index];
-        if (!given) {
-          unattempted++;
-        } else if (given === q.answer) {
-          correct++;
-          score += 2;
-        } else {
-          wrong++;
-          score -= 0.25;
-        }
-      });
-
-      if (currentUser) {
-        await setDoc(doc(db, "results", `${currentUser.uid}-${selectedExam}`), {
-          exam: selectedExam,
-          email: currentUser.email,
-          answers: answers,
-          correct,
-          wrong,
-          unattempted,
-          score,
-          total: questions.length * 2,
-          submittedAt: serverTimestamp()
-        });
-      }
-
-      resultBox.style.display = "block";
-      resultBox.innerHTML = `
-        <h3>📊 আপনার ফলাফল</h3>
-        <p>✅ সঠিক: ${correct}</p>
-        <p>❌ ভুল: ${wrong}</p>
-        <p>⚪ অনুত্তরিত: ${unattempted}</p>
-        <p>🏆 প্রাপ্ত নম্বর: ${score} / ${questions.length * 2}</p>
-        <hr>
-        <h4>🔎 প্রশ্নভিত্তিক রিভিউ</h4>
-        ${questions.map((q, i) => `
-          <div>
-            <b>প্রশ্ন ${i+1}: ${q.question}</b><br>
-            আপনার উত্তর: ${answers[i] || "দেওয়া হয়নি"}<br>
-            সঠিক উত্তর: ${q.answer}
-          </div>
-          <hr>
-        `).join("")}
-      `;
-    }
+    // Dark Mode
+    window.toggleDarkMode=function(){document.body.classList.toggle("dark");}
   </script>
 </body>
 </html>
