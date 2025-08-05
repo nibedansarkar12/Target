@@ -19,9 +19,8 @@
   </header>
   <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="card">
-      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ বা এডিট করুন</h2>
+      <h2 class="text-xl font-semibold mb-2">➕ নতুন প্রশ্ন যোগ করুন</h2>
       <form id="questionForm">
-        <input type="hidden" id="editingId" value="">
         <input type="text" id="questionText" placeholder="প্রশ্ন লিখুন" class="w-full mb-2 p-2 border rounded" required>
         <div class="grid grid-cols-2 gap-2 mb-2">
           <input type="text" id="optionA" placeholder="Option A" class="p-2 border rounded" required>
@@ -36,20 +35,20 @@
           <option value="C">C</option>
           <option value="D">D</option>
         </select>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">সংরক্ষণ করুন</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">প্রশ্ন যোগ করুন</button>
       </form>
       <div id="messageBox" class="text-center mt-4 font-semibold"></div>
-    </div>
-    <div class="card">
-      <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
-      <a href="student-results.html" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full block text-center">📄 ছাত্রদের রেজাল্ট দেখুন</a>
-    </div>
+    </div><div class="card">
+  <h2 class="text-xl font-semibold mb-4">📁 Export Options</h2>
+  <a href="student-results.html" class="block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-center">📊 ছাত্রদের রেজাল্ট দেখুন</a>
+</div>
+
   </main>  <section class="mt-8">
     <h2 class="text-2xl font-bold text-center mb-4">📋 প্রশ্ন তালিকা</h2>
     <div id="questionList" class="space-y-4"></div>
   </section>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -77,7 +76,6 @@
     const questionForm = document.getElementById('questionForm');
     const messageBox = document.getElementById('messageBox');
     const questionList = document.getElementById('questionList');
-    const editingId = document.getElementById('editingId');
 
     function showMessage(msg, isError = false) {
       messageBox.textContent = msg;
@@ -106,35 +104,28 @@
             <p><strong>(${q.id})</strong> ${q.question}</p>
             <ul class="list-disc ml-6">${optionsHTML}</ul>
             <p class="mt-2">✅ সঠিক উত্তর: ${q.answer}</p>
-            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">🗑️ Delete</button>
-            <button onclick="editQuestion('${q.docId}', '${q.question.replace(/'/g, "\'")}', ${JSON.stringify(q.options).replace(/"/g, '&quot;')}, '${q.answer.replace(/'/g, "\'")}')" class="mt-2 ml-2 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">✏️ Edit</button>
+            <button onclick="deleteQuestion('${q.docId}')" class="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+            <button onclick="alert('Edit feature coming soon!')" class="mt-2 ml-2 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
           </div>
         `;
       });
     }
 
     window.deleteQuestion = async function (docId) {
-      if (confirm("আপনি কি নিশ্চিত মুছতে চান?")) {
-        await deleteDoc(doc(db, "questions", docId));
-        showMessage("প্রশ্ন মুছে ফেলা হয়েছে");
-        loadQuestions();
+      if (confirm("আপনি কি নিশ্চিত এই প্রশ্নটি মুছে ফেলতে চান?")) {
+        try {
+          await deleteDoc(doc(db, "questions", docId));
+          alert("✅ প্রশ্ন মুছে ফেলা হয়েছে");
+          loadQuestions();
+        } catch (error) {
+          console.error("❌ ডিলিট করতে সমস্যা:", error);
+          alert("❌ প্রশ্ন ডিলিট করা যায়নি");
+        }
       }
-    };
-
-    window.editQuestion = function (docId, question, options, answer) {
-      document.getElementById("editingId").value = docId;
-      document.getElementById("questionText").value = question;
-      document.getElementById("optionA").value = options[0];
-      document.getElementById("optionB").value = options[1];
-      document.getElementById("optionC").value = options[2];
-      document.getElementById("optionD").value = options[3];
-      const correctIndex = options.findIndex(opt => opt.trim() === answer.trim());
-      document.getElementById("correctOption").value = ["A", "B", "C", "D"][correctIndex];
     };
 
     questionForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      const docId = editingId.value;
       const question = document.getElementById("questionText").value.trim();
       const options = [
         document.getElementById("optionA").value.trim(),
@@ -146,26 +137,18 @@
       const answer = options["ABCD".indexOf(correct)];
 
       try {
-        if (docId) {
-          await updateDoc(doc(db, "questions", docId), {
-            question,
-            options,
-            answer
-          });
-          showMessage("✏️ প্রশ্ন আপডেট হয়েছে!");
-        } else {
-          const snapshot = await getDocs(collection(db, "questions"));
-          const newId = snapshot.size + 1;
-          await addDoc(collection(db, "questions"), {
-            id: newId,
-            question,
-            options,
-            answer
-          });
-          showMessage("✅ নতুন প্রশ্ন যুক্ত হয়েছে!");
-        }
+        const snapshot = await getDocs(collection(db, "questions"));
+        const newId = snapshot.size + 1;
+
+        await addDoc(collection(db, "questions"), {
+          id: newId,
+          question,
+          options,
+          answer
+        });
+
+        showMessage("✅ প্রশ্ন যোগ হয়েছে!");
         questionForm.reset();
-        editingId.value = "";
         loadQuestions();
       } catch (error) {
         showMessage("❌ ব্যর্থ: " + error.message, true);
