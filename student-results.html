@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>📊 স্টুডেন্ট রেজাল্টস - Target Zone</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
   <style>
     body {
       background: linear-gradient(to bottom, #e0f7fa, #ffffff);
@@ -35,7 +35,7 @@
   <header class="text-center mb-8">
     <h1 class="text-4xl font-bold text-gray-800 mb-2">📊 স্টুডেন্ট রেজাল্টস</h1>
     <p class="text-gray-600 text-lg">Target Zone - Success Batch</p>
-    <hr class="mt-4 border-t-2 border-blue-400 w-32 mx-auto">
+    <hr class="mt-4 border-t-2 border-blue-400 w-32 mx-auto" />
   </header>
 
   <main class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="resultsContainer">
@@ -87,8 +87,8 @@
           if (!rawAnswer || rawAnswer.trim() === "") {
             unattempted++;
           } else {
-            const given = (rawAnswer || "").trim().toLowerCase();
-            const actual = (q.answer || "").trim().toLowerCase();
+            const given = (rawAnswer || "").trim();
+            const actual = (q.answer || "").trim();
 
             if (given === actual) {
               correct++;
