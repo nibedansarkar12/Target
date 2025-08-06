@@ -165,13 +165,37 @@ window.startExam = async function(examId, examName) {
 }
 
 async function loadQuestions() {
-  const q = query(collection(db, `${currentExam}_sets/${selectedSet}/questions`), orderBy("id"));
-  const snapshot = await getDocs(q);
-  questions = snapshot.docs.map(doc => doc.data());
-  buildPalette();
-  showQuestion();
-  startTimer();
-}
+  console.log("🚀 প্রশ্ন লোড শুরু হচ্ছে...");
+
+  const q = query(
+    collection(db, `${currentExam}_sets/${selectedSet}/questions`),
+    orderBy("id")
+  );
+
+  console.log("📂 Path:", `${currentExam}_sets/${selectedSet}/questions`);
+
+  try {
+    const snapshot = await getDocs(q);
+    console.log("📊 মোট প্রশ্ন পাওয়া গেছে:", snapshot.size);
+
+    questions = snapshot.docs.map(doc => {
+      console.log("📝 প্রশ্ন:", doc.data().question);
+      return doc.data();
+    });
+
+    if (questions.length === 0) {
+      alert("⚠️ কোনো প্রশ্ন পাওয়া যায়নি।");
+      return;
+    }
+
+    buildPalette();
+    showQuestion();
+    startTimer();
+  } catch (error) {
+    console.error("❌ প্রশ্ন লোড করতে সমস্যা:", error);
+    alert("প্রশ্ন লোড করতে সমস্যা হয়েছে। Console check করুন।");
+  }
+  }
 
 function buildPalette() {
   const palette = document.getElementById("palette");
