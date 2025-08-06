@@ -186,26 +186,43 @@
       updatePalette();
     };
     document.getElementById("submit-btn").onclick = async () => {
-      let correct = 0;
-      questions.forEach((q, i) => {
-        if (answers[i] === q.answer) correct++;
-      });
-      const total = questions.length;
-      const wrong = total - correct;
-      const percentage = Math.round((correct / total) * 100);
-      resultText.innerHTML = `সঠিক উত্তর: ${correct}টি<br>ভুল উত্তর: ${wrong}টি<br>মোট স্কোর: ${percentage}%`;
-      resultBox.classList.remove("hidden");
+  let correct = 0;
+  let wrong = 0;
+  let unattempted = 0;
 
-      await addDoc(collection(db, "results"), {
-        exam: currentExam,
-        score: correct,
-        total: total,
-        correct,
-        wrong,
-        unattempted: total - Object.keys(answers).length,
-        submittedAt: new Date()
-      });
-    };
+  questions.forEach((q, i) => {
+    if (answers[i] === undefined) {
+      unattempted++;
+    } else if (answers[i] === q.answer) {
+      correct++;
+    } else {
+      wrong++;
+    }
+  });
+
+  const total = questions.length;
+  const percentage = Math.round((correct / total) * 100);
+
+  resultText.innerHTML = `
+    ✅ সঠিক উত্তর: ${correct}টি<br>
+    ❌ ভুল উত্তর: ${wrong}টি<br>
+    ⚪ উত্তর দেওয়া হয়নি: ${unattempted}টি<br>
+    📊 মোট স্কোর: ${percentage}%
+  `;
+  resultBox.classList.remove("hidden");
+
+  await addDoc(collection(db, "results"), {
+    exam: currentExam,
+    score: correct,
+    total,
+    correct,
+    wrong,
+    unattempted,
+    submittedAt: new Date()
+  });
+
+  alert("✅ পরীক্ষাটি সফলভাবে জমা হয়েছে!");
+};
 
     const starsCanvas = document.getElementById("stars");
     const planesCanvas = document.getElementById("planes");
