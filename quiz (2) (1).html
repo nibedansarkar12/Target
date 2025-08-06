@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>Target Zone Mock Tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: radial-gradient(#1e3c72, #2a5298);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+    #stars, #planes {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .floating-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    #quiz-container input[type="radio"] {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body class="relative min-h-screen overflow-x-hidden overflow-y-auto">
+  <canvas id="stars"></canvas>
+  <canvas id="planes"></canvas>  <div id="dashboard" class="relative z-10 text-center py-10 px-4">
+    <h1 class="text-4xl font-extrabold mb-4 text-white">Target Zone Mock Tests</h1>
+    <p class="mb-6 text-gray-200">নির্বাচন করুন আপনি কোন বিষয়ের পরীক্ষা দিতে চান:</p>
+    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-6 max-w-6xl mx-auto pb-24"></div>
+  </div>  <div id="quiz-container" class="hidden max-w-4xl mx-auto bg-white rounded-lg shadow p-6 relative z-10 text-gray-800">
+    <h2 id="quiz-header" class="text-2xl font-bold text-center mb-6">Mock Test</h2>
+    <div class="flex justify-end mb-4">
+      <span id="timer" class="bg-blue-700 text-white px-4 py-1 rounded text-lg font-semibold">80:00</span>
+    </div>
+    <div class="mb-6">
+      <p id="question-text" class="text-lg font-semibold">প্রশ্ন 1: প্রশ্ন লোড হচ্ছে...</p>
+      <ul id="options-list" class="space-y-3 mt-4"></ul>
+    </div>
+    <div class="flex justify-center gap-4 mb-6">
+      <button id="mark-review-btn" class="bg-yellow-500 text-white px-4 py-2 rounded shadow">🔖 মার্ক করে রাখো</button>
+      <button id="prev-btn" class="bg-gray-600 text-white px-4 py-2 rounded shadow">⬅ পূর্ববর্তী</button>
+      <button id="next-btn" class="bg-blue-600 text-white px-4 py-2 rounded shadow">পরবর্তী ➡</button>
+    </div>
+    <div id="palette" class="grid grid-cols-8 sm:grid-cols-10 gap-2 justify-center mb-6"></div>
+    <div class="flex justify-center mb-6">
+      <button id="submit-btn" class="bg-red-600 text-white px-6 py-2 rounded shadow">📤 পরীক্ষাটি জমা দিন</button>
+    </div>
+    <div class="bg-gray-100 p-4 rounded shadow text-gray-800">
+      <h3 class="text-lg font-semibold mb-2">নির্দেশিকা:</h3>
+      <p class="text-sm">🟢 Attempted | 🟠 Review | ⚪ Unattempted</p>
+    </div>
+    <div id="result-box" class="hidden mt-6 bg-green-100 text-green-900 p-4 rounded shadow">
+      <h3 class="text-lg font-bold mb-2">📊 পরীক্ষার ফলাফল</h3>
+      <p id="result-text" class="text-md font-semibold"></p>
+    </div>
+  </div>  <footer class="bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-center text-white text-sm fixed bottom-0 w-full z-10 shadow-lg">
+    📌 উন্নত প্রস্তুতির জন্য — SSC | Railways | TET | WB SET | WBJEE | Madhyamik — সব কিছু এক জায়গায়
+  </footer>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const exams = [
+      {id:"ssc", name:"SSC Exams", desc:"CGL, CHSL, GD, MTS"},
+      {id:"railways", name:"Railways", desc:"NTPC, Group-D, JE"},
+      {id:"tet", name:"TET Exams", desc:"Primary & Upper Primary"},
+      {id:"wbset", name:"WB SET", desc:"Paper I & II"},
+      {id:"wbjee", name:"WBJEE", desc:"Engineering & Medical"},
+      {id:"madhyamik", name:"Madhyamik / HS", desc:"Board MCQ Practice"}
+    ];
+
+    const dashboard = document.getElementById("dashboard");
+    const quizContainer = document.getElementById("quiz-container");
+    const examCards = document.getElementById("exam-cards");
+    const resultBox = document.getElementById("result-box");
+    const resultText = document.getElementById("result-text");
+
+    examCards.innerHTML = exams.map(ex => `
+      <div class="bg-white text-gray-800 rounded-lg shadow-lg p-5 cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:bg-indigo-100 floating-btn"
+           onclick="startExam('${ex.id}', '${ex.name}')">
+        <h2 class="text-xl font-bold">${ex.name}</h2>
+        <p class="text-sm mt-2 text-gray-600">${ex.desc}</p>
+      </div>
+    `).join("");
+
+    let currentExam = "", questions = [], currentQuestion = 0, answers = {}, reviewed = {}, timeLeft = 80*60;
+
+    window.startExam = async function(examId, examName) {
+      currentExam = examId;
+      dashboard.classList.add("hidden");
+      quizContainer.classList.remove("hidden");
+      document.getElementById("quiz-header").textContent = examName + " Mock Test";
+      await loadQuestions();
+    }
+
+    async function loadQuestions() {
+      const q = query(collection(db, currentExam), orderBy("id"));
+      const snapshot = await getDocs(q);
+      questions = snapshot.docs.map(doc => doc.data());
+      buildPalette();
+      showQuestion();
+      startTimer();
+    }
+
+    function buildPalette() {
+      const palette = document.getElementById("palette");
+      palette.innerHTML = "";
+      for (let i = 0; i < questions.length; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        btn.className = "unattempted";
+        btn.onclick = () => { currentQuestion = i; showQuestion(); };
+        palette.appendChild(btn);
+      }
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("question-text").textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
+      const optionsList = document.getElementById("options-list");
+      optionsList.innerHTML = "";
+      q.options.forEach(option => {
+        const li = document.createElement("li");
+        li.classList.add("p-2", "rounded", "border", "cursor-pointer", "hover:bg-gray-100");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "option";
+        input.value = option;
+        if (answers[currentQuestion] === option) input.checked = true;
+        input.addEventListener("change", () => {
+          answers[currentQuestion] = option;
+          updatePalette();
+        });
+        li.appendChild(input);
+        li.append(option);
+        optionsList.appendChild(li);
+      });
+      updatePalette();
+    }
+
+    function updatePalette() {
+      [...document.getElementById("palette").children].forEach((btn, i) => {
+        btn.className = "unattempted";
+        if (answers[i]) btn.classList.add("attempted");
+        if (reviewed[i]) btn.classList.add("review");
+      });
+    }
+
+    function startTimer() {
+      setInterval(() => {
+        if (timeLeft <= 0) return;
+        timeLeft--;
+        const min = Math.floor(timeLeft / 60);
+        const sec = timeLeft % 60;
+        document.getElementById("timer").textContent = `${min}:${sec.toString().padStart(2, "0")}`;
+      }, 1000);
+    }
+
+    document.getElementById("prev-btn").onclick = () => {
+      if (currentQuestion > 0) currentQuestion--;
+      showQuestion();
+    };
+    document.getElementById("next-btn").onclick = () => {
+      if (currentQuestion < questions.length - 1) currentQuestion++;
+      showQuestion();
+    };
+    document.getElementById("mark-review-btn").onclick = () => {
+      reviewed[currentQuestion] = true;
+      updatePalette();
+    };
+    document.getElementById("submit-btn").onclick = async () => {
+      let correct = 0;
+      questions.forEach((q, i) => {
+        if (answers[i] === q.answer) correct++;
+      });
+      const total = questions.length;
+      const wrong = total - correct;
+      const percentage = Math.round((correct / total) * 100);
+      resultText.innerHTML = `সঠিক উত্তর: ${correct}টি<br>ভুল উত্তর: ${wrong}টি<br>মোট স্কোর: ${percentage}%`;
+      resultBox.classList.remove("hidden");
+
+      await addDoc(collection(db, "results"), {
+        exam: currentExam,
+        score: correct,
+        total: total,
+        correct,
+        wrong,
+        unattempted: total - Object.keys(answers).length,
+        submittedAt: new Date()
+      });
+    };
+
+    const starsCanvas = document.getElementById("stars");
+    const planesCanvas = document.getElementById("planes");
+    const starsCtx = starsCanvas.getContext("2d");
+    const planesCtx = planesCanvas.getContext("2d");
+    starsCanvas.width = planesCanvas.width = window.innerWidth;
+    starsCanvas.height = planesCanvas.height = window.innerHeight;
+    let stars = [], planes = [];
+    for (let i = 0; i < 120; i++) {
+      stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*2 });
+    }
+    for (let i = 0; i < 2; i++) {
+      planes.push({ x: -50, y: Math.random()*starsCanvas.height/2, dx: 2+Math.random()*2 });
+    }
+    function drawBackground() {
+      starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
+      starsCtx.fillStyle = "white";
+      stars.forEach(s => {
+        starsCtx.beginPath();
+        starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        starsCtx.fill();
+      });
+      planesCtx.clearRect(0,0,planesCanvas.width,planesCanvas.height);
+      planes.forEach(p => {
+        planesCtx.fillStyle = "lightblue";
+        planesCtx.fillRect(p.x, p.y, 40, 3);
+        p.x += p.dx;
+        if (p.x > planesCanvas.width + 100) {
+          p.x = -50;
+          p.y = Math.random()*planesCanvas.height/2;
+        }
+      });
+    }
+    setInterval(drawBackground, 30);
+  </script></body>
+</html>
