@@ -165,37 +165,33 @@ window.startExam = async function(examId, examName) {
 }
 
 async function loadQuestions() {
-  console.log("🚀 প্রশ্ন লোড শুরু হচ্ছে...");
-
-  const q = query(
-    collection(db, `${currentExam}_sets/${selectedSet}/questions`),
-    orderBy("id")
-  );
-
-  console.log("📂 Path:", `${currentExam}_sets/${selectedSet}/questions`);
-
   try {
-    const snapshot = await getDocs(q);
-    console.log("📊 মোট প্রশ্ন পাওয়া গেছে:", snapshot.size);
+    console.log("🚀 প্রশ্ন লোড শুরু হচ্ছে...");
+    const exam = currentExam;
+    const questionRef = collection(db, exam);
+    const snapshot = await getDocs(questionRef);
 
+    if (snapshot.empty) {
+      alert("❌ প্রশ্ন পাওয়া যায়নি");
+      return;
+    }
+
+    console.log("📊 মোট প্রশ্ন:", snapshot.size);
     questions = snapshot.docs.map(doc => {
       console.log("📝 প্রশ্ন:", doc.data().question);
       return doc.data();
     });
 
-    if (questions.length === 0) {
-      alert("⚠️ কোনো প্রশ্ন পাওয়া যায়নি।");
-      return;
-    }
-
-    buildPalette();
+    currentIndex = 0;
+    answers = Array(questions.length).fill(null);
+    reviews = Array(questions.length).fill(false);
+    document.getElementById("quiz-box").classList.remove("hidden");
     showQuestion();
-    startTimer();
   } catch (error) {
-    console.error("❌ প্রশ্ন লোড করতে সমস্যা:", error);
-    alert("প্রশ্ন লোড করতে সমস্যা হয়েছে। Console check করুন।");
+    console.error("❌ প্রশ্ন লোড করতে গিয়ে সমস্যা:", error);
+    alert("⚠️ প্রশ্ন লোড করা যায়নি।");
   }
-  }
+}
 
 function buildPalette() {
   const palette = document.getElementById("palette");
