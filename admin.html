@@ -154,6 +154,7 @@
   }
 
 await addDoc(collection(db, cat + "_sets", set, "questions"), {
+await addDoc(collection(db, cat), {
   id: Date.now(),
   question: ques,
   options: opts,
