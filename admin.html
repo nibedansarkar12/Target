@@ -153,16 +153,14 @@
     photoURL = await getDownloadURL(storageRef);
   }
 
-  const setPath = `${cat}_sets/${set}/questions`;
-
-  await addDoc(collection(db, setPath), {
-    id: Date.now(),
-    question: ques,
-    options: opts,
-    answer: opts[correctIndex],
-    photo: photoURL,
-    createdAt: new Date()
-  });
+await addDoc(collection(db, cat + "_sets", set, "questions"), {
+  id: Date.now(),
+  question: ques,
+  options: opts,
+  answer: opts[correctIndex],
+  photo: photoURL,
+  createdAt: new Date()
+});
 
   alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
   document.getElementById("question-form").reset();
