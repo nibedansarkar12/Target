@@ -173,7 +173,7 @@ await addDoc(collection(db, cat), {
   if (!category || !set) return;
 
   currentCategory = category;
-  const path = `${category}_sets/${set}/questions`;
+  const path = category;
   const table = document.getElementById("questions-list");
   table.innerHTML = "<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
 
