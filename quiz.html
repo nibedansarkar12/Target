@@ -312,9 +312,10 @@ function showSetSelector(sets, callback) {
     btn.className = "w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded";
     btn.textContent = set;
     btn.onclick = () => {
-      modal.classList.add("hidden");
-      callback(set);
-    };
+  console.log("✅ Set সিলেক্ট করা হয়েছে:", set); // <-- এই লাইন বসান
+  modal.classList.add("hidden");
+  callback(set);
+};
     container.appendChild(btn);
   });
 }
