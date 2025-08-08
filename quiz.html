@@ -16,6 +16,7 @@
       --attempted: #10b981;
       --review: #f59e0b;
       --unattempted: #d1d5db;
+      --card-border: rgba(255,255,255,0.10);
     }
     body{
       font-family: 'Segoe UI', system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
@@ -24,27 +25,63 @@
       color: #fff;
       overflow-x:hidden;
     }
-    #stars,#planes{ position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    main{ position:relative; z-index:10; padding-bottom:160px; max-width:1100px; margin:0 auto; }
 
-    main{ position:relative; z-index:10; padding-bottom:160px; max-width:1200px; margin:0 auto; }
-
-    .card{ background:var(--glass); border-radius:12px; padding:16px; box-shadow: 0 8px 24px rgba(2,6,23,0.45); }
+    /* Unified card base */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:16px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+      border: 1px solid var(--card-border);
+    }
     .muted{ color:var(--muted); }
     header.sticky-top{ position:sticky; top:0; z-index:40; backdrop-filter: blur(6px); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    header h1{ font-size:1.5rem; margin:0; font-weight:800; }
+    header h1{ font-size:1.4rem; margin:0; font-weight:800; }
 
     /* Dashboard / exam cards */
-    #exam-cards{ display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-top:12px; }
-    .exam-card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; min-height:110px; justify-content:space-between; }
-    .exam-card h4{ margin:0; font-weight:700; }
+    #exam-cards{ display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:12px; }
+    .exam-card{
+      border-radius:12px;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:110px;
+      justify-content:space-between;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    /* give each exam-card a subtle unique background so it's obvious */
+    .exam-card.bg-1{ background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); }
+    .exam-card.bg-2{ background: linear-gradient(180deg, rgba(16,185,129,0.06), rgba(16,185,129,0.02)); }
+    .exam-card.bg-3{ background: linear-gradient(180deg, rgba(37,99,235,0.04), rgba(37,99,235,0.02)); }
+    .exam-card.bg-4{ background: linear-gradient(180deg, rgba(245,158,11,0.04), rgba(245,158,11,0.02)); }
+    .exam-card h4{ margin:0; font-weight:800; font-size:1rem; }
     .exam-card p{ margin:0; color:var(--muted); font-size:0.95rem; }
+
+    /* horizontal layout for name + desc */
+    .exam-card .top-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .exam-card .title-desc{ display:flex; gap:12px; align-items:center; flex:1; min-width:0; }
+    .exam-card .desc { color:var(--muted); font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
     /* Quiz area visuals */
     #quiz-section { padding: 18px; }
-    #question-card { background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(255,255,255,0.02)); border-radius:12px; padding:16px; box-shadow: 0 10px 30px rgba(2,6,23,0.45); }
-    #question-text { font-size:1.1rem; font-weight:700; margin-bottom:8px; color:#fff; }
-    #options-list li { background: rgba(255,255,255,0.04); padding:10px; border-radius:10px; display:flex; gap:12px; align-items:center; cursor:pointer; }
-    #options-list li input[type="radio"]{ transform:scale(1.05); }
+    #question-card { background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(255,255,255,0.02)); border-radius:12px; padding:16px; box-shadow: 0 10px 30px rgba(2,6,23,0.45); border:1px solid var(--card-border); }
+    #question-text { font-size:1.1rem; font-weight:700; margin-bottom:8px; color:#fff; word-break:break-word; }
+    #options-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+    #options-list li {
+      background: rgba(255,255,255,0.04);
+      padding:12px;
+      border-radius:10px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      cursor:pointer;
+      user-select:none;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    #options-list li input[type="radio"]{ transform:scale(1.05); pointer-events:none; } /* we handle clicks on li */
+    #options-list li .opt-text{ flex:1; min-width:0; word-break:break-word; }
 
     /* Palette */
     #palette{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
@@ -66,19 +103,27 @@
 
     /* Result simple card */
     #result-section .stat-row{ display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
-    .stat { background: rgba(255,255,255,0.04); padding:12px; border-radius:8px; min-width:120px; text-align:center; }
+    .stat { background: rgba(255,255,255,0.04); padding:12px; border-radius:8px; min-width:120px; text-align:center; border:1px solid rgba(255,255,255,0.06); }
     .stat .num{ font-size:1.4rem; font-weight:800; color:#fff; }
     .stat .label{ color:var(--muted); font-size:0.95rem; }
 
-    /* Profile */
-    #profile-section .profile-card{ display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+    /* Profile & leaderboard */
+    #profile-section .profile-area{ display:grid; grid-template-columns: 1fr 320px; gap:14px; align-items:start; margin-top:12px; }
+    @media (max-width:880px){
+      #profile-section .profile-area{ grid-template-columns: 1fr; }
+    }
+    .profile-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); }
+    .small-card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); }
+
+    /* leaderboard list items */
+    #leaderboard-list li{ padding:10px; margin-bottom:8px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+
+    /* make clickable elements large on mobile */
+    button, input, select{ touch-action:manipulation; }
 
   </style>
 </head>
 <body>
-
-  <canvas id="stars"></canvas>
-  <canvas id="planes"></canvas>
 
   <header class="sticky-top card" role="banner">
     <div style="display:flex; align-items:center; gap:12px;">
@@ -130,7 +175,7 @@
         <p id="question-text">প্রশ্ন লোড হচ্ছে...</p>
         <div id="difficulty-tag" class="muted" style="font-size:0.95rem;">Difficulty: -</div>
 
-        <ul id="options-list" class="mt-4 space-y-2"></ul>
+        <ul id="options-list" class="mt-4"></ul>
 
         <div class="controls-row" style="margin-top:14px;">
           <div class="controls-left">
@@ -163,12 +208,11 @@
       </div>
     </section>
 
-    <!-- RESULT / ANALYSIS (Simplified counts only) -->
+    <!-- RESULT / ANALYSIS (Pie chart replaces certificate) -->
     <section id="result-section" class="hidden card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3 style="margin:0; font-weight:800;">Result</h3>
         <div>
-          <button id="download-cert" class="bg-blue-600 px-3 py-1 rounded text-white">Download Certificate</button>
           <button id="close-result" class="bg-white/6 px-2 py-1 rounded">Close</button>
         </div>
       </div>
@@ -177,44 +221,61 @@
         <!-- injected simple stats -->
       </div>
 
-      <div style="margin-top:12px;" id="result-note" class="muted">রেজাল্টে শুধু মোট প্রশ্ন, কতটি করেছেন, কতটি করেননি, কতটি ঠিক ও ভুল — এ ষ্ট্যাট দিয়ে দেখানো হয়েছে।</div>
+      <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+        <div style="flex:1; min-width:240px;">
+          <canvas id="result-pie" style="max-width:480px;"></canvas>
+        </div>
+        <div id="result-note" class="muted" style="flex-basis:240px;">রেজাল্টে শুধু মোট প্রশ্ন, কতটি করেছেন, কতটি করেননি, কতটি ঠিক ও ভুল — পাই চার্ট দিয়ে দেখানো হয়েছে।</div>
+      </div>
     </section>
 
-    <!-- PROFILE / HISTORY (single card; user-only view) -->
+    <!-- PROFILE / HISTORY / LEADERBOARD (combined view) -->
     <section id="profile-section" class="hidden card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="margin:0; font-weight:800;">প্রোফাইল</h3>
+        <h3 style="margin:0; font-weight:800;">প্রোফাইল ও এক্সট্রা</h3>
         <div>
           <button id="logout-btn" class="bg-red-500 px-3 py-1 rounded text-white">Logout</button>
         </div>
       </div>
 
-      <div style="margin-top:12px;">
-        <div class="profile-card">
-          <div style="flex:1;">
-            <div id="profile-email" class="muted"></div>
-            <div style="margin-top:8px;">
-              <h4 style="margin:0; font-weight:700;">Past Attempts</h4>
-              <ul id="past-attempts" style="margin-top:8px; list-style:none; padding:0;"></ul>
+      <div class="profile-area">
+        <!-- left: profile + history -->
+        <div>
+          <div class="profile-card" style="display:flex; gap:12px; align-items:center;">
+            <div style="width:72px;height:72px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.2rem; border:1px solid rgba(255,255,255,0.06);">
+              <span id="profile-initial">U</span>
+            </div>
+            <div style="flex:1;">
+              <div id="profile-name" style="font-weight:800; font-size:1.05rem;">User</div>
+              <div id="profile-email" class="muted" style="font-size:0.95rem; margin-top:4px;"></div>
+              <div style="margin-top:10px;">
+                <button id="edit-name-btn" class="bg-white/6 px-3 py-1 rounded">Name বদলান</button>
+              </div>
             </div>
           </div>
-          <div style="min-width:220px;">
-            <div class="card" style="background:rgba(255,255,255,0.03);">
-              <div style="font-weight:700; font-size:0.95rem;">User Summary</div>
-              <div id="user-summary" class="muted" style="margin-top:8px;"></div>
+
+          <div style="margin-top:12px;">
+            <h4 style="margin:6px 0 8px 0; font-weight:800;">Past Attempts</h4>
+            <div id="past-attempts" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+        </div>
+
+        <!-- right: summary + leaderboard compact -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="small-card">
+            <div style="font-weight:700; font-size:0.95rem;">User Summary</div>
+            <div id="user-summary" class="muted" style="margin-top:8px;">—</div>
+          </div>
+
+          <div class="small-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight:700;">Leaderboard</div>
+              <select id="leaderboard-exam" class="bg-white/6 px-2 py-1 rounded"></select>
             </div>
+            <ul id="leaderboard-list" style="margin-top:12px; list-style:none; padding:0;"></ul>
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- LEADERBOARD -->
-    <section id="leaderboard-section" class="hidden card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="margin:0; font-weight:800;">Leaderboard</h3>
-        <select id="leaderboard-exam" class="bg-white/6 px-2 py-1 rounded"></select>
-      </div>
-      <ul id="leaderboard-list" style="margin-top:12px; list-style:none; padding:0;"></ul>
     </section>
 
   </main>
@@ -226,15 +287,15 @@
   </div>
 
   <!-- ============================
-       Firebase + App Script (updated per requests)
+       Firebase + App Script (updated)
        ============================ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
-      getFirestore, collection, getDocs, query, orderBy, addDoc, doc, setDoc, onSnapshot, updateDoc, getDoc, where
+      getFirestore, collection, getDocs, query, orderBy, addDoc, doc, setDoc, onSnapshot, updateDoc, getDoc, where, limit
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import {
-      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -266,28 +327,36 @@
     const quizSection = document.getElementById("quiz-section");
     const resultSection = document.getElementById("result-section");
     const profileSection = document.getElementById("profile-section");
-    const leaderboardSection = document.getElementById("leaderboard-section");
     const authUi = document.getElementById("auth-ui");
 
-    // populate exam cards as neat cards
-    examCards.innerHTML = exams.map(ex => `
-      <div class="exam-card" data-id="${ex.id}">
-        <div>
-          <h4>${ex.name}</h4>
-          <p class="muted">${ex.desc}</p>
+    // initial UI render
+    function renderExamCards(){
+      examCards.innerHTML = exams.map((ex,i) => `
+        <div class="exam-card bg-${(i%4)+1}" data-id="${ex.id}">
+          <div class="top-row">
+            <div class="title-desc">
+              <div style="min-width:8px;"></div>
+              <div style="display:flex; flex-direction:column; min-width:0;">
+                <h4 style="margin:0; font-weight:800;">${ex.name}</h4>
+                <div class="desc muted">${ex.desc}</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+              <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
+              <div><button class="start-exam" data-id="${ex.id}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Start</button></div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
-          <div><button class="start-exam" data-id="${ex.id}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Start</button></div>
-        </div>
-      </div>
-    `).join("");
+      `).join("");
+    }
+    renderExamCards();
 
     // app state
     let currentExam = null, questions = [], currentIndex = 0;
     let answers = {}, reviewed = {}, timeLeft = 80*60, timerInterval = null;
     let currentUser = null;
     let ttsEnabled = false;
+    let pieChartInstance = null;
 
     // auth UI
     function renderAuthUI(){
@@ -300,15 +369,23 @@
         document.getElementById("btn-signin").onclick = showSignIn;
         document.getElementById("btn-signup").onclick = showSignUp;
       } else {
-        authUi.innerHTML = `<div class="muted" style="font-weight:700;">Hi, ${currentUser.email}</div>`;
+        const display = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
+        authUi.innerHTML = `<div class="muted" style="font-weight:700;">Hi, ${display}</div>`;
       }
     }
+
     function showSignUp(){
       const email = prompt("Email:");
       const pass = prompt("Password (6+):");
+      const name = prompt("Name (shown on profile):");
       if (!email || !pass) return alert("Invalid");
       createUserWithEmailAndPassword(auth,email,pass)
-        .then(cred => { alert("Registered"); })
+        .then(async cred => {
+          if (name) {
+            try { await updateProfile(cred.user, { displayName: name }); } catch(e){}
+          }
+          alert("Registered & signed in");
+        })
         .catch(err => alert(err.message));
     }
     function showSignIn(){
@@ -322,14 +399,13 @@
 
     document.getElementById("go-profile").onclick = () => showSection('profile');
     document.getElementById("go-history").onclick = () => showSection('profile');
-    document.getElementById("go-leaderboard").onclick = () => showSection('leaderboard');
+    document.getElementById("go-leaderboard").onclick = () => showSection('profile');
 
     function showSection(name){
       dashboard.classList.toggle('hidden', name !== 'dashboard');
       quizSection.classList.toggle('hidden', name !== 'quiz');
       resultSection.classList.toggle('hidden', name !== 'result');
       profileSection.classList.toggle('hidden', name !== 'profile');
-      leaderboardSection.classList.toggle('hidden', name !== 'leaderboard');
       if (name === 'dashboard') dashboard.classList.remove('hidden');
     }
 
@@ -337,15 +413,18 @@
       currentUser = user;
       renderAuthUI();
       if (user) loadUserHistory();
+      // update profile display panel if open
+      updateProfilePanel();
     });
 
     // start exam
-    document.querySelectorAll('.start-exam').forEach(btn => {
-      btn.onclick = async (e) => {
-        if (!auth.currentUser) return alert("Please sign in first.");
-        const examId = e.target.dataset.id;
-        await startExam(examId);
-      };
+    // delegate click to container because buttons are injected dynamically
+    examCards.addEventListener('click', async (ev) => {
+      const btn = ev.target.closest('.start-exam');
+      if (!btn) return;
+      if (!auth.currentUser) return alert("Please sign in first.");
+      const examId = btn.dataset.id;
+      await startExam(examId);
     });
 
     async function startExam(examId){
@@ -355,10 +434,19 @@
       document.getElementById('quiz-title').textContent = exams.find(x=>x.id===examId).name;
       document.getElementById('exam-tag').textContent = examId.toUpperCase();
 
-      // fetch questions (same approach)
-      const q = query(collection(db, examId), orderBy('id'));
-      const snap = await getDocs(q);
-      questions = snap.docs.map(d => d.data());
+      // fetch questions from Firestore collection named by examId
+      try {
+        const q = query(collection(db, examId), orderBy('id'));
+        const snap = await getDocs(q);
+        questions = snap.docs.map(d => d.data());
+      } catch(e){
+        // fallback demo question if no firestore collection exists
+        questions = [
+          {id:1, question:"বাংলাদেশের রাজধানী কোথা?", options:["ঢাকা","চট্টগ্রাম","রাজশাহী","খুলনা"], answer:"ঢাকা", difficulty:"Easy", topic:"Geography"},
+          {id:2, question:"2 + 2 = ?", options:["3","4","5","6"], answer:"4", difficulty:"Easy", topic:"Math"}
+        ];
+      }
+
       answers = JSON.parse(localStorage.getItem(`${examId}_answers_${auth.currentUser.uid}`) || '{}');
       reviewed = JSON.parse(localStorage.getItem(`${examId}_review_${auth.currentUser.uid}`) || '{}');
       currentIndex = 0;
@@ -375,22 +463,49 @@
 
       const ol = document.getElementById('options-list');
       ol.innerHTML = '';
-      (q.options || []).forEach(opt=>{
+      (q.options || []).forEach((opt, idx)=>{
         const li = document.createElement('li');
-        li.className = '';
+        li.setAttribute('data-opt', opt);
+        // set aria for accessibility
+        li.setAttribute('role','button');
+        li.setAttribute('tabindex','0');
+
         const input = document.createElement('input');
         input.type='radio'; input.name='option'; input.value=opt;
         input.checked = (answers[currentIndex] === opt);
+        // keep input non-interactive for touch, we handle via li click
         input.onchange = () => {
           answers[currentIndex] = opt;
           localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
           updatePalette(); updateProgress();
         };
+
+        const spanText = document.createElement('span');
+        spanText.className = 'opt-text';
+        spanText.textContent = opt;
+
+        // compose li
         li.appendChild(input);
-        const span = document.createElement('span');
-        span.style.marginLeft='6px';
-        span.textContent = opt;
-        li.appendChild(span);
+        li.appendChild(spanText);
+
+        // clicking anywhere on li selects the option
+        li.addEventListener('click', (e)=>{
+          // prevent double toggles if clicking the radio directly
+          input.checked = true;
+          // trigger onchange manually (ensures state saved)
+          const ev = new Event('change', { bubbles: true });
+          input.dispatchEvent(ev);
+        });
+
+        // keyboard support (Enter / Space)
+        li.addEventListener('keydown', (ev)=>{
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            input.checked = true;
+            input.dispatchEvent(new Event('change', { bubbles:true }));
+          }
+        });
+
         ol.appendChild(li);
       });
       updatePalette(); updateProgress();
@@ -401,7 +516,7 @@
     document.getElementById('next-btn').onclick = ()=>{ if(currentIndex<questions.length-1){ currentIndex++; renderQuestion(); } };
     document.getElementById('mark-review-btn').onclick = ()=>{ reviewed[currentIndex]=true; localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed)); updatePalette(); };
 
-    // palette build & update (clear icons & colors)
+    // palette build & update
     function buildPalette(){
       const pal = document.getElementById('palette');
       pal.innerHTML = '';
@@ -409,7 +524,7 @@
         const b = document.createElement('button');
         b.className = 'palette-btn palette-un';
         b.title = `Question ${i+1}`;
-        b.innerHTML = `${i+1}<span style="font-size:0.7rem;margin-left:6px;"></span>`;
+        b.innerText = `${i+1}`;
         b.onclick = ()=>{ currentIndex = i; renderQuestion(); };
         pal.appendChild(b);
       }
@@ -419,9 +534,9 @@
       const children = [...document.getElementById('palette').children];
       children.forEach((btn,i)=>{
         btn.className = 'palette-btn palette-un';
-        btn.innerHTML = `${i+1}`;
-        if (answers[i]) { btn.classList.remove('palette-un'); btn.classList.add('palette-att'); btn.innerHTML = `${i+1} ✔`; btn.title = `Attempted • Q${i+1}`; }
-        if (reviewed[i]) { btn.classList.remove('palette-att','palette-un'); btn.classList.add('palette-rev'); btn.innerHTML = `${i+1} ⚑`; btn.title = `Marked for review • Q${i+1}`; }
+        btn.innerText = `${i+1}`;
+        if (answers[i]) { btn.classList.remove('palette-un'); btn.classList.add('palette-att'); btn.innerText = `${i+1} ✔`; btn.title = `Attempted • Q${i+1}`; }
+        if (reviewed[i]) { btn.classList.remove('palette-att','palette-un'); btn.classList.add('palette-rev'); btn.innerText = `${i+1} ⚑`; btn.title = `Marked for review • Q${i+1}`; }
       });
     }
     function updateProgress(){
@@ -441,7 +556,7 @@
       },1000);
     }
 
-    // submit -> compute simplified counts -> save -> show minimal result view
+    // submit -> compute counts -> save -> show pie chart result
     document.getElementById('submit-btn').onclick = ()=> {
       if (!confirm("আপনি কি পরীক্ষা জমা দিতে চান?")) return;
       submitExam();
@@ -465,29 +580,35 @@
       const percent = Math.round((correct/total)*100);
 
       // save minimal result to Firestore
-      await addDoc(collection(db,'results'), {
-        uid: auth.currentUser.uid,
-        email: auth.currentUser.email,
-        exam: currentExam,
-        score: correct,
-        total,
-        correct, wrong, unattempted,
-        topicMap,
-        submittedAt: new Date()
-      });
+      try {
+        await addDoc(collection(db,'results'), {
+          uid: auth.currentUser.uid,
+          email: auth.currentUser.email,
+          displayName: auth.currentUser.displayName || null,
+          exam: currentExam,
+          score: correct,
+          total,
+          correct, wrong, unattempted,
+          topicMap,
+          submittedAt: new Date()
+        });
+      } catch(e){
+        console.warn("Firestore save failed (maybe offline or rules):", e.message);
+      }
 
       // clear local storage
       localStorage.removeItem(`${currentExam}_answers_${auth.currentUser.uid}`);
       localStorage.removeItem(`${currentExam}_review_${auth.currentUser.uid}`);
       clearInterval(timerInterval);
 
-      // show minimal result
-      showMinimalResult({correct, wrong, unattempted, attempted, total, percent});
+      // show result with pie chart
+      showResultChart({correct, wrong, unattempted, attempted, total, percent});
     }
 
-    function showMinimalResult(data){
+    function showResultChart(data){
       quizSection.classList.add('hidden');
       resultSection.classList.remove('hidden');
+
       const holder = document.getElementById('result-stats');
       holder.innerHTML = '';
       function statHtml(label, num){
@@ -503,19 +624,28 @@
       holder.appendChild(statHtml('Wrong', data.wrong));
       holder.appendChild(statHtml('Percentage', data.percent + '%'));
 
-      document.getElementById('download-cert').onclick = async ()=>{
-        const q = query(collection(db,'results'), where('uid','==',auth.currentUser.uid), where('exam','==',currentExam), orderBy('submittedAt','desc'));
-        const snap = await getDocs(q);
-        if (snap.empty) return alert("No result found to create certificate.");
-        const r = snap.docs[0].data();
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.setFontSize(22); doc.text("Certificate of Achievement", 20, 30);
-        doc.setFontSize(14); doc.text(`This certifies that ${auth.currentUser.email}`, 20, 50);
-        doc.text(`has scored ${r.score}/${r.total} in ${r.exam.toUpperCase()}`, 20, 60);
-        doc.text(`Date: ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`, 20, 80);
-        doc.save(`certificate_${currentExam}_${auth.currentUser.uid}.pdf`);
-      };
+      // render pie chart
+      const ctx = document.getElementById('result-pie').getContext('2d');
+      if (pieChartInstance) pieChartInstance.destroy();
+      pieChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Correct','Wrong','Unattempted'],
+          datasets: [{
+            data: [data.correct, data.wrong, data.unattempted],
+            /* DO NOT set colors explicitly per instructions? The instructions for python charts said no colors.
+               For Chart.js in browser we may let it use defaults — but specify subtle palettes for clarity. */
+            backgroundColor: ['#10b981','#ef4444','#d1d5db']
+          }]
+        },
+        options: {
+          responsive:true,
+          plugins:{
+            legend:{ position: 'bottom', labels:{color:'#fff'} },
+            tooltip:{ callbacks:{ label: function(ctx){ return `${ctx.label}: ${ctx.parsed}`; } } }
+          }
+        }
+      });
     }
 
     document.getElementById('close-result').onclick = ()=> {
@@ -529,20 +659,25 @@
     lbExamSelect.onchange = loadLeaderboard;
     async function loadLeaderboard(){
       const exam = lbExamSelect.value;
-      // query results for selected exam ordered by score desc
-      // Note: Firestore requires composite index for combined where+order; keep minimal for demo
-      const q = query(collection(db,'results'), where('exam','==',exam), orderBy('score','desc'));
-      const snap = await getDocs(q);
       const ul = document.getElementById('leaderboard-list');
-      ul.innerHTML = '';
-      snap.forEach(d=>{
-        const r = d.data();
-        const li = document.createElement('li');
-        li.style.marginBottom='8px';
-        li.className = 'card';
-        li.innerText = `${r.email} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleString()}`;
-        ul.appendChild(li);
-      });
+      ul.innerHTML = '<li class="muted">Loading…</li>';
+      try {
+        const q = query(collection(db,'results'), where('exam','==',exam), orderBy('score','desc'), limit(20));
+        const snap = await getDocs(q);
+        ul.innerHTML = '';
+        if (snap.empty) { ul.innerHTML = '<li class="muted">No results yet</li>'; return; }
+        snap.forEach(d=>{
+          const r = d.data();
+          const li = document.createElement('li');
+          li.style.marginBottom='8px';
+          li.className = 'card';
+          const name = r.displayName || (r.email ? r.email.split('@')[0] : 'User');
+          li.innerText = `${name} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleString()}`;
+          ul.appendChild(li);
+        });
+      } catch(e){
+        ul.innerHTML = `<li class="muted">Unable to load leaderboard</li>`;
+      }
     }
     lbExamSelect.value = exams[0].id;
     loadLeaderboard();
@@ -550,26 +685,58 @@
     // user history & profile summary
     async function loadUserHistory(){
       if (!auth.currentUser) return;
-      document.getElementById('profile-email').textContent = auth.currentUser.email;
       const q = query(collection(db,'results'), where('uid','==',auth.currentUser.uid), orderBy('submittedAt','asc'));
-      const snap = await getDocs(q);
-      const arr = snap.docs.map(d=>d.data());
-      const ul = document.getElementById('past-attempts'); ul.innerHTML='';
-      let totalAttempts = 0, bestPercent = 0;
-      arr.forEach(r=>{
-        totalAttempts++;
-        const li = document.createElement('li');
-        li.style.marginBottom='8px';
-        li.className = 'card';
-        li.innerText = `${r.exam} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`;
-        ul.appendChild(li);
-        const p = Math.round((r.score / r.total)*100);
-        if (p > bestPercent) bestPercent = p;
-      });
-      document.getElementById('user-summary').textContent = `Attempts: ${totalAttempts} • Best: ${bestPercent}%`;
+      try {
+        const snap = await getDocs(q);
+        const arr = snap.docs.map(d=>d.data());
+        const container = document.getElementById('past-attempts'); container.innerHTML='';
+        let totalAttempts = 0, bestPercent = 0;
+        arr.forEach(r=>{
+          totalAttempts++;
+          const li = document.createElement('div');
+          li.style.marginBottom='8px';
+          li.className = 'small-card';
+          const date = new Date(r.submittedAt?.toDate?.() || r.submittedAt);
+          li.innerText = `${r.exam} — ${r.score}/${r.total} — ${date.toLocaleDateString()}`;
+          container.appendChild(li);
+          const p = Math.round((r.score / r.total)*100);
+          if (p > bestPercent) bestPercent = p;
+        });
+        document.getElementById('user-summary').textContent = `Attempts: ${totalAttempts} • Best: ${bestPercent}%`;
+      } catch(e){
+        console.warn("history load failed:", e.message);
+      }
+      updateProfilePanel();
+    }
+
+    function updateProfilePanel(){
+      if (!currentUser) {
+        document.getElementById('profile-name').textContent = 'Guest';
+        document.getElementById('profile-email').textContent = '';
+        document.getElementById('profile-initial').textContent = 'G';
+        return;
+      }
+      const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
+      document.getElementById('profile-name').textContent = name;
+      document.getElementById('profile-email').textContent = currentUser.email || '';
+      document.getElementById('profile-initial').textContent = (name[0] || 'U').toUpperCase();
     }
 
     document.getElementById('logout-btn').onclick = ()=>{ signOut(auth); };
+
+    // allow editing name (updates Firebase profile)
+    document.getElementById('edit-name-btn').onclick = async ()=>{
+      if (!auth.currentUser) return alert("Please sign in to change name.");
+      const newName = prompt("নতুন নাম লিখুন:", auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split('@')[0] : ''));
+      if (!newName) return;
+      try {
+        await updateProfile(auth.currentUser, { displayName: newName });
+        // refresh UI
+        updateProfilePanel();
+        renderAuthUI();
+        alert("Name updated");
+      } catch(e){ alert("Unable to update name: " + e.message); }
+    };
 
     // tts
     document.getElementById('tts-toggle').onclick = ()=> {
@@ -596,43 +763,8 @@
       }
     });
 
-    // initial
+    // initial UI
     renderAuthUI();
-
-    // background animation (kept simple)
-    const starsCanvas = document.getElementById("stars");
-    const planesCanvas = document.getElementById("planes");
-    const starsCtx = starsCanvas.getContext("2d");
-    const planesCtx = planesCanvas.getContext("2d");
-    function resizeCanvases(){ starsCanvas.width = planesCanvas.width = window.innerWidth; starsCanvas.height = planesCanvas.height = window.innerHeight; }
-    window.addEventListener('resize', resizeCanvases);
-    resizeCanvases();
-    let stars = [], planes = [];
-    function initBackground(){
-      stars = []; planes = [];
-      const count = Math.max(80, Math.floor((window.innerWidth * window.innerHeight) / 8000));
-      for (let i = 0; i < count; i++) stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*1.5, twinkle: Math.random()*1.5 });
-      for (let i = 0; i < 2; i++) planes.push({ x: -50, y: Math.random()*starsCanvas.height*0.4, dx: 2+Math.random()*2 });
-    }
-    initBackground();
-    function drawBackground() {
-      starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
-      stars.forEach(s => {
-        starsCtx.beginPath();
-        const alpha = 0.6 + 0.4*Math.sin((Date.now()/500) * s.twinkle);
-        starsCtx.fillStyle = `rgba(255,255,255,${alpha})`;
-        starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        starsCtx.fill();
-      });
-      planesCtx.clearRect(0,0,planesCanvas.width,planesCanvas.height);
-      planes.forEach(p => {
-        planesCtx.fillStyle = "rgba(173,216,230,0.07)";
-        planesCtx.fillRect(p.x, p.y, 40, 3);
-        p.x += p.dx;
-        if (p.x > planesCanvas.width + 100) { p.x = -50; p.y = Math.random()*planesCanvas.height*0.4; p.dx = 2 + Math.random()*3; }
-      });
-    }
-    setInterval(drawBackground, 30);
 
   </script>
 </body>
