@@ -11,6 +11,11 @@
       background: radial-gradient(#1e3c72, #2a5298);
       font-family: 'Segoe UI', sans-serif;
       color: white;
+      transition: background 0.5s, color 0.5s;
+    }
+    body.light-mode {
+      background: #f9fafb;
+      color: #111827;
     }
     #stars, #planes {
       position: absolute;
@@ -25,6 +30,32 @@
     }
     #quiz-container input[type="radio"] {
       margin-right: 8px;
+    }
+    /* Question fade-in animation */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Palette button colors */
+    .palette-btn {
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 0.8rem;
+    }
+    .attempted { background: #10b981; color: white; }
+    .review { background: #f59e0b; color: white; }
+    .unattempted { background: #d1d5db; color: black; }
+    /* Sticky header */
+    #sticky-header {
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      z-index: 20;
+      padding: 8px;
     }
   </style>
 </head>
@@ -41,11 +72,20 @@
 
   <!-- Quiz Container -->
   <div id="quiz-container" class="hidden max-w-4xl mx-auto bg-white rounded-lg shadow p-6 relative z-10 text-gray-800">
-    <h2 id="quiz-header" class="text-2xl font-bold text-center mb-6">Mock Test</h2>
-    <div class="flex justify-end mb-4">
+    <!-- Sticky Header -->
+    <div id="sticky-header" class="flex justify-between items-center">
+      <button id="dark-mode-toggle" class="bg-gray-700 text-white px-3 py-1 rounded">🌗 Mode</button>
       <span id="timer" class="bg-blue-700 text-white px-4 py-1 rounded text-lg font-semibold">80:00</span>
+      <div class="flex-1 mx-4">
+        <div class="w-full bg-gray-300 h-2 rounded">
+          <div id="progress-bar" class="bg-green-500 h-2 rounded" style="width: 0%;"></div>
+        </div>
+        <p id="progress-text" class="text-sm text-center text-white mt-1">0% সম্পূর্ণ</p>
+      </div>
     </div>
-    <div class="mb-6">
+
+    <h2 id="quiz-header" class="text-2xl font-bold text-center mb-6">Mock Test</h2>
+    <div class="mb-6 fade-in" id="question-area">
       <p id="question-text" class="text-lg font-semibold">প্রশ্ন 1: প্রশ্ন লোড হচ্ছে...</p>
       <ul id="options-list" class="space-y-3 mt-4"></ul>
     </div>
@@ -58,10 +98,6 @@
     <div class="flex justify-center mb-6">
       <button id="submit-btn" class="bg-red-600 text-white px-6 py-2 rounded shadow">📤 পরীক্ষাটি জমা দিন</button>
     </div>
-    <div class="bg-gray-100 p-4 rounded shadow text-gray-800">
-      <h3 class="text-lg font-semibold mb-2">নির্দেশিকা:</h3>
-      <p class="text-sm">🟢 Attempted | 🟠 Review | ⚪ Unattempted</p>
-    </div>
   </div>
 
   <!-- Footer -->
@@ -73,12 +109,14 @@
   <div id="result-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white text-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full text-center">
       <h2 class="text-2xl font-bold mb-4 text-green-600">📊 পরীক্ষার ফলাফল</h2>
+      <canvas id="result-chart" class="mb-4"></canvas>
       <div id="result-text" class="text-md font-semibold space-y-1 mb-4"></div>
+      <h3 class="text-lg font-bold mb-2">🏆 Leaderboard</h3>
+      <ul id="leaderboard" class="mb-4 text-sm"></ul>
       <button id="close-modal-btn" class="bg-blue-600 text-white px-4 py-2 rounded shadow">বন্ধ করুন</button>
     </div>
   </div>
 
-  <!-- Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
@@ -118,6 +156,11 @@
 
     let currentExam = "", questions = [], currentQuestion = 0, answers = {}, reviewed = {}, timeLeft = 80*60;
 
+    // 🌗 Dark Mode Toggle
+    document.getElementById("dark-mode-toggle").onclick = () => {
+      document.body.classList.toggle("light-mode");
+    };
+
     window.startExam = async function(examId, examName) {
       currentExam = examId;
       dashboard.classList.add("hidden");
@@ -130,6 +173,8 @@
       const q = query(collection(db, currentExam), orderBy("id"));
       const snapshot = await getDocs(q);
       questions = snapshot.docs.map(doc => doc.data());
+      answers = JSON.parse(localStorage.getItem(currentExam + "_answers") || "{}");
+      reviewed = JSON.parse(localStorage.getItem(currentExam + "_review") || "{}");
       buildPalette();
       showQuestion();
       startTimer();
@@ -141,14 +186,20 @@
       for (let i = 0; i < questions.length; i++) {
         const btn = document.createElement("button");
         btn.textContent = i + 1;
-        btn.className = "unattempted";
+        btn.className = "palette-btn unattempted";
         btn.onclick = () => { currentQuestion = i; showQuestion(); };
         palette.appendChild(btn);
       }
+      updatePalette();
     }
 
     function showQuestion() {
       const q = questions[currentQuestion];
+      const questionArea = document.getElementById("question-area");
+      questionArea.classList.remove("fade-in");
+      void questionArea.offsetWidth;
+      questionArea.classList.add("fade-in");
+
       document.getElementById("question-text").textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
       const optionsList = document.getElementById("options-list");
       optionsList.innerHTML = "";
@@ -162,21 +213,31 @@
         if (answers[currentQuestion] === option) input.checked = true;
         input.addEventListener("change", () => {
           answers[currentQuestion] = option;
+          localStorage.setItem(currentExam + "_answers", JSON.stringify(answers));
           updatePalette();
+          updateProgress();
         });
         li.appendChild(input);
         li.append(option);
         optionsList.appendChild(li);
       });
       updatePalette();
+      updateProgress();
     }
 
     function updatePalette() {
       [...document.getElementById("palette").children].forEach((btn, i) => {
-        btn.className = "unattempted";
+        btn.className = "palette-btn unattempted";
         if (answers[i]) btn.classList.add("attempted");
         if (reviewed[i]) btn.classList.add("review");
       });
+    }
+
+    function updateProgress() {
+      const attempted = Object.keys(answers).length;
+      const percent = Math.round((attempted / questions.length) * 100);
+      document.getElementById("progress-bar").style.width = percent + "%";
+      document.getElementById("progress-text").textContent = `${percent}% সম্পূর্ণ`;
     }
 
     function startTimer() {
@@ -199,10 +260,11 @@
     };
     document.getElementById("mark-review-btn").onclick = () => {
       reviewed[currentQuestion] = true;
+      localStorage.setItem(currentExam + "_review", JSON.stringify(reviewed));
       updatePalette();
     };
 
-    // ✅ Updated Submit with Modal
+    // ✅ Submit with Result Visualization & Leaderboard
     document.getElementById("submit-btn").onclick = async () => {
       const confirmSubmit = confirm("আপনি কি নিশ্চিত যে আপনি পরীক্ষা জমা দিতে চান?");
       if (!confirmSubmit) return;
@@ -234,6 +296,18 @@
         submittedAt: new Date()
       });
 
+      // Chart.js Pie Chart
+      new Chart(document.getElementById("result-chart"), {
+        type: "pie",
+        data: {
+          labels: ["সঠিক", "ভুল", "উত্তর নাই"],
+          datasets: [{
+            data: [correct, wrong, unattempted],
+            backgroundColor: ["#10b981", "#ef4444", "#9ca3af"]
+          }]
+        }
+      });
+
       const resultText = document.getElementById("result-text");
       resultText.innerHTML = `
         <p>✅ সঠিক উত্তর: ${correct}টি</p>
@@ -241,15 +315,27 @@
         <p>⚪ উত্তর দেওয়া হয়নি: ${unattempted}টি</p>
         <p>📊 মোট স্কোর: ${percentage}%</p>
       `;
+
+      // Leaderboard fetch
+      const lbSnapshot = await getDocs(query(collection(db, "results"), orderBy("score", "desc")));
+      const lbList = document.getElementById("leaderboard");
+      lbList.innerHTML = "";
+      lbSnapshot.forEach(doc => {
+        const data = doc.data();
+        lbList.innerHTML += `<li>${data.exam.toUpperCase()} - ${data.score}/${data.total}</li>`;
+      });
+
       document.getElementById("result-modal").classList.remove("hidden");
     };
 
     document.getElementById("close-modal-btn").onclick = () => {
       document.getElementById("result-modal").classList.add("hidden");
+      localStorage.removeItem(currentExam + "_answers");
+      localStorage.removeItem(currentExam + "_review");
       window.location.reload();
     };
 
-    // Background animation
+    // Background animation (same as before)
     const starsCanvas = document.getElementById("stars");
     const planesCanvas = document.getElementById("planes");
     const starsCtx = starsCanvas.getContext("2d");
