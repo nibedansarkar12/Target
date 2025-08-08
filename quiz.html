@@ -1,126 +1,292 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <title>Target Zone Mock Tests</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <title>Target Zone — Full Platform (Final)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Tailwind + Chart.js + jsPDF (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
+    /* ===========================
+       Global styles + theme
+       =========================== */
+    :root {
+      --glass: rgba(255,255,255,0.06);
+      --muted: rgba(255,255,255,0.75);
+      --accent: #10b981;
+    }
     body {
-      background: radial-gradient(#1e3c72, #2a5298);
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 10% 10%, #1e3c72 0%, #2a5298 60%, #0f172a 100%);
       color: white;
-      transition: background 0.5s, color 0.5s;
+      overflow-x: hidden;
     }
-    body.light-mode {
-      background: #f9fafb;
-      color: #111827;
-    }
+
+    /* ===========================
+       Background canvases (stars & planes)
+       Kept at z-index:0 so content remains above
+       =========================== */
     #stars, #planes {
-      position: absolute;
+      position: fixed;
       top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       z-index: 0;
       pointer-events: none;
     }
-    .floating-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+
+    /* ===========================
+       Main content container sits above canvases
+       =========================== */
+    main {
+      position: relative;
+      z-index: 10; /* above canvases */
+      padding-bottom: 120px; /* enough space so footer doesn't cover content */
     }
-    #quiz-container input[type="radio"] {
-      margin-right: 8px;
+
+    /* ===========================
+       Cards, palette, small UI helpers
+       =========================== */
+    .card { background: var(--glass); border-radius: 12px; padding: 14px; }
+    .muted { color: rgba(255,255,255,0.8); }
+    .palette-btn { border-radius: 6px; padding: 6px 8px; font-size: 0.9rem; }
+    .attempted { background: #10b981; color:white; } .review { background:#f59e0b;color:white;} .unattempted{background:#d1d5db;color:black;}
+    .fade-in{ animation: fadeIn .45s ease-in-out; } @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .sticky { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(6px); }
+
+    /* ===========================
+       Footer styles (sticky-bottom behavior)
+       We keep it non-fixed so it won't overlap content; main has padding-bottom
+       Also include fade-in class for subtle entrance
+       =========================== */
+    footer.site-footer {
+      margin-top: 24px;
+      width: 100%;
+      background: linear-gradient(90deg, rgba(79,70,229,0.95), rgba(139,92,246,0.95));
+      color: #fff;
+      padding: 14px 18px;
+      text-align: center;
+      border-radius: 10px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 8px 24px rgba(2,6,23,0.5);
+      transition: transform .5s, opacity .6s;
+      opacity: 0;
+      transform: translateY(10px);
     }
-    /* Question fade-in animation */
-    .fade-in {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    /* Palette button colors */
-    .palette-btn {
-      border-radius: 6px;
-      padding: 4px 6px;
-      font-size: 0.8rem;
-    }
-    .attempted { background: #10b981; color: white; }
-    .review { background: #f59e0b; color: white; }
-    .unattempted { background: #d1d5db; color: black; }
-    /* Sticky header */
-    #sticky-header {
-      position: sticky;
-      top: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      z-index: 20;
-      padding: 8px;
+    footer.site-footer.visible { opacity: 1; transform: translateY(0); }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+      .grid-cols-3 { grid-template-columns: repeat(1, minmax(0,1fr)); }
+      footer.site-footer { padding: 12px; }
     }
   </style>
 </head>
-<body class="relative min-h-screen overflow-x-hidden overflow-y-auto">
+<body>
+
+  <!-- ===========================
+       BACKGROUND CANVASES (Stars + Planes)
+       রচনাঃ এগুলো ব্যাকগ্রাউন্ড এ্যানিমেশনের জন্য।
+       Z-index:0 রাখা হয়েছে যাতে কোন কন্টেন্ট ঢেকে না পড়ে।
+       =========================== -->
   <canvas id="stars"></canvas>
   <canvas id="planes"></canvas>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="relative z-10 text-center py-10 px-4">
-    <h1 class="text-4xl font-extrabold mb-4 text-white">Target Zone Mock Tests</h1>
-    <p class="mb-6 text-gray-200">নির্বাচন করুন আপনি কোন বিষয়ের পরীক্ষা দিতে চান:</p>
-    <div id="exam-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-6 max-w-6xl mx-auto pb-24"></div>
-  </div>
-
-  <!-- Quiz Container -->
-  <div id="quiz-container" class="hidden max-w-4xl mx-auto bg-white rounded-lg shadow p-6 relative z-10 text-gray-800">
-    <!-- Sticky Header -->
-    <div id="sticky-header" class="flex justify-between items-center">
-      <button id="dark-mode-toggle" class="bg-gray-700 text-white px-3 py-1 rounded">🌗 Mode</button>
-      <span id="timer" class="bg-blue-700 text-white px-4 py-1 rounded text-lg font-semibold">80:00</span>
-      <div class="flex-1 mx-4">
-        <div class="w-full bg-gray-300 h-2 rounded">
-          <div id="progress-bar" class="bg-green-500 h-2 rounded" style="width: 0%;"></div>
-        </div>
-        <p id="progress-text" class="text-sm text-center text-white mt-1">0% সম্পূর্ণ</p>
+  <!-- ===========================
+       HEADER / NAV
+       =========================== -->
+  <header class="p-4 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-extrabold">Target Zone</h1>
+      <span class="muted">— Mock tests & analytics</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="auth-ui" class="flex items-center gap-2">
+        <!-- Auth buttons inserted dynamically -->
       </div>
     </div>
+  </header>
 
-    <h2 id="quiz-header" class="text-2xl font-bold text-center mb-6">Mock Test</h2>
-    <div class="mb-6 fade-in" id="question-area">
-      <p id="question-text" class="text-lg font-semibold">প্রশ্ন 1: প্রশ্ন লোড হচ্ছে...</p>
-      <ul id="options-list" class="space-y-3 mt-4"></ul>
-    </div>
-    <div class="flex justify-center gap-4 mb-6">
-      <button id="mark-review-btn" class="bg-yellow-500 text-white px-4 py-2 rounded shadow">🔖 মার্ক করে রাখো</button>
-      <button id="prev-btn" class="bg-gray-600 text-white px-4 py-2 rounded shadow">⬅ পূর্ববর্তী</button>
-      <button id="next-btn" class="bg-blue-600 text-white px-4 py-2 rounded shadow">পরবর্তী ➡</button>
-    </div>
-    <div id="palette" class="grid grid-cols-8 sm:grid-cols-10 gap-2 justify-center mb-6"></div>
-    <div class="flex justify-center mb-6">
-      <button id="submit-btn" class="bg-red-600 text-white px-6 py-2 rounded shadow">📤 পরীক্ষাটি জমা দিন</button>
-    </div>
+  <!-- ===========================
+       MAIN (All sections: dashboard, quiz, result, profile, leaderboard, challenge)
+       আমরা মূল কন্টেন্টকে z-index:10 দিয়েছি যেন ব্যাকগ্রাউন্ডের উপর থাকে।
+       =========================== -->
+  <main class="p-6 max-w-6xl mx-auto space-y-6">
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="card p-6">
+      <!-- মন্তব্য: Dashboard area - পরীক্ষা নির্বাচন -->
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h2 class="text-xl font-bold">নির্বাচন করুন পরীক্ষা</h2>
+          <p class="muted">বিভাগ বেছে নিয়ে পরীক্ষা শুরু করুন</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="go-profile" class="bg-white/10 px-3 py-1 rounded">প্রোফাইল</button>
+          <button id="go-history" class="bg-white/10 px-3 py-1 rounded">ইতিহাস</button>
+          <button id="go-leaderboard" class="bg-white/10 px-3 py-1 rounded">Leaderboard</button>
+          <button id="go-challenge" class="bg-white/10 px-3 py-1 rounded">Challenge</button>
+        </div>
+      </div>
+
+      <div id="exam-cards" class="grid grid-cols-3 gap-4">
+        <!-- exam cards injected by JS -->
+      </div>
+    </section>
+
+    <!-- QUIZ AREA -->
+    <section id="quiz-section" class="hidden card p-6 relative">
+      <!-- মন্তব্য: Quiz header: timer, tts, title -->
+      <div class="flex items-center justify-between sticky top-16 bg-transparent py-2">
+        <div class="flex items-center gap-3">
+          <button id="back-to-dashboard" class="bg-white/10 px-2 py-1 rounded">← Back</button>
+          <h3 id="quiz-title" class="text-lg font-bold">Mock Test</h3>
+          <span id="exam-tag" class="muted text-sm">—</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="tts-toggle" class="bg-white/10 px-2 py-1 rounded">🔊 Play Voice</button>
+          <div class="bg-white/10 px-3 py-1 rounded text-sm" id="timer">80:00</div>
+        </div>
+      </div>
+
+      <!-- প্রশ্ন অঞ্চল -->
+      <div id="question-area" class="mt-4 fade-in">
+        <p id="question-text" class="text-lg font-semibold">প্রশ্ন লোড হচ্ছে...</p>
+        <div id="difficulty-tag" class="muted text-sm mt-1">Difficulty: -</div>
+        <ul id="options-list" class="space-y-2 mt-4"></ul>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-3 mt-4">
+        <button id="prev-btn" class="bg-white/10 px-3 py-1 rounded">⬅ পূর্ববর্তী</button>
+        <button id="next-btn" class="bg-white/10 px-3 py-1 rounded">পরবর্তী ➡</button>
+        <button id="mark-review-btn" class="bg-yellow-500 px-3 py-1 rounded text-white">🔖 Review</button>
+        <div class="flex-1">
+          <div class="w-full bg-white/10 h-2 rounded">
+            <div id="progress-bar" style="width:0%" class="h-2 rounded bg-green-500"></div>
+          </div>
+        </div>
+        <button id="submit-btn" class="bg-red-600 px-4 py-1 rounded text-white">জমা দিন</button>
+      </div>
+
+      <!-- Palette -->
+      <div id="palette" class="flex gap-2 flex-wrap mt-4"></div>
+    </section>
+
+    <!-- RESULT / ANALYSIS -->
+    <section id="result-section" class="hidden card p-6">
+      <!-- মন্তব্য: Result & Analysis area -->
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Result & Analysis</h3>
+        <div class="flex items-center gap-2">
+          <button id="download-cert" class="bg-blue-600 px-3 py-1 rounded text-white">Download Certificate</button>
+          <button id="close-result" class="bg-white/10 px-2 py-1 rounded">Close</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <canvas id="result-pie"></canvas>
+          <div id="score-text" class="mt-2 font-semibold"></div>
+        </div>
+        <div>
+          <h4 class="font-semibold">Topic-wise Weakness</h4>
+          <canvas id="topic-bar" class="mt-2"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h4 class="font-semibold mb-2">Question-by-Question Analysis</h4>
+        <div id="qa-analysis" class="space-y-2 max-h-64 overflow-auto"></div>
+      </div>
+    </section>
+
+    <!-- PROFILE / HISTORY -->
+    <section id="profile-section" class="hidden card p-6">
+      <!-- মন্তব্য: User profile, history & charts -->
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">User Profile</h3>
+        <div>
+          <button id="logout-btn" class="bg-red-500 px-3 py-1 rounded text-white">Logout</button>
+        </div>
+      </div>
+      <div class="mt-4">
+        <p id="profile-email" class="muted"></p>
+        <h4 class="mt-3 font-semibold">Performance Over Time</h4>
+        <canvas id="history-chart" class="mt-2"></canvas>
+      </div>
+      <div class="mt-6">
+        <h4 class="font-semibold">Past Attempts</h4>
+        <ul id="past-attempts" class="mt-2 space-y-1"></ul>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section id="leaderboard-section" class="hidden card p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Leaderboard</h3>
+        <select id="leaderboard-exam" class="bg-white/10 px-2 py-1 rounded">
+          <!-- options injected -->
+        </select>
+      </div>
+      <ul id="leaderboard-list" class="mt-4"></ul>
+    </section>
+
+    <!-- CHALLENGE (Friends Mode) -->
+    <section id="challenge-section" class="hidden card p-6">
+      <h3 class="text-xl font-bold">Friends Challenge</h3>
+      <div class="mt-3 flex gap-3">
+        <input id="room-name" placeholder="Room name" class="px-2 py-1 rounded bg-white/5" />
+        <button id="create-room" class="bg-green-600 px-3 py-1 rounded">Create Room</button>
+        <button id="join-room" class="bg-blue-600 px-3 py-1 rounded">Join Room</button>
+      </div>
+      <div id="room-area" class="mt-4 hidden">
+        <p id="room-info" class="muted"></p>
+        <div id="room-players" class="mt-2"></div>
+        <div id="room-controls" class="mt-3">
+          <button id="start-room" class="bg-red-600 px-3 py-1 rounded text-white">Start Challenge</button>
+        </div>
+        <div id="room-scoreboard" class="mt-4"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===========================
+       Footer (modern style) — পূর্বের লাইন রেখে, কিন্তু একটু আধুনিকভাবে
+       Fade-in effect: visible class toggled by IntersectionObserver
+       =========================== -->
+  <div style="padding: 0 1.5rem 1.5rem;">
+    <footer id="site-footer" class="site-footer">
+      📌 উন্নত প্রস্তুতির জন্য — SSC | Railways | TET | WB SET | WBJEE | Madhyamik — সব কিছু এক জায়গায়
+    </footer>
   </div>
 
-  <!-- Footer -->
-  <footer class="bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-center text-white text-sm fixed bottom-0 w-full z-10 shadow-lg">
-    📌 উন্নত প্রস্তুতির জন্য — SSC | Railways | TET | WB SET | WBJEE | Madhyamik — সব কিছু এক জায়গায়
-  </footer>
-
-  <!-- ✅ Result Modal -->
-  <div id="result-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white text-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full text-center">
-      <h2 class="text-2xl font-bold mb-4 text-green-600">📊 পরীক্ষার ফলাফল</h2>
-      <canvas id="result-chart" class="mb-4"></canvas>
-      <div id="result-text" class="text-md font-semibold space-y-1 mb-4"></div>
-      <h3 class="text-lg font-bold mb-2">🏆 Leaderboard</h3>
-      <ul id="leaderboard" class="mb-4 text-sm"></ul>
-      <button id="close-modal-btn" class="bg-blue-600 text-white px-4 py-2 rounded shadow">বন্ধ করুন</button>
-    </div>
-  </div>
-
+  <!-- ===========================
+       Firebase + App Script
+       (সমস্ত ফিচার: auth, questions, results, leaderboard, history, rooms, certificate, tts)
+       =========================== -->
   <script type="module">
+    // ---------------------------
+    // Firebase imports
+    // ---------------------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import {
+      getFirestore, collection, getDocs, query, orderBy, addDoc, doc, setDoc, onSnapshot, updateDoc, getDoc, where
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+    // ---------------------------
+    // Firebase config (তোামার দেওয়া সেট)
+    // ---------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -132,7 +298,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
+    // ---------------------------
+    // Basic exam metadata
+    // ---------------------------
     const exams = [
       {id:"ssc", name:"SSC Exams", desc:"CGL, CHSL, GD, MTS"},
       {id:"railways", name:"Railways", desc:"NTPC, Group-D, JE"},
@@ -142,233 +312,547 @@
       {id:"madhyamik", name:"Madhyamik / HS", desc:"Board MCQ Practice"}
     ];
 
-    const dashboard = document.getElementById("dashboard");
-    const quizContainer = document.getElementById("quiz-container");
+    // ---------------------------
+    // UI references
+    // ---------------------------
     const examCards = document.getElementById("exam-cards");
+    const dashboard = document.getElementById("dashboard");
+    const quizSection = document.getElementById("quiz-section");
+    const resultSection = document.getElementById("result-section");
+    const profileSection = document.getElementById("profile-section");
+    const leaderboardSection = document.getElementById("leaderboard-section");
+    const challengeSection = document.getElementById("challenge-section");
+    const authUi = document.getElementById("auth-ui");
 
+    // populate exam cards
     examCards.innerHTML = exams.map(ex => `
-      <div class="bg-white text-gray-800 rounded-lg shadow-lg p-5 cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:bg-indigo-100 floating-btn"
-           onclick="startExam('${ex.id}', '${ex.name}')">
-        <h2 class="text-xl font-bold">${ex.name}</h2>
-        <p class="text-sm mt-2 text-gray-600">${ex.desc}</p>
-      </div>
-    `).join("");
+      <div class="p-4 rounded-lg bg-white/6 cursor-pointer" data-id="${ex.id}">
+        <h4 class="font-bold">${ex.name}</h4>
+        <p class="muted text-sm">${ex.desc}</p>
+        <div class="mt-2"><button class="start-exam bg-blue-600 px-3 py-1 rounded text-white" data-id="${ex.id}">Start</button></div>
+      </div>`).join("");
 
-    let currentExam = "", questions = [], currentQuestion = 0, answers = {}, reviewed = {}, timeLeft = 80*60;
+    // ---------------------------
+    // App state
+    // ---------------------------
+    let currentExam = null, questions = [], currentIndex = 0;
+    let answers = {}, reviewed = {}, timeLeft = 80*60, timerInterval = null;
+    let currentUser = null;
 
-    // 🌗 Dark Mode Toggle
-    document.getElementById("dark-mode-toggle").onclick = () => {
-      document.body.classList.toggle("light-mode");
-    };
-
-    window.startExam = async function(examId, examName) {
-      currentExam = examId;
-      dashboard.classList.add("hidden");
-      quizContainer.classList.remove("hidden");
-      document.getElementById("quiz-header").textContent = examName + " Mock Test";
-      await loadQuestions();
+    // ---------------------------
+    // Auth UI & handlers
+    // ---------------------------
+    function renderAuthUI() {
+      authUi.innerHTML = '';
+      if (!currentUser) {
+        authUi.innerHTML = `
+          <button id="btn-signin" class="bg-white/10 px-3 py-1 rounded">Sign In</button>
+          <button id="btn-signup" class="bg-white/10 px-3 py-1 rounded">Sign Up</button>
+        `;
+        document.getElementById("btn-signin").onclick = showSignIn;
+        document.getElementById("btn-signup").onclick = showSignUp;
+      } else {
+        authUi.innerHTML = `<div class="muted text-sm">Hi, ${currentUser.email}</div>`;
+      }
     }
 
-    async function loadQuestions() {
-      const q = query(collection(db, currentExam), orderBy("id"));
-      const snapshot = await getDocs(q);
-      questions = snapshot.docs.map(doc => doc.data());
-      answers = JSON.parse(localStorage.getItem(currentExam + "_answers") || "{}");
-      reviewed = JSON.parse(localStorage.getItem(currentExam + "_review") || "{}");
+    function showSignUp(){
+      const email = prompt("Email:");
+      const pass = prompt("Password (6+):");
+      if (!email || !pass) return alert("Invalid");
+      createUserWithEmailAndPassword(auth,email,pass)
+        .then(cred => { alert("Registered"); })
+        .catch(err => alert(err.message));
+    }
+    function showSignIn(){
+      const email = prompt("Email:");
+      const pass = prompt("Password:");
+      if (!email || !pass) return alert("Invalid");
+      signInWithEmailAndPassword(auth,email,pass)
+        .then(u => alert("Signed in"))
+        .catch(err => alert(err.message));
+    }
+
+    document.getElementById("go-profile").onclick = () => showSection('profile');
+    document.getElementById("go-history").onclick = () => showSection('profile');
+    document.getElementById("go-leaderboard").onclick = () => showSection('leaderboard');
+    document.getElementById("go-challenge").onclick = () => showSection('challenge');
+
+    function showSection(name) {
+      // hide all then show target
+      dashboard.classList.toggle('hidden', name !== 'dashboard');
+      quizSection.classList.toggle('hidden', name !== 'quiz');
+      resultSection.classList.toggle('hidden', name !== 'result');
+      profileSection.classList.toggle('hidden', name !== 'profile');
+      leaderboardSection.classList.toggle('hidden', name !== 'leaderboard');
+      challengeSection.classList.toggle('hidden', name !== 'challenge');
+      if (name === 'dashboard') { dashboard.classList.remove('hidden'); }
+    }
+
+    // auth state listener
+    onAuthStateChanged(auth, user => {
+      currentUser = user;
+      renderAuthUI();
+      if (user) loadUserHistory();
+    });
+
+    // ---------------------------
+    // Start exam handlers
+    // ---------------------------
+    document.querySelectorAll('.start-exam').forEach(btn => {
+      btn.onclick = async (e) => {
+        if (!currentUser) return alert("Please sign in first.");
+        const examId = e.target.dataset.id;
+        await startExam(examId);
+      };
+    });
+
+    // load questions from Firestore
+    async function startExam(examId){
+      currentExam = examId;
+      dashboard.classList.add('hidden');
+      quizSection.classList.remove('hidden');
+      document.getElementById('quiz-title').textContent = exams.find(x=>x.id===examId).name;
+      document.getElementById('exam-tag').textContent = examId.toUpperCase();
+      // get questions collection for this exam
+      const q = query(collection(db, examId), orderBy('id'));
+      const snap = await getDocs(q);
+      questions = snap.docs.map(d => d.data());
+      // load autosaved answers (user-specific)
+      answers = JSON.parse(localStorage.getItem(`${examId}_answers_${currentUser.uid}`) || '{}');
+      reviewed = JSON.parse(localStorage.getItem(`${examId}_review_${currentUser.uid}`) || '{}');
+      currentIndex = 0;
+      timeLeft = (questions.length * 60) || 80*60;
+      renderQuestion();
       buildPalette();
-      showQuestion();
       startTimer();
     }
 
-    function buildPalette() {
-      const palette = document.getElementById("palette");
-      palette.innerHTML = "";
-      for (let i = 0; i < questions.length; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i + 1;
-        btn.className = "palette-btn unattempted";
-        btn.onclick = () => { currentQuestion = i; showQuestion(); };
-        palette.appendChild(btn);
+    // render question
+    function renderQuestion(){
+      const q = questions[currentIndex];
+      document.getElementById('question-text').textContent = `Q${currentIndex+1}: ${q.question}`;
+      document.getElementById('difficulty-tag').textContent = `Difficulty: ${q.difficulty || 'N/A'} • Topic: ${q.topic || 'General'}`;
+      const ol = document.getElementById('options-list');
+      ol.innerHTML = '';
+      (q.options || []).forEach(opt=>{
+        const li = document.createElement('li');
+        li.className = 'p-2 rounded bg-white/5 cursor-pointer flex items-center gap-2';
+        const input = document.createElement('input');
+        input.type='radio'; input.name='option'; input.value=opt;
+        if (answers[currentIndex] === opt) input.checked = true;
+        input.onchange = () => {
+          answers[currentIndex] = opt;
+          localStorage.setItem(`${currentExam}_answers_${currentUser.uid}`, JSON.stringify(answers));
+          updatePalette(); updateProgress();
+          // if in a challenge room, update room score if correct (basic)
+          if (currentRoomId && questions[currentIndex].answer === opt) {
+            updateRoomScore(1).catch(()=>{});
+          }
+        };
+        li.appendChild(input);
+        li.appendChild(document.createTextNode(opt));
+        ol.appendChild(li);
+      });
+      updatePalette(); updateProgress();
+      if (ttsEnabled) speakQuestion(questions[currentIndex]);
+    }
+
+    // prev/next
+    document.getElementById('prev-btn').onclick = ()=>{ if(currentIndex>0){ currentIndex--; renderQuestion(); } };
+    document.getElementById('next-btn').onclick = ()=>{ if(currentIndex<questions.length-1){ currentIndex++; renderQuestion(); } };
+    document.getElementById('mark-review-btn').onclick = ()=>{ reviewed[currentIndex]=true; localStorage.setItem(`${currentExam}_review_${currentUser.uid}`, JSON.stringify(reviewed)); updatePalette(); };
+
+    // ---------------------------
+    // Palette
+    // ---------------------------
+    function buildPalette(){
+      const pal = document.getElementById('palette');
+      pal.innerHTML = '';
+      for(let i=0;i<questions.length;i++){
+        const b = document.createElement('button');
+        b.className = 'palette-btn unattempted';
+        b.innerText = i+1;
+        b.onclick = ()=>{ currentIndex = i; renderQuestion(); };
+        pal.appendChild(b);
       }
       updatePalette();
     }
-
-    function showQuestion() {
-      const q = questions[currentQuestion];
-      const questionArea = document.getElementById("question-area");
-      questionArea.classList.remove("fade-in");
-      void questionArea.offsetWidth;
-      questionArea.classList.add("fade-in");
-
-      document.getElementById("question-text").textContent = `প্রশ্ন ${currentQuestion + 1}: ${q.question}`;
-      const optionsList = document.getElementById("options-list");
-      optionsList.innerHTML = "";
-      q.options.forEach(option => {
-        const li = document.createElement("li");
-        li.classList.add("p-2", "rounded", "border", "cursor-pointer", "hover:bg-gray-100");
-        const input = document.createElement("input");
-        input.type = "radio";
-        input.name = "option";
-        input.value = option;
-        if (answers[currentQuestion] === option) input.checked = true;
-        input.addEventListener("change", () => {
-          answers[currentQuestion] = option;
-          localStorage.setItem(currentExam + "_answers", JSON.stringify(answers));
-          updatePalette();
-          updateProgress();
-        });
-        li.appendChild(input);
-        li.append(option);
-        optionsList.appendChild(li);
-      });
-      updatePalette();
-      updateProgress();
-    }
-
-    function updatePalette() {
-      [...document.getElementById("palette").children].forEach((btn, i) => {
-        btn.className = "palette-btn unattempted";
-        if (answers[i]) btn.classList.add("attempted");
-        if (reviewed[i]) btn.classList.add("review");
+    function updatePalette(){
+      const children = [...document.getElementById('palette').children];
+      children.forEach((btn,i)=>{
+        btn.className='palette-btn unattempted';
+        if (answers[i]) btn.classList.add('attempted');
+        if (reviewed[i]) btn.classList.add('review');
       });
     }
-
-    function updateProgress() {
+    function updateProgress(){
       const attempted = Object.keys(answers).length;
-      const percent = Math.round((attempted / questions.length) * 100);
-      document.getElementById("progress-bar").style.width = percent + "%";
-      document.getElementById("progress-text").textContent = `${percent}% সম্পূর্ণ`;
+      const percent = Math.round((attempted / questions.length)*100) || 0;
+      document.getElementById('progress-bar').style.width = percent + '%';
     }
 
-    function startTimer() {
-      setInterval(() => {
-        if (timeLeft <= 0) return;
+    // ---------------------------
+    // Timer
+    // ---------------------------
+    function startTimer(){
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{
+        if (timeLeft<=0){ clearInterval(timerInterval); submitExam(); return; }
         timeLeft--;
-        const min = Math.floor(timeLeft / 60);
-        const sec = timeLeft % 60;
-        document.getElementById("timer").textContent = `${min}:${sec.toString().padStart(2, "0")}`;
-      }, 1000);
+        const m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+      },1000);
     }
 
-    document.getElementById("prev-btn").onclick = () => {
-      if (currentQuestion > 0) currentQuestion--;
-      showQuestion();
-    };
-    document.getElementById("next-btn").onclick = () => {
-      if (currentQuestion < questions.length - 1) currentQuestion++;
-      showQuestion();
-    };
-    document.getElementById("mark-review-btn").onclick = () => {
-      reviewed[currentQuestion] = true;
-      localStorage.setItem(currentExam + "_review", JSON.stringify(reviewed));
-      updatePalette();
+    // ---------------------------
+    // Submit exam -> compute results, save to Firestore, show analysis
+    // ---------------------------
+    document.getElementById('submit-btn').onclick = ()=> {
+      if (!confirm("আপনি কি পরীক্ষা জমা দিতে চান?")) return;
+      submitExam();
     };
 
-    // ✅ Submit with Result Visualization & Leaderboard
-    document.getElementById("submit-btn").onclick = async () => {
-      const confirmSubmit = confirm("আপনি কি নিশ্চিত যে আপনি পরীক্ষা জমা দিতে চান?");
-      if (!confirmSubmit) return;
-
-      let correct = 0;
-      let wrong = 0;
-      let unattempted = 0;
-
-      questions.forEach((q, i) => {
-        if (answers[i] === undefined) {
-          unattempted++;
-        } else if (answers[i] === q.answer) {
-          correct++;
-        } else {
-          wrong++;
+    async function submitExam(){
+      // compute score and topic-wise weakness
+      let correct=0, wrong=0, unattempted=0;
+      const topicMap = {};
+      for(let i=0;i<questions.length;i++){
+        const q = questions[i];
+        const given = answers[i];
+        if (!given) { unattempted++; }
+        else if (given === q.answer) { correct++; }
+        else { wrong++; 
+          const t = q.topic || 'General';
+          topicMap[t] = (topicMap[t]||0) + 1;
         }
-      });
-
+      }
       const total = questions.length;
-      const percentage = Math.round((correct / total) * 100);
-
-      await addDoc(collection(db, "results"), {
+      const percent = Math.round((correct/total)*100);
+      // save result
+      await addDoc(collection(db,'results'), {
+        uid: currentUser.uid,
+        email: currentUser.email,
         exam: currentExam,
         score: correct,
         total,
-        correct,
-        wrong,
-        unattempted,
+        correct, wrong, unattempted,
+        topicMap,
         submittedAt: new Date()
       });
+      // show analysis
+      showResultAnalysis({correct,wrong,unattempted,total,percent,topicMap});
+      // cleanup local storage for this exam/user
+      localStorage.removeItem(`${currentExam}_answers_${currentUser.uid}`);
+      localStorage.removeItem(`${currentExam}_review_${currentUser.uid}`);
+      clearInterval(timerInterval);
+    }
 
-      // Chart.js Pie Chart
-      new Chart(document.getElementById("result-chart"), {
-        type: "pie",
+    // ---------------------------
+    // Result analysis & charts
+    // ---------------------------
+    let resultPieChart = null, topicBarChart = null;
+    function showResultAnalysis(data){
+      quizSection.classList.add('hidden');
+      resultSection.classList.remove('hidden');
+
+      // Pie chart
+      const ctx = document.getElementById('result-pie').getContext('2d');
+      if (resultPieChart) resultPieChart.destroy();
+      resultPieChart = new Chart(ctx, {
+        type:'pie',
         data: {
-          labels: ["সঠিক", "ভুল", "উত্তর নাই"],
-          datasets: [{
-            data: [correct, wrong, unattempted],
-            backgroundColor: ["#10b981", "#ef4444", "#9ca3af"]
-          }]
+          labels:['Correct','Wrong','Unattempted'],
+          datasets:[{ data:[data.correct,data.wrong,data.unattempted], backgroundColor: ['#10b981','#ef4444','#9ca3af'] }]
         }
       });
 
-      const resultText = document.getElementById("result-text");
-      resultText.innerHTML = `
-        <p>✅ সঠিক উত্তর: ${correct}টি</p>
-        <p>❌ ভুল উত্তর: ${wrong}টি</p>
-        <p>⚪ উত্তর দেওয়া হয়নি: ${unattempted}টি</p>
-        <p>📊 মোট স্কোর: ${percentage}%</p>
-      `;
-
-      // Leaderboard fetch
-      const lbSnapshot = await getDocs(query(collection(db, "results"), orderBy("score", "desc")));
-      const lbList = document.getElementById("leaderboard");
-      lbList.innerHTML = "";
-      lbSnapshot.forEach(doc => {
-        const data = doc.data();
-        lbList.innerHTML += `<li>${data.exam.toUpperCase()} - ${data.score}/${data.total}</li>`;
+      // Topic bar
+      const topics = Object.keys(data.topicMap || {});
+      const topicCounts = topics.map(t=>data.topicMap[t]);
+      const ctx2 = document.getElementById('topic-bar').getContext('2d');
+      if (topicBarChart) topicBarChart.destroy();
+      topicBarChart = new Chart(ctx2, {
+        type:'bar',
+        data: { labels: topics, datasets:[{ label:'Wrong count', data:topicCounts }] },
+        options: { indexAxis:'y' }
       });
 
-      document.getElementById("result-modal").classList.remove("hidden");
+      document.getElementById('score-text').innerText = `Score: ${data.correct}/${data.total} (${data.percent}%)`;
+
+      // QA analysis
+      const qa = document.getElementById('qa-analysis'); qa.innerHTML='';
+      for(let i=0;i<questions.length;i++){
+        const q = questions[i];
+        const div = document.createElement('div');
+        div.className='p-3 rounded bg-white/5';
+        const given = answers[i] || '—';
+        div.innerHTML = `<strong>Q${i+1}.</strong> ${q.question}
+          <div class="muted text-sm">Your: ${given} • Correct: ${q.answer} • Topic: ${q.topic || 'General'}</div>
+          <div class="mt-2">${q.explanation ? '<em>Explanation:</em> '+ q.explanation : '<em>No explanation provided</em>'}</div>`;
+        qa.appendChild(div);
+      }
+    }
+
+    document.getElementById('close-result').onclick = ()=> {
+      resultSection.classList.add('hidden');
+      dashboard.classList.remove('hidden');
     };
 
-    document.getElementById("close-modal-btn").onclick = () => {
-      document.getElementById("result-modal").classList.add("hidden");
-      localStorage.removeItem(currentExam + "_answers");
-      localStorage.removeItem(currentExam + "_review");
-      window.location.reload();
+    // ---------------------------
+    // Leaderboard
+    // ---------------------------
+    const lbExamSelect = document.getElementById('leaderboard-exam');
+    lbExamSelect.innerHTML = exams.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+    lbExamSelect.onchange = loadLeaderboard;
+    async function loadLeaderboard(){
+      const exam = lbExamSelect.value;
+      // query results for selected exam ordered by score desc
+      const q = query(collection(db,'results'), where('exam','==',exam), orderBy('score','desc'));
+      const snap = await getDocs(q);
+      const ul = document.getElementById('leaderboard-list');
+      ul.innerHTML = '';
+      snap.forEach(d=>{
+        const r = d.data();
+        const li = document.createElement('li');
+        li.className = 'p-2 bg-white/5 rounded';
+        li.innerText = `${r.email} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleString()}`;
+        ul.appendChild(li);
+      });
+    }
+    lbExamSelect.value = exams[0].id;
+    loadLeaderboard();
+
+    // ---------------------------
+    // User history & profile chart
+    // ---------------------------
+    async function loadUserHistory(){
+      if (!currentUser) return;
+      document.getElementById('profile-email').textContent = currentUser.email;
+      const q = query(collection(db,'results'), where('uid','==',currentUser.uid), orderBy('submittedAt','asc'));
+      const snap = await getDocs(q);
+      const arr = snap.docs.map(d=>d.data());
+      const ul = document.getElementById('past-attempts'); ul.innerHTML='';
+      const labels = [], scores=[];
+      arr.forEach(r=>{
+        const li = document.createElement('li');
+        li.className='p-2 bg-white/5 rounded';
+        li.innerText = `${r.exam} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`;
+        ul.appendChild(li);
+        labels.push(new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString());
+        scores.push(Math.round((r.score / r.total)*100));
+      });
+      // history chart
+      const ctx = document.getElementById('history-chart').getContext('2d');
+      if (window._histChart) window._histChart.destroy();
+      window._histChart = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Score %', data:scores, fill:false}] } });
+    }
+    document.getElementById('logout-btn').onclick = ()=>{ signOut(auth); };
+
+    // ---------------------------
+    // Certificate generation (jsPDF)
+    // ---------------------------
+    document.getElementById('download-cert').onclick = async ()=>{
+      const q = query(collection(db,'results'), where('uid','==',currentUser.uid), where('exam','==',currentExam), orderBy('submittedAt','desc'));
+      const snap = await getDocs(q);
+      if (snap.empty) return alert("No result found to create certificate.");
+      const r = snap.docs[0].data();
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(22); doc.text("Certificate of Achievement", 20, 30);
+      doc.setFontSize(14); doc.text(`This certifies that ${currentUser.email}`, 20, 50);
+      doc.text(`has scored ${r.score}/${r.total} in ${r.exam.toUpperCase()}`, 20, 60);
+      doc.text(`Date: ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`, 20, 80);
+      doc.save(`certificate_${currentExam}_${currentUser.uid}.pdf`);
     };
 
-    // Background animation (same as before)
+    // ---------------------------
+    // TTS (Voice Reading) - Web Speech API
+    // ---------------------------
+    let ttsEnabled = false;
+    document.getElementById('tts-toggle').onclick = ()=> {
+      ttsEnabled = !ttsEnabled;
+      document.getElementById('tts-toggle').innerText = ttsEnabled ? '🔊 Stop Voice' : '🔊 Play Voice';
+      if (!ttsEnabled) speechSynthesis.cancel();
+      else speakQuestion(questions[currentIndex]);
+    };
+    function speakQuestion(q){
+      if (!q || !ttsEnabled) return;
+      speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance();
+      utter.lang = 'bn-BD';
+      utter.text = `প্রশ্ন: ${q.question}. `;
+      (q.options || []).forEach((opt,i)=>{ utter.text += `বিকল্প ${i+1}: ${opt}. `; });
+      speechSynthesis.speak(utter);
+    }
+
+    // ---------------------------
+    // Friends Challenge Mode (basic realtime with rooms)
+    // ---------------------------
+    const createRoomBtn = document.getElementById('create-room');
+    const joinRoomBtn = document.getElementById('join-room');
+    const roomNameInput = document.getElementById('room-name');
+    const roomArea = document.getElementById('room-area');
+    const roomInfo = document.getElementById('room-info');
+    const roomPlayers = document.getElementById('room-players');
+    const startRoomBtn = document.getElementById('start-room');
+    const roomScoreboard = document.getElementById('room-scoreboard');
+
+    let currentRoomId = null, roomUnsub = null;
+    createRoomBtn.onclick = async ()=>{
+      if (!currentUser) return alert("Please login");
+      const name = roomNameInput.value.trim();
+      if (!name) return alert("Enter room name");
+      const ref = doc(collection(db,'rooms'));
+      await setDoc(ref, { name, host: currentUser.uid, players: [{uid:currentUser.uid, email:currentUser.email, score:0}], status:'waiting', exam:exams[0].id, createdAt:new Date() });
+      currentRoomId = ref.id;
+      watchRoom(ref.id);
+      roomArea.classList.remove('hidden');
+    };
+    joinRoomBtn.onclick = async ()=>{
+      if (!currentUser) return alert("Please login");
+      const name = roomNameInput.value.trim();
+      if (!name) return alert("Enter room name to join");
+      const roomsSnap = await getDocs(query(collection(db,'rooms'), where('name','==',name)));
+      if (roomsSnap.empty) return alert("Room not found");
+      const docRef = roomsSnap.docs[0].ref;
+      const data = roomsSnap.docs[0].data();
+      const players = data.players || [];
+      if (!players.find(p=>p.uid===currentUser.uid)) players.push({uid:currentUser.uid,email:currentUser.email,score:0});
+      await updateDoc(docRef, { players });
+      currentRoomId = docRef.id;
+      watchRoom(currentRoomId);
+      roomArea.classList.remove('hidden');
+    };
+
+    function watchRoom(roomId){
+      if (roomUnsub) roomUnsub();
+      const rDoc = doc(db,'rooms',roomId);
+      roomUnsub = onSnapshot(rDoc, snap=>{
+        if (!snap.exists()) return;
+        const data = snap.data();
+        roomInfo.innerText = `Room: ${data.name} • Status: ${data.status} • Exam: ${data.exam}`;
+        roomPlayers.innerHTML = data.players.map(p=>`<div class="p-2 bg-white/5 rounded">${p.email} — ${p.score}</div>`).join('');
+        if (data.status==='started' && data.currentQuestionIndex !== undefined) {
+          questions = data.questions || [];
+          currentIndex = data.currentQuestionIndex || 0;
+          quizSection.classList.remove('hidden');
+          roomArea.classList.remove('hidden');
+          dashboard.classList.add('hidden');
+          renderQuestion();
+        }
+        roomScoreboard.innerHTML = '<h4 class="font-semibold">Scoreboard</h4>' + (data.players||[]).map(p=>`<div class="p-2 bg-white/5 rounded">${p.email}: ${p.score}</div>`).join('');
+      });
+    }
+
+    startRoomBtn.onclick = async ()=>{
+      if (!currentRoomId) return alert("No room");
+      const rDoc = doc(db,'rooms',currentRoomId);
+      const examId = currentExam || exams[0].id;
+      const qSnap = await getDocs(query(collection(db,examId), orderBy('id')));
+      const qs = qSnap.docs.map(d=>d.data());
+      await updateDoc(rDoc, { status:'started', exam:examId, questions:qs, currentQuestionIndex:0 });
+    };
+
+    async function updateRoomScore(points){
+      if (!currentRoomId) return;
+      const rDocRef = doc(db,'rooms',currentRoomId);
+      const rSnap = await getDoc(rDocRef);
+      if (!rSnap.exists()) return;
+      const data = rSnap.data();
+      const players = (data.players||[]).map(p => {
+        if (p.uid === currentUser.uid) p.score = (p.score||0)+points;
+        return p;
+      });
+      await updateDoc(rDocRef, { players });
+    }
+
+    // ---------------------------
+    // Auto-save on unload
+    // ---------------------------
+    window.addEventListener('beforeunload', ()=>{
+      if (currentExam && currentUser) {
+        localStorage.setItem(`${currentExam}_answers_${currentUser.uid}`, JSON.stringify(answers));
+        localStorage.setItem(`${currentExam}_review_${currentUser.uid}`, JSON.stringify(reviewed));
+      }
+    });
+
+    // ---------------------------
+    // Initialize Auth UI & leaderboard
+    // ---------------------------
+    renderAuthUI();
+    loadLeaderboard();
+
+    // ---------------------------
+    // Background animation (stars + planes)
+    // Based on your original design; kept simple & performant
+    // ---------------------------
     const starsCanvas = document.getElementById("stars");
     const planesCanvas = document.getElementById("planes");
     const starsCtx = starsCanvas.getContext("2d");
     const planesCtx = planesCanvas.getContext("2d");
-    starsCanvas.width = planesCanvas.width = window.innerWidth;
-    starsCanvas.height = planesCanvas.height = window.innerHeight;
+
+    function resizeCanvases(){
+      starsCanvas.width = planesCanvas.width = window.innerWidth;
+      starsCanvas.height = planesCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvases);
+    resizeCanvases();
+
     let stars = [], planes = [];
-    for (let i = 0; i < 120; i++) {
-      stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*2 });
+    function initBackground(){
+      stars = [];
+      planes = [];
+      const count = Math.max(80, Math.floor((window.innerWidth * window.innerHeight) / 8000));
+      for (let i = 0; i < count; i++) {
+        stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*1.5, twinkle: Math.random()*1.5 });
+      }
+      for (let i = 0; i < 2; i++) {
+        planes.push({ x: -50, y: Math.random()*starsCanvas.height*0.4, dx: 2+Math.random()*2 });
+      }
     }
-    for (let i = 0; i < 2; i++) {
-      planes.push({ x: -50, y: Math.random()*starsCanvas.height/2, dx: 2+Math.random()*2 });
-    }
+    initBackground();
+
     function drawBackground() {
+      // stars
       starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
-      starsCtx.fillStyle = "white";
       stars.forEach(s => {
         starsCtx.beginPath();
+        const alpha = 0.6 + 0.4*Math.sin((Date.now()/500) * s.twinkle);
+        starsCtx.fillStyle = `rgba(255,255,255,${alpha})`;
         starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         starsCtx.fill();
       });
+      // planes
       planesCtx.clearRect(0,0,planesCanvas.width,planesCanvas.height);
       planes.forEach(p => {
-        planesCtx.fillStyle = "lightblue";
+        planesCtx.fillStyle = "rgba(173,216,230,0.7)";
         planesCtx.fillRect(p.x, p.y, 40, 3);
         p.x += p.dx;
         if (p.x > planesCanvas.width + 100) {
           p.x = -50;
-          p.y = Math.random()*planesCanvas.height/2;
+          p.y = Math.random()*planesCanvas.height*0.4;
+          p.dx = 2 + Math.random()*3;
         }
       });
     }
     setInterval(drawBackground, 30);
+
+    // ---------------------------
+    // Footer fade-in observer
+    // ---------------------------
+    const footerEl = document.getElementById('site-footer');
+    const footerObserver = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if (e.isIntersecting) footerEl.classList.add('visible');
+      });
+    }, { threshold: 0.1 });
+    footerObserver.observe(footerEl);
+
+    // ============================
+    // End of module
+    // ============================
   </script>
+
 </body>
 </html>
