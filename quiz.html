@@ -17,11 +17,15 @@
       --review: #f59e0b;
       --unattempted: #d1d5db;
       --card-border: rgba(255,255,255,0.10);
+      --sun-glow: rgba(255,214,102,0.07);
     }
     body{
       font-family: 'Segoe UI', system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
       margin:0; min-height:100vh;
-      background: radial-gradient(circle at 10% 10%, #1e3c72 0%, #2a5298 60%, #0f172a 100%);
+      /* Blue background with subtle 'sun' glow to make it less dark */
+      background:
+        radial-gradient(circle at 12% 12%, var(--sun-glow) 0%, transparent 18%),
+        radial-gradient(circle at 10% 10%, #1e3c72 0%, #2a5298 60%, #0f172a 100%);
       color: #fff;
       overflow-x:hidden;
     }
@@ -39,6 +43,14 @@
     header.sticky-top{ position:sticky; top:0; z-index:40; backdrop-filter: blur(6px); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
     header h1{ font-size:1.4rem; margin:0; font-weight:800; }
 
+    /* Colored card border helpers */
+    .card-bordered { border-left:6px solid var(--card-border); padding-left:12px; }
+    .border-accent{ border-left-color: var(--accent); }
+    .border-emerald{ border-left-color: #10b981; }
+    .border-blue{ border-left-color: #2563eb; }
+    .border-yellow{ border-left-color: #f59e0b; }
+    .border-teal{ border-left-color: #06b6d4; }
+
     /* Dashboard / exam cards */
     #exam-cards{ display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:12px; }
     .exam-card{
@@ -50,6 +62,7 @@
       min-height:110px;
       justify-content:space-between;
       border:1px solid rgba(255,255,255,0.08);
+      cursor: default;
     }
     /* give each exam-card a subtle unique background so it's obvious */
     .exam-card.bg-1{ background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); }
@@ -121,6 +134,11 @@
     /* make clickable elements large on mobile */
     button, input, select{ touch-action:manipulation; }
 
+    /* Profile card on dashboard */
+    #profile-card-dashboard{ display:flex; gap:12px; align-items:center; padding:12px; border-radius:12px; cursor:pointer; }
+    #profile-card-dashboard .meta{ display:flex; flex-direction:column; gap:6px; }
+    #profile-card-dashboard .meta .name{ font-weight:800; font-size:1rem; }
+    #profile-card-dashboard .meta .sub{ color:var(--muted); font-size:0.95rem; }
   </style>
 </head>
 <body>
@@ -148,6 +166,21 @@
           <button id="go-history" class="bg-white/6 px-3 py-1 rounded">ইতিহাস</button>
           <button id="go-leaderboard" class="bg-white/6 px-3 py-1 rounded">Leaderboard</button>
         </div>
+      </div>
+
+      <!-- New: Profile card on dashboard (click opens combined profile/history/leaderboard view) -->
+      <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div id="profile-card-dashboard" class="card card-bordered border-teal" role="button" tabindex="0" aria-pressed="false">
+          <div style="width:64px;height:64px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.2rem; border:1px solid rgba(255,255,255,0.06);">
+            <span id="dash-profile-initial">U</span>
+          </div>
+          <div class="meta">
+            <div class="name" id="dash-profile-name">Guest</div>
+            <div class="sub" id="dash-profile-sub">প্রোফাইল দেখুন • ইতিহাস ও লিডারবোর্ড সহ</div>
+          </div>
+        </div>
+
+        <!-- you can keep other quick-start small widgets here if desired -->
       </div>
 
       <div id="exam-cards" class="mt-4">
@@ -332,7 +365,7 @@
     // initial UI render
     function renderExamCards(){
       examCards.innerHTML = exams.map((ex,i) => `
-        <div class="exam-card bg-${(i%4)+1}" data-id="${ex.id}">
+        <div class="exam-card bg-${(i%4)+1} card-bordered ${(i%4)==0? 'border-emerald': (i%4)==1? 'border-blue' : (i%4)==2? 'border-yellow' : 'border-accent'}" data-id="${ex.id}">
           <div class="top-row">
             <div class="title-desc">
               <div style="min-width:8px;"></div>
@@ -397,17 +430,34 @@
         .catch(err => alert(err.message));
     }
 
+    // Dashboard profile card click opens profile combined view
+    document.getElementById('profile-card-dashboard').addEventListener('click', ()=> showSection('profile'));
+    document.getElementById('profile-card-dashboard').addEventListener('keydown', (e)=> { if(e.key==='Enter'||e.key===' ') showSection('profile'); });
+
     document.getElementById("go-profile").onclick = () => showSection('profile');
     document.getElementById("go-history").onclick = () => showSection('profile');
     document.getElementById("go-leaderboard").onclick = () => showSection('profile');
 
-    function showSection(name){
+    // History management & section navigation
+    // Replace initial state to avoid unexpected back-to-login issues
+    history.replaceState({section:'dashboard'}, '');
+
+    function showSection(name, fromPop=false){
       dashboard.classList.toggle('hidden', name !== 'dashboard');
       quizSection.classList.toggle('hidden', name !== 'quiz');
       resultSection.classList.toggle('hidden', name !== 'result');
       profileSection.classList.toggle('hidden', name !== 'profile');
-      if (name === 'dashboard') dashboard.classList.remove('hidden');
+
+      // update accessible focus / announcements if needed
+      if (!fromPop) {
+        try { history.pushState({section:name}, ''); } catch(e){}
+      }
     }
+
+    window.addEventListener('popstate', (e)=>{
+      const sec = (e.state && e.state.section) || 'dashboard';
+      showSection(sec, true);
+    });
 
     onAuthStateChanged(auth, user => {
       currentUser = user;
@@ -447,13 +497,17 @@
         ];
       }
 
-      answers = JSON.parse(localStorage.getItem(`${examId}_answers_${auth.currentUser.uid}`) || '{}');
-      reviewed = JSON.parse(localStorage.getItem(`${examId}_review_${auth.currentUser.uid}`) || '{}');
+      // IMPORTANT CHANGE per request:
+      // Do NOT auto-restore previously saved answers on exam start.
+      // This ensures after completing an exam the user can take it again without old choices auto-selecting.
+      answers = {}; reviewed = {};
       currentIndex = 0;
       timeLeft = (questions.length * 60) || 80*60;
       renderQuestion();
       buildPalette();
       startTimer();
+      // push quiz to history
+      try { history.pushState({section:'quiz'}, ''); } catch(e){}
     }
 
     function renderQuestion(){
@@ -472,11 +526,18 @@
 
         const input = document.createElement('input');
         input.type='radio'; input.name='option'; input.value=opt;
+        // do not pre-check from localStorage (we intentionally avoid auto-restoring)
         input.checked = (answers[currentIndex] === opt);
-        // keep input non-interactive for touch, we handle via li click
+
         input.onchange = () => {
           answers[currentIndex] = opt;
-          localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
+          // persist in-progress if desired (silent autosave) but we will not auto-restore on next full start
+          if (auth.currentUser) {
+            try {
+              localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
+              localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed));
+            } catch(e){}
+          }
           updatePalette(); updateProgress();
         };
 
@@ -490,9 +551,7 @@
 
         // clicking anywhere on li selects the option
         li.addEventListener('click', (e)=>{
-          // prevent double toggles if clicking the radio directly
           input.checked = true;
-          // trigger onchange manually (ensures state saved)
           const ev = new Event('change', { bubbles: true });
           input.dispatchEvent(ev);
         });
@@ -512,9 +571,12 @@
       if (ttsEnabled) speakQuestion(questions[currentIndex]);
     }
 
+    // back button handler (was missing)
+    document.getElementById('back-to-dashboard').onclick = ()=> { showSection('dashboard'); };
+
     document.getElementById('prev-btn').onclick = ()=>{ if(currentIndex>0){ currentIndex--; renderQuestion(); } };
     document.getElementById('next-btn').onclick = ()=>{ if(currentIndex<questions.length-1){ currentIndex++; renderQuestion(); } };
-    document.getElementById('mark-review-btn').onclick = ()=>{ reviewed[currentIndex]=true; localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed)); updatePalette(); };
+    document.getElementById('mark-review-btn').onclick = ()=>{ reviewed[currentIndex]=true; if (auth.currentUser) localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed)); updatePalette(); };
 
     // palette build & update
     function buildPalette(){
@@ -596,9 +658,12 @@
         console.warn("Firestore save failed (maybe offline or rules):", e.message);
       }
 
-      // clear local storage
-      localStorage.removeItem(`${currentExam}_answers_${auth.currentUser.uid}`);
-      localStorage.removeItem(`${currentExam}_review_${auth.currentUser.uid}`);
+      // clear local storage for this exam so a fresh attempt won't auto-restore
+      try {
+        localStorage.removeItem(`${currentExam}_answers_${auth.currentUser.uid}`);
+        localStorage.removeItem(`${currentExam}_review_${auth.currentUser.uid}`);
+      } catch(e){}
+
       clearInterval(timerInterval);
 
       // show result with pie chart
@@ -633,8 +698,6 @@
           labels: ['Correct','Wrong','Unattempted'],
           datasets: [{
             data: [data.correct, data.wrong, data.unattempted],
-            /* DO NOT set colors explicitly per instructions? The instructions for python charts said no colors.
-               For Chart.js in browser we may let it use defaults — but specify subtle palettes for clarity. */
             backgroundColor: ['#10b981','#ef4444','#d1d5db']
           }]
         },
@@ -646,11 +709,15 @@
           }
         }
       });
+
+      // push result to history so back brings back to previous appropriately
+      try { history.pushState({section:'result'}, ''); } catch(e){}
     }
 
     document.getElementById('close-result').onclick = ()=> {
       resultSection.classList.add('hidden');
       dashboard.classList.remove('hidden');
+      try { history.pushState({section:'dashboard'}, ''); } catch(e){}
     };
 
     // leaderboard
@@ -710,16 +777,23 @@
     }
 
     function updateProfilePanel(){
+      const dashInitial = document.getElementById('dash-profile-initial');
       if (!currentUser) {
         document.getElementById('profile-name').textContent = 'Guest';
         document.getElementById('profile-email').textContent = '';
         document.getElementById('profile-initial').textContent = 'G';
+        document.getElementById('dash-profile-name').textContent = 'Guest';
+        document.getElementById('dash-profile-sub').textContent = 'প্রোফাইল দেখুন • ইতিহাস ও লিডারবোর্ড সহ';
+        dashInitial.textContent = 'G';
         return;
       }
       const name = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
       document.getElementById('profile-name').textContent = name;
       document.getElementById('profile-email').textContent = currentUser.email || '';
       document.getElementById('profile-initial').textContent = (name[0] || 'U').toUpperCase();
+      document.getElementById('dash-profile-name').textContent = name;
+      document.getElementById('dash-profile-sub').textContent = currentUser.email || '';
+      dashInitial.textContent = (name[0] || 'U').toUpperCase();
     }
 
     document.getElementById('logout-btn').onclick = ()=>{ signOut(auth); };
@@ -755,11 +829,13 @@
       speechSynthesis.speak(utter);
     }
 
-    // autosave on unload
+    // autosave on unload (still saves but we DO NOT auto-restore on new attempts)
     window.addEventListener('beforeunload', ()=>{
       if (currentExam && auth.currentUser) {
-        localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
-        localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed));
+        try {
+          localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
+          localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed));
+        } catch(e){}
       }
     });
 
