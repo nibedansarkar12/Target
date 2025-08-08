@@ -2,280 +2,233 @@
 <html lang="bn">
 <head>
   <meta charset="utf-8" />
-  <title>Target Zone — Full Platform (Final)</title>
+  <title>Target Zone — Full Platform (Updated)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Tailwind + Chart.js + jsPDF (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-    /* ===========================
-       Global styles + theme
-       =========================== */
-    :root {
+    :root{
       --glass: rgba(255,255,255,0.06);
-      --muted: rgba(255,255,255,0.75);
+      --muted: rgba(255,255,255,0.78);
       --accent: #10b981;
+      --attempted: #10b981;
+      --review: #f59e0b;
+      --unattempted: #d1d5db;
     }
-    body {
+    body{
       font-family: 'Segoe UI', system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
-      margin: 0;
-      min-height: 100vh;
+      margin:0; min-height:100vh;
       background: radial-gradient(circle at 10% 10%, #1e3c72 0%, #2a5298 60%, #0f172a 100%);
-      color: white;
-      overflow-x: hidden;
-    }
-
-    /* ===========================
-       Background canvases (stars & planes)
-       Kept at z-index:0 so content remains above
-       =========================== */
-    #stars, #planes {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    /* ===========================
-       Main content container sits above canvases
-       =========================== */
-    main {
-      position: relative;
-      z-index: 10; /* above canvases */
-      padding-bottom: 120px; /* enough space so footer doesn't cover content */
-    }
-
-    /* ===========================
-       Cards, palette, small UI helpers
-       =========================== */
-    .card { background: var(--glass); border-radius: 12px; padding: 14px; }
-    .muted { color: rgba(255,255,255,0.8); }
-    .palette-btn { border-radius: 6px; padding: 6px 8px; font-size: 0.9rem; }
-    .attempted { background: #10b981; color:white; } .review { background:#f59e0b;color:white;} .unattempted{background:#d1d5db;color:black;}
-    .fade-in{ animation: fadeIn .45s ease-in-out; } @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    .sticky { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(6px); }
-
-    /* ===========================
-       Footer styles (sticky-bottom behavior)
-       We keep it non-fixed so it won't overlap content; main has padding-bottom
-       Also include fade-in class for subtle entrance
-       =========================== */
-    footer.site-footer {
-      margin-top: 24px;
-      width: 100%;
-      background: linear-gradient(90deg, rgba(79,70,229,0.95), rgba(139,92,246,0.95));
       color: #fff;
-      padding: 14px 18px;
-      text-align: center;
-      border-radius: 10px;
-      max-width: 1200px;
-      margin-left: auto;
-      margin-right: auto;
-      box-shadow: 0 8px 24px rgba(2,6,23,0.5);
-      transition: transform .5s, opacity .6s;
-      opacity: 0;
-      transform: translateY(10px);
+      overflow-x:hidden;
     }
-    footer.site-footer.visible { opacity: 1; transform: translateY(0); }
+    #stars,#planes{ position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
 
-    /* Responsive tweaks */
-    @media (max-width: 768px) {
-      .grid-cols-3 { grid-template-columns: repeat(1, minmax(0,1fr)); }
-      footer.site-footer { padding: 12px; }
+    main{ position:relative; z-index:10; padding-bottom:160px; max-width:1200px; margin:0 auto; }
+
+    .card{ background:var(--glass); border-radius:12px; padding:16px; box-shadow: 0 8px 24px rgba(2,6,23,0.45); }
+    .muted{ color:var(--muted); }
+    header.sticky-top{ position:sticky; top:0; z-index:40; backdrop-filter: blur(6px); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    header h1{ font-size:1.5rem; margin:0; font-weight:800; }
+
+    /* Dashboard / exam cards */
+    #exam-cards{ display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-top:12px; }
+    .exam-card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; min-height:110px; justify-content:space-between; }
+    .exam-card h4{ margin:0; font-weight:700; }
+    .exam-card p{ margin:0; color:var(--muted); font-size:0.95rem; }
+
+    /* Quiz area visuals */
+    #quiz-section { padding: 18px; }
+    #question-card { background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(255,255,255,0.02)); border-radius:12px; padding:16px; box-shadow: 0 10px 30px rgba(2,6,23,0.45); }
+    #question-text { font-size:1.1rem; font-weight:700; margin-bottom:8px; color:#fff; }
+    #options-list li { background: rgba(255,255,255,0.04); padding:10px; border-radius:10px; display:flex; gap:12px; align-items:center; cursor:pointer; }
+    #options-list li input[type="radio"]{ transform:scale(1.05); }
+
+    /* Palette */
+    #palette{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .palette-btn{ min-width:44px; min-height:44px; border-radius:8px; padding:6px 10px; display:flex; align-items:center; justify-content:center; font-weight:700; cursor:pointer; border:none; color: #0f172a; }
+    .palette-un { background: var(--unattempted); color:#0f172a; }
+    .palette-att { background: var(--attempted); color:white; }
+    .palette-rev { background: var(--review); color:white; }
+    .palette-legend{ display:flex; gap:10px; align-items:center; margin-top:8px; color:var(--muted); font-size:0.95rem; }
+
+    /* Submit button repositioned: center & fixed on small screens */
+    .controls-row{ display:flex; gap:10px; align-items:center; margin-top:12px; }
+    .controls-left{ display:flex; gap:8px; }
+    #submit-btn{ background:#ef4444; color:white; padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
+
+    /* On very small screens, make submit fixed bottom center */
+    @media (max-width:640px){
+      #submit-fixed{ position:fixed; left:50%; transform:translateX(-50%); bottom:14px; z-index:60; width:calc(100% - 40px); max-width:540px; display:flex; justify-content:center; }
     }
+
+    /* Result simple card */
+    #result-section .stat-row{ display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+    .stat { background: rgba(255,255,255,0.04); padding:12px; border-radius:8px; min-width:120px; text-align:center; }
+    .stat .num{ font-size:1.4rem; font-weight:800; color:#fff; }
+    .stat .label{ color:var(--muted); font-size:0.95rem; }
+
+    /* Profile */
+    #profile-section .profile-card{ display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+
   </style>
 </head>
 <body>
 
-  <!-- ===========================
-       BACKGROUND CANVASES (Stars + Planes)
-       রচনাঃ এগুলো ব্যাকগ্রাউন্ড এ্যানিমেশনের জন্য।
-       Z-index:0 রাখা হয়েছে যাতে কোন কন্টেন্ট ঢেকে না পড়ে।
-       =========================== -->
   <canvas id="stars"></canvas>
   <canvas id="planes"></canvas>
 
-  <!-- ===========================
-       HEADER / NAV
-       =========================== -->
-  <header class="p-4 flex items-center justify-between sticky top-0 z-40">
-    <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-extrabold">Target Zone</h1>
-      <span class="muted">— Mock tests & analytics</span>
+  <header class="sticky-top card" role="banner">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <h1>Target Zone</h1>
+      <div class="muted" style="font-weight:600;">— Mock tests & analytics</div>
     </div>
-    <div class="flex items-center gap-3">
-      <div id="auth-ui" class="flex items-center gap-2">
-        <!-- Auth buttons inserted dynamically -->
-      </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <div id="auth-ui" style="display:flex; gap:8px; align-items:center;"></div>
     </div>
   </header>
 
-  <!-- ===========================
-       MAIN (All sections: dashboard, quiz, result, profile, leaderboard, challenge)
-       আমরা মূল কন্টেন্টকে z-index:10 দিয়েছি যেন ব্যাকগ্রাউন্ডের উপর থাকে।
-       =========================== -->
-  <main class="p-6 max-w-6xl mx-auto space-y-6">
+  <main class="p-6">
     <!-- DASHBOARD -->
-    <section id="dashboard" class="card p-6">
-      <!-- মন্তব্য: Dashboard area - পরীক্ষা নির্বাচন -->
-      <div class="flex justify-between items-center mb-4">
+    <section id="dashboard" class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
         <div>
-          <h2 class="text-xl font-bold">নির্বাচন করুন পরীক্ষা</h2>
-          <p class="muted">বিভাগ বেছে নিয়ে পরীক্ষা শুরু করুন</p>
+          <h2 style="font-size:1.25rem; margin:0; font-weight:800;">নির্বাচন করুন পরীক্ষা</h2>
+          <p class="muted" style="margin-top:6px;">বিভাগ বেছে নিয়ে পরীক্ষা শুরু করুন — নিচের কার্ড থেকে Start চাপুন</p>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="go-profile" class="bg-white/10 px-3 py-1 rounded">প্রোফাইল</button>
-          <button id="go-history" class="bg-white/10 px-3 py-1 rounded">ইতিহাস</button>
-          <button id="go-leaderboard" class="bg-white/10 px-3 py-1 rounded">Leaderboard</button>
-          <button id="go-challenge" class="bg-white/10 px-3 py-1 rounded">Challenge</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="go-profile" class="bg-white/6 px-3 py-1 rounded">প্রোফাইল</button>
+          <button id="go-history" class="bg-white/6 px-3 py-1 rounded">ইতিহাস</button>
+          <button id="go-leaderboard" class="bg-white/6 px-3 py-1 rounded">Leaderboard</button>
         </div>
       </div>
 
-      <div id="exam-cards" class="grid grid-cols-3 gap-4">
-        <!-- exam cards injected by JS -->
+      <div id="exam-cards" class="mt-4">
+        <!-- JS injects cards -->
       </div>
     </section>
 
     <!-- QUIZ AREA -->
-    <section id="quiz-section" class="hidden card p-6 relative">
-      <!-- মন্তব্য: Quiz header: timer, tts, title -->
-      <div class="flex items-center justify-between sticky top-16 bg-transparent py-2">
-        <div class="flex items-center gap-3">
-          <button id="back-to-dashboard" class="bg-white/10 px-2 py-1 rounded">← Back</button>
-          <h3 id="quiz-title" class="text-lg font-bold">Mock Test</h3>
-          <span id="exam-tag" class="muted text-sm">—</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <button id="tts-toggle" class="bg-white/10 px-2 py-1 rounded">🔊 Play Voice</button>
-          <div class="bg-white/10 px-3 py-1 rounded text-sm" id="timer">80:00</div>
-        </div>
-      </div>
-
-      <!-- প্রশ্ন অঞ্চল -->
-      <div id="question-area" class="mt-4 fade-in">
-        <p id="question-text" class="text-lg font-semibold">প্রশ্ন লোড হচ্ছে...</p>
-        <div id="difficulty-tag" class="muted text-sm mt-1">Difficulty: -</div>
-        <ul id="options-list" class="space-y-2 mt-4"></ul>
-      </div>
-
-      <!-- Controls -->
-      <div class="flex items-center gap-3 mt-4">
-        <button id="prev-btn" class="bg-white/10 px-3 py-1 rounded">⬅ পূর্ববর্তী</button>
-        <button id="next-btn" class="bg-white/10 px-3 py-1 rounded">পরবর্তী ➡</button>
-        <button id="mark-review-btn" class="bg-yellow-500 px-3 py-1 rounded text-white">🔖 Review</button>
-        <div class="flex-1">
-          <div class="w-full bg-white/10 h-2 rounded">
-            <div id="progress-bar" style="width:0%" class="h-2 rounded bg-green-500"></div>
+    <section id="quiz-section" class="hidden card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="back-to-dashboard" class="bg-white/6 px-2 py-1 rounded">← Back</button>
+          <div>
+            <h3 id="quiz-title" style="margin:0; font-weight:800;">Mock Test</h3>
+            <div id="exam-tag" class="muted" style="font-size:0.95rem;">—</div>
           </div>
         </div>
-        <button id="submit-btn" class="bg-red-600 px-4 py-1 rounded text-white">জমা দিন</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="tts-toggle" class="bg-white/6 px-2 py-1 rounded">🔊 Play Voice</button>
+          <div id="timer" class="muted" style="background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:8px;">80:00</div>
+        </div>
       </div>
 
-      <!-- Palette -->
-      <div id="palette" class="flex gap-2 flex-wrap mt-4"></div>
+      <div id="question-card" class="mt-4">
+        <p id="question-text">প্রশ্ন লোড হচ্ছে...</p>
+        <div id="difficulty-tag" class="muted" style="font-size:0.95rem;">Difficulty: -</div>
+
+        <ul id="options-list" class="mt-4 space-y-2"></ul>
+
+        <div class="controls-row" style="margin-top:14px;">
+          <div class="controls-left">
+            <button id="prev-btn" class="bg-white/6 px-3 py-1 rounded">⬅ পূর্ববর্তী</button>
+            <button id="next-btn" class="bg-white/6 px-3 py-1 rounded">পরবর্তী ➡</button>
+            <button id="mark-review-btn" class="bg-yellow-500 px-3 py-1 rounded text-white">🔖 Review</button>
+          </div>
+
+          <div style="flex:1;">
+            <div style="width:100%; background:rgba(255,255,255,0.06); height:10px; border-radius:8px; overflow:hidden;">
+              <div id="progress-bar" style="width:0%; height:100%; background:var(--accent);"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Palette -->
+        <div id="palette" class="mt-4"></div>
+        <div class="palette-legend">
+          <div style="display:flex; gap:6px; align-items:center;"><div style="width:18px;height:18px;background:var(--attempted);border-radius:4px;"></div> ✔ Attempted</div>
+          <div style="display:flex; gap:6px; align-items:center;"><div style="width:18px;height:18px;background:var(--review);border-radius:4px;"></div> ⚑ Review</div>
+          <div style="display:flex; gap:6px; align-items:center;"><div style="width:18px;height:18px;background:var(--unattempted);border-radius:4px;"></div> — Unattempted</div>
+        </div>
+
+        <!-- Submit button centered; small screens fixed via #submit-fixed -->
+        <div id="submit-fixed" style="margin-top:14px;">
+          <button id="submit-btn">জমা দিন</button>
+        </div>
+
+      </div>
     </section>
 
-    <!-- RESULT / ANALYSIS -->
-    <section id="result-section" class="hidden card p-6">
-      <!-- মন্তব্য: Result & Analysis area -->
-      <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold">Result & Analysis</h3>
-        <div class="flex items-center gap-2">
+    <!-- RESULT / ANALYSIS (Simplified counts only) -->
+    <section id="result-section" class="hidden card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; font-weight:800;">Result</h3>
+        <div>
           <button id="download-cert" class="bg-blue-600 px-3 py-1 rounded text-white">Download Certificate</button>
-          <button id="close-result" class="bg-white/10 px-2 py-1 rounded">Close</button>
+          <button id="close-result" class="bg-white/6 px-2 py-1 rounded">Close</button>
         </div>
       </div>
 
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <canvas id="result-pie"></canvas>
-          <div id="score-text" class="mt-2 font-semibold"></div>
-        </div>
-        <div>
-          <h4 class="font-semibold">Topic-wise Weakness</h4>
-          <canvas id="topic-bar" class="mt-2"></canvas>
-        </div>
+      <div class="stat-row" id="result-stats">
+        <!-- injected simple stats -->
       </div>
 
-      <div class="mt-6">
-        <h4 class="font-semibold mb-2">Question-by-Question Analysis</h4>
-        <div id="qa-analysis" class="space-y-2 max-h-64 overflow-auto"></div>
-      </div>
+      <div style="margin-top:12px;" id="result-note" class="muted">রেজাল্টে শুধু মোট প্রশ্ন, কতটি করেছেন, কতটি করেননি, কতটি ঠিক ও ভুল — এ ষ্ট্যাট দিয়ে দেখানো হয়েছে।</div>
     </section>
 
-    <!-- PROFILE / HISTORY -->
-    <section id="profile-section" class="hidden card p-6">
-      <!-- মন্তব্য: User profile, history & charts -->
-      <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold">User Profile</h3>
+    <!-- PROFILE / HISTORY (single card; user-only view) -->
+    <section id="profile-section" class="hidden card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; font-weight:800;">প্রোফাইল</h3>
         <div>
           <button id="logout-btn" class="bg-red-500 px-3 py-1 rounded text-white">Logout</button>
         </div>
       </div>
-      <div class="mt-4">
-        <p id="profile-email" class="muted"></p>
-        <h4 class="mt-3 font-semibold">Performance Over Time</h4>
-        <canvas id="history-chart" class="mt-2"></canvas>
-      </div>
-      <div class="mt-6">
-        <h4 class="font-semibold">Past Attempts</h4>
-        <ul id="past-attempts" class="mt-2 space-y-1"></ul>
+
+      <div style="margin-top:12px;">
+        <div class="profile-card">
+          <div style="flex:1;">
+            <div id="profile-email" class="muted"></div>
+            <div style="margin-top:8px;">
+              <h4 style="margin:0; font-weight:700;">Past Attempts</h4>
+              <ul id="past-attempts" style="margin-top:8px; list-style:none; padding:0;"></ul>
+            </div>
+          </div>
+          <div style="min-width:220px;">
+            <div class="card" style="background:rgba(255,255,255,0.03);">
+              <div style="font-weight:700; font-size:0.95rem;">User Summary</div>
+              <div id="user-summary" class="muted" style="margin-top:8px;"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- LEADERBOARD -->
-    <section id="leaderboard-section" class="hidden card p-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold">Leaderboard</h3>
-        <select id="leaderboard-exam" class="bg-white/10 px-2 py-1 rounded">
-          <!-- options injected -->
-        </select>
+    <section id="leaderboard-section" class="hidden card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; font-weight:800;">Leaderboard</h3>
+        <select id="leaderboard-exam" class="bg-white/6 px-2 py-1 rounded"></select>
       </div>
-      <ul id="leaderboard-list" class="mt-4"></ul>
-    </section>
-
-    <!-- CHALLENGE (Friends Mode) -->
-    <section id="challenge-section" class="hidden card p-6">
-      <h3 class="text-xl font-bold">Friends Challenge</h3>
-      <div class="mt-3 flex gap-3">
-        <input id="room-name" placeholder="Room name" class="px-2 py-1 rounded bg-white/5" />
-        <button id="create-room" class="bg-green-600 px-3 py-1 rounded">Create Room</button>
-        <button id="join-room" class="bg-blue-600 px-3 py-1 rounded">Join Room</button>
-      </div>
-      <div id="room-area" class="mt-4 hidden">
-        <p id="room-info" class="muted"></p>
-        <div id="room-players" class="mt-2"></div>
-        <div id="room-controls" class="mt-3">
-          <button id="start-room" class="bg-red-600 px-3 py-1 rounded text-white">Start Challenge</button>
-        </div>
-        <div id="room-scoreboard" class="mt-4"></div>
-      </div>
+      <ul id="leaderboard-list" style="margin-top:12px; list-style:none; padding:0;"></ul>
     </section>
 
   </main>
 
-  <!-- ===========================
-       Footer (modern style) — পূর্বের লাইন রেখে, কিন্তু একটু আধুনিকভাবে
-       Fade-in effect: visible class toggled by IntersectionObserver
-       =========================== -->
   <div style="padding: 0 1.5rem 1.5rem;">
-    <footer id="site-footer" class="site-footer">
+    <footer id="site-footer" class="site-footer card" style="margin-top:18px; text-align:center;">
       📌 উন্নত প্রস্তুতির জন্য — SSC | Railways | TET | WB SET | WBJEE | Madhyamik — সব কিছু এক জায়গায়
     </footer>
   </div>
 
-  <!-- ===========================
-       Firebase + App Script
-       (সমস্ত ফিচার: auth, questions, results, leaderboard, history, rooms, certificate, tts)
-       =========================== -->
+  <!-- ============================
+       Firebase + App Script (updated per requests)
+       ============================ -->
   <script type="module">
-    // ---------------------------
-    // Firebase imports
-    // ---------------------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import {
       getFirestore, collection, getDocs, query, orderBy, addDoc, doc, setDoc, onSnapshot, updateDoc, getDoc, where
@@ -284,9 +237,6 @@
       getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // ---------------------------
-    // Firebase config (তোামার দেওয়া সেট)
-    // ---------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
       authDomain: "target-zone-8fffd.firebaseapp.com",
@@ -300,9 +250,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // ---------------------------
-    // Basic exam metadata
-    // ---------------------------
+    // exams
     const exams = [
       {id:"ssc", name:"SSC Exams", desc:"CGL, CHSL, GD, MTS"},
       {id:"railways", name:"Railways", desc:"NTPC, Group-D, JE"},
@@ -312,50 +260,49 @@
       {id:"madhyamik", name:"Madhyamik / HS", desc:"Board MCQ Practice"}
     ];
 
-    // ---------------------------
-    // UI references
-    // ---------------------------
+    // refs
     const examCards = document.getElementById("exam-cards");
     const dashboard = document.getElementById("dashboard");
     const quizSection = document.getElementById("quiz-section");
     const resultSection = document.getElementById("result-section");
     const profileSection = document.getElementById("profile-section");
     const leaderboardSection = document.getElementById("leaderboard-section");
-    const challengeSection = document.getElementById("challenge-section");
     const authUi = document.getElementById("auth-ui");
 
-    // populate exam cards
+    // populate exam cards as neat cards
     examCards.innerHTML = exams.map(ex => `
-      <div class="p-4 rounded-lg bg-white/6 cursor-pointer" data-id="${ex.id}">
-        <h4 class="font-bold">${ex.name}</h4>
-        <p class="muted text-sm">${ex.desc}</p>
-        <div class="mt-2"><button class="start-exam bg-blue-600 px-3 py-1 rounded text-white" data-id="${ex.id}">Start</button></div>
-      </div>`).join("");
+      <div class="exam-card" data-id="${ex.id}">
+        <div>
+          <h4>${ex.name}</h4>
+          <p class="muted">${ex.desc}</p>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
+          <div><button class="start-exam" data-id="${ex.id}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Start</button></div>
+        </div>
+      </div>
+    `).join("");
 
-    // ---------------------------
-    // App state
-    // ---------------------------
+    // app state
     let currentExam = null, questions = [], currentIndex = 0;
     let answers = {}, reviewed = {}, timeLeft = 80*60, timerInterval = null;
     let currentUser = null;
+    let ttsEnabled = false;
 
-    // ---------------------------
-    // Auth UI & handlers
-    // ---------------------------
-    function renderAuthUI() {
+    // auth UI
+    function renderAuthUI(){
       authUi.innerHTML = '';
       if (!currentUser) {
         authUi.innerHTML = `
-          <button id="btn-signin" class="bg-white/10 px-3 py-1 rounded">Sign In</button>
-          <button id="btn-signup" class="bg-white/10 px-3 py-1 rounded">Sign Up</button>
+          <button id="btn-signin" class="bg-white/6 px-3 py-1 rounded">Sign In</button>
+          <button id="btn-signup" class="bg-white/6 px-3 py-1 rounded">Sign Up</button>
         `;
         document.getElementById("btn-signin").onclick = showSignIn;
         document.getElementById("btn-signup").onclick = showSignUp;
       } else {
-        authUi.innerHTML = `<div class="muted text-sm">Hi, ${currentUser.email}</div>`;
+        authUi.innerHTML = `<div class="muted" style="font-weight:700;">Hi, ${currentUser.email}</div>`;
       }
     }
-
     function showSignUp(){
       const email = prompt("Email:");
       const pass = prompt("Password (6+):");
@@ -376,51 +323,44 @@
     document.getElementById("go-profile").onclick = () => showSection('profile');
     document.getElementById("go-history").onclick = () => showSection('profile');
     document.getElementById("go-leaderboard").onclick = () => showSection('leaderboard');
-    document.getElementById("go-challenge").onclick = () => showSection('challenge');
 
-    function showSection(name) {
-      // hide all then show target
+    function showSection(name){
       dashboard.classList.toggle('hidden', name !== 'dashboard');
       quizSection.classList.toggle('hidden', name !== 'quiz');
       resultSection.classList.toggle('hidden', name !== 'result');
       profileSection.classList.toggle('hidden', name !== 'profile');
       leaderboardSection.classList.toggle('hidden', name !== 'leaderboard');
-      challengeSection.classList.toggle('hidden', name !== 'challenge');
-      if (name === 'dashboard') { dashboard.classList.remove('hidden'); }
+      if (name === 'dashboard') dashboard.classList.remove('hidden');
     }
 
-    // auth state listener
     onAuthStateChanged(auth, user => {
       currentUser = user;
       renderAuthUI();
       if (user) loadUserHistory();
     });
 
-    // ---------------------------
-    // Start exam handlers
-    // ---------------------------
+    // start exam
     document.querySelectorAll('.start-exam').forEach(btn => {
       btn.onclick = async (e) => {
-        if (!currentUser) return alert("Please sign in first.");
+        if (!auth.currentUser) return alert("Please sign in first.");
         const examId = e.target.dataset.id;
         await startExam(examId);
       };
     });
 
-    // load questions from Firestore
     async function startExam(examId){
       currentExam = examId;
       dashboard.classList.add('hidden');
       quizSection.classList.remove('hidden');
       document.getElementById('quiz-title').textContent = exams.find(x=>x.id===examId).name;
       document.getElementById('exam-tag').textContent = examId.toUpperCase();
-      // get questions collection for this exam
+
+      // fetch questions (same approach)
       const q = query(collection(db, examId), orderBy('id'));
       const snap = await getDocs(q);
       questions = snap.docs.map(d => d.data());
-      // load autosaved answers (user-specific)
-      answers = JSON.parse(localStorage.getItem(`${examId}_answers_${currentUser.uid}`) || '{}');
-      reviewed = JSON.parse(localStorage.getItem(`${examId}_review_${currentUser.uid}`) || '{}');
+      answers = JSON.parse(localStorage.getItem(`${examId}_answers_${auth.currentUser.uid}`) || '{}');
+      reviewed = JSON.parse(localStorage.getItem(`${examId}_review_${auth.currentUser.uid}`) || '{}');
       currentIndex = 0;
       timeLeft = (questions.length * 60) || 80*60;
       renderQuestion();
@@ -428,51 +368,48 @@
       startTimer();
     }
 
-    // render question
     function renderQuestion(){
-      const q = questions[currentIndex];
+      const q = questions[currentIndex] || { question: 'No question', options:[] };
       document.getElementById('question-text').textContent = `Q${currentIndex+1}: ${q.question}`;
       document.getElementById('difficulty-tag').textContent = `Difficulty: ${q.difficulty || 'N/A'} • Topic: ${q.topic || 'General'}`;
+
       const ol = document.getElementById('options-list');
       ol.innerHTML = '';
       (q.options || []).forEach(opt=>{
         const li = document.createElement('li');
-        li.className = 'p-2 rounded bg-white/5 cursor-pointer flex items-center gap-2';
+        li.className = '';
         const input = document.createElement('input');
         input.type='radio'; input.name='option'; input.value=opt;
-        if (answers[currentIndex] === opt) input.checked = true;
+        input.checked = (answers[currentIndex] === opt);
         input.onchange = () => {
           answers[currentIndex] = opt;
-          localStorage.setItem(`${currentExam}_answers_${currentUser.uid}`, JSON.stringify(answers));
+          localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
           updatePalette(); updateProgress();
-          // if in a challenge room, update room score if correct (basic)
-          if (currentRoomId && questions[currentIndex].answer === opt) {
-            updateRoomScore(1).catch(()=>{});
-          }
         };
         li.appendChild(input);
-        li.appendChild(document.createTextNode(opt));
+        const span = document.createElement('span');
+        span.style.marginLeft='6px';
+        span.textContent = opt;
+        li.appendChild(span);
         ol.appendChild(li);
       });
       updatePalette(); updateProgress();
       if (ttsEnabled) speakQuestion(questions[currentIndex]);
     }
 
-    // prev/next
     document.getElementById('prev-btn').onclick = ()=>{ if(currentIndex>0){ currentIndex--; renderQuestion(); } };
     document.getElementById('next-btn').onclick = ()=>{ if(currentIndex<questions.length-1){ currentIndex++; renderQuestion(); } };
-    document.getElementById('mark-review-btn').onclick = ()=>{ reviewed[currentIndex]=true; localStorage.setItem(`${currentExam}_review_${currentUser.uid}`, JSON.stringify(reviewed)); updatePalette(); };
+    document.getElementById('mark-review-btn').onclick = ()=>{ reviewed[currentIndex]=true; localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed)); updatePalette(); };
 
-    // ---------------------------
-    // Palette
-    // ---------------------------
+    // palette build & update (clear icons & colors)
     function buildPalette(){
       const pal = document.getElementById('palette');
       pal.innerHTML = '';
       for(let i=0;i<questions.length;i++){
         const b = document.createElement('button');
-        b.className = 'palette-btn unattempted';
-        b.innerText = i+1;
+        b.className = 'palette-btn palette-un';
+        b.title = `Question ${i+1}`;
+        b.innerHTML = `${i+1}<span style="font-size:0.7rem;margin-left:6px;"></span>`;
         b.onclick = ()=>{ currentIndex = i; renderQuestion(); };
         pal.appendChild(b);
       }
@@ -481,9 +418,10 @@
     function updatePalette(){
       const children = [...document.getElementById('palette').children];
       children.forEach((btn,i)=>{
-        btn.className='palette-btn unattempted';
-        if (answers[i]) btn.classList.add('attempted');
-        if (reviewed[i]) btn.classList.add('review');
+        btn.className = 'palette-btn palette-un';
+        btn.innerHTML = `${i+1}`;
+        if (answers[i]) { btn.classList.remove('palette-un'); btn.classList.add('palette-att'); btn.innerHTML = `${i+1} ✔`; btn.title = `Attempted • Q${i+1}`; }
+        if (reviewed[i]) { btn.classList.remove('palette-att','palette-un'); btn.classList.add('palette-rev'); btn.innerHTML = `${i+1} ⚑`; btn.title = `Marked for review • Q${i+1}`; }
       });
     }
     function updateProgress(){
@@ -492,9 +430,7 @@
       document.getElementById('progress-bar').style.width = percent + '%';
     }
 
-    // ---------------------------
-    // Timer
-    // ---------------------------
+    // timer
     function startTimer(){
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(()=>{
@@ -505,34 +441,33 @@
       },1000);
     }
 
-    // ---------------------------
-    // Submit exam -> compute results, save to Firestore, show analysis
-    // ---------------------------
+    // submit -> compute simplified counts -> save -> show minimal result view
     document.getElementById('submit-btn').onclick = ()=> {
       if (!confirm("আপনি কি পরীক্ষা জমা দিতে চান?")) return;
       submitExam();
     };
 
     async function submitExam(){
-      // compute score and topic-wise weakness
-      let correct=0, wrong=0, unattempted=0;
+      if (!auth.currentUser) { alert("Please sign in"); return; }
+      let correct=0, wrong=0, unattempted=0, attempted=0;
       const topicMap = {};
       for(let i=0;i<questions.length;i++){
         const q = questions[i];
         const given = answers[i];
         if (!given) { unattempted++; }
-        else if (given === q.answer) { correct++; }
-        else { wrong++; 
-          const t = q.topic || 'General';
-          topicMap[t] = (topicMap[t]||0) + 1;
+        else {
+          attempted++;
+          if (given === q.answer) correct++;
+          else { wrong++; const t = q.topic || 'General'; topicMap[t] = (topicMap[t]||0)+1; }
         }
       }
       const total = questions.length;
       const percent = Math.round((correct/total)*100);
-      // save result
+
+      // save minimal result to Firestore
       await addDoc(collection(db,'results'), {
-        uid: currentUser.uid,
-        email: currentUser.email,
+        uid: auth.currentUser.uid,
+        email: auth.currentUser.email,
         exam: currentExam,
         score: correct,
         total,
@@ -540,58 +475,47 @@
         topicMap,
         submittedAt: new Date()
       });
-      // show analysis
-      showResultAnalysis({correct,wrong,unattempted,total,percent,topicMap});
-      // cleanup local storage for this exam/user
-      localStorage.removeItem(`${currentExam}_answers_${currentUser.uid}`);
-      localStorage.removeItem(`${currentExam}_review_${currentUser.uid}`);
+
+      // clear local storage
+      localStorage.removeItem(`${currentExam}_answers_${auth.currentUser.uid}`);
+      localStorage.removeItem(`${currentExam}_review_${auth.currentUser.uid}`);
       clearInterval(timerInterval);
+
+      // show minimal result
+      showMinimalResult({correct, wrong, unattempted, attempted, total, percent});
     }
 
-    // ---------------------------
-    // Result analysis & charts
-    // ---------------------------
-    let resultPieChart = null, topicBarChart = null;
-    function showResultAnalysis(data){
+    function showMinimalResult(data){
       quizSection.classList.add('hidden');
       resultSection.classList.remove('hidden');
-
-      // Pie chart
-      const ctx = document.getElementById('result-pie').getContext('2d');
-      if (resultPieChart) resultPieChart.destroy();
-      resultPieChart = new Chart(ctx, {
-        type:'pie',
-        data: {
-          labels:['Correct','Wrong','Unattempted'],
-          datasets:[{ data:[data.correct,data.wrong,data.unattempted], backgroundColor: ['#10b981','#ef4444','#9ca3af'] }]
-        }
-      });
-
-      // Topic bar
-      const topics = Object.keys(data.topicMap || {});
-      const topicCounts = topics.map(t=>data.topicMap[t]);
-      const ctx2 = document.getElementById('topic-bar').getContext('2d');
-      if (topicBarChart) topicBarChart.destroy();
-      topicBarChart = new Chart(ctx2, {
-        type:'bar',
-        data: { labels: topics, datasets:[{ label:'Wrong count', data:topicCounts }] },
-        options: { indexAxis:'y' }
-      });
-
-      document.getElementById('score-text').innerText = `Score: ${data.correct}/${data.total} (${data.percent}%)`;
-
-      // QA analysis
-      const qa = document.getElementById('qa-analysis'); qa.innerHTML='';
-      for(let i=0;i<questions.length;i++){
-        const q = questions[i];
+      const holder = document.getElementById('result-stats');
+      holder.innerHTML = '';
+      function statHtml(label, num){
         const div = document.createElement('div');
-        div.className='p-3 rounded bg-white/5';
-        const given = answers[i] || '—';
-        div.innerHTML = `<strong>Q${i+1}.</strong> ${q.question}
-          <div class="muted text-sm">Your: ${given} • Correct: ${q.answer} • Topic: ${q.topic || 'General'}</div>
-          <div class="mt-2">${q.explanation ? '<em>Explanation:</em> '+ q.explanation : '<em>No explanation provided</em>'}</div>`;
-        qa.appendChild(div);
+        div.className = 'stat';
+        div.innerHTML = `<div class="num">${num}</div><div class="label">${label}</div>`;
+        return div;
       }
+      holder.appendChild(statHtml('Total Questions', data.total));
+      holder.appendChild(statHtml('Attempted', data.attempted));
+      holder.appendChild(statHtml('Unattempted', data.unattempted));
+      holder.appendChild(statHtml('Correct', data.correct));
+      holder.appendChild(statHtml('Wrong', data.wrong));
+      holder.appendChild(statHtml('Percentage', data.percent + '%'));
+
+      document.getElementById('download-cert').onclick = async ()=>{
+        const q = query(collection(db,'results'), where('uid','==',auth.currentUser.uid), where('exam','==',currentExam), orderBy('submittedAt','desc'));
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("No result found to create certificate.");
+        const r = snap.docs[0].data();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(22); doc.text("Certificate of Achievement", 20, 30);
+        doc.setFontSize(14); doc.text(`This certifies that ${auth.currentUser.email}`, 20, 50);
+        doc.text(`has scored ${r.score}/${r.total} in ${r.exam.toUpperCase()}`, 20, 60);
+        doc.text(`Date: ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`, 20, 80);
+        doc.save(`certificate_${currentExam}_${auth.currentUser.uid}.pdf`);
+      };
     }
 
     document.getElementById('close-result').onclick = ()=> {
@@ -599,15 +523,14 @@
       dashboard.classList.remove('hidden');
     };
 
-    // ---------------------------
-    // Leaderboard
-    // ---------------------------
+    // leaderboard
     const lbExamSelect = document.getElementById('leaderboard-exam');
     lbExamSelect.innerHTML = exams.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
     lbExamSelect.onchange = loadLeaderboard;
     async function loadLeaderboard(){
       const exam = lbExamSelect.value;
       // query results for selected exam ordered by score desc
+      // Note: Firestore requires composite index for combined where+order; keep minimal for demo
       const q = query(collection(db,'results'), where('exam','==',exam), orderBy('score','desc'));
       const snap = await getDocs(q);
       const ul = document.getElementById('leaderboard-list');
@@ -615,7 +538,8 @@
       snap.forEach(d=>{
         const r = d.data();
         const li = document.createElement('li');
-        li.className = 'p-2 bg-white/5 rounded';
+        li.style.marginBottom='8px';
+        li.className = 'card';
         li.innerText = `${r.email} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleString()}`;
         ul.appendChild(li);
       });
@@ -623,53 +547,31 @@
     lbExamSelect.value = exams[0].id;
     loadLeaderboard();
 
-    // ---------------------------
-    // User history & profile chart
-    // ---------------------------
+    // user history & profile summary
     async function loadUserHistory(){
-      if (!currentUser) return;
-      document.getElementById('profile-email').textContent = currentUser.email;
-      const q = query(collection(db,'results'), where('uid','==',currentUser.uid), orderBy('submittedAt','asc'));
+      if (!auth.currentUser) return;
+      document.getElementById('profile-email').textContent = auth.currentUser.email;
+      const q = query(collection(db,'results'), where('uid','==',auth.currentUser.uid), orderBy('submittedAt','asc'));
       const snap = await getDocs(q);
       const arr = snap.docs.map(d=>d.data());
       const ul = document.getElementById('past-attempts'); ul.innerHTML='';
-      const labels = [], scores=[];
+      let totalAttempts = 0, bestPercent = 0;
       arr.forEach(r=>{
+        totalAttempts++;
         const li = document.createElement('li');
-        li.className='p-2 bg-white/5 rounded';
+        li.style.marginBottom='8px';
+        li.className = 'card';
         li.innerText = `${r.exam} — ${r.score}/${r.total} — ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`;
         ul.appendChild(li);
-        labels.push(new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString());
-        scores.push(Math.round((r.score / r.total)*100));
+        const p = Math.round((r.score / r.total)*100);
+        if (p > bestPercent) bestPercent = p;
       });
-      // history chart
-      const ctx = document.getElementById('history-chart').getContext('2d');
-      if (window._histChart) window._histChart.destroy();
-      window._histChart = new Chart(ctx, { type:'line', data:{ labels, datasets:[{label:'Score %', data:scores, fill:false}] } });
+      document.getElementById('user-summary').textContent = `Attempts: ${totalAttempts} • Best: ${bestPercent}%`;
     }
+
     document.getElementById('logout-btn').onclick = ()=>{ signOut(auth); };
 
-    // ---------------------------
-    // Certificate generation (jsPDF)
-    // ---------------------------
-    document.getElementById('download-cert').onclick = async ()=>{
-      const q = query(collection(db,'results'), where('uid','==',currentUser.uid), where('exam','==',currentExam), orderBy('submittedAt','desc'));
-      const snap = await getDocs(q);
-      if (snap.empty) return alert("No result found to create certificate.");
-      const r = snap.docs[0].data();
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(22); doc.text("Certificate of Achievement", 20, 30);
-      doc.setFontSize(14); doc.text(`This certifies that ${currentUser.email}`, 20, 50);
-      doc.text(`has scored ${r.score}/${r.total} in ${r.exam.toUpperCase()}`, 20, 60);
-      doc.text(`Date: ${new Date(r.submittedAt?.toDate?.() || r.submittedAt).toLocaleDateString()}`, 20, 80);
-      doc.save(`certificate_${currentExam}_${currentUser.uid}.pdf`);
-    };
-
-    // ---------------------------
-    // TTS (Voice Reading) - Web Speech API
-    // ---------------------------
-    let ttsEnabled = false;
+    // tts
     document.getElementById('tts-toggle').onclick = ()=> {
       ttsEnabled = !ttsEnabled;
       document.getElementById('tts-toggle').innerText = ttsEnabled ? '🔊 Stop Voice' : '🔊 Play Voice';
@@ -686,135 +588,34 @@
       speechSynthesis.speak(utter);
     }
 
-    // ---------------------------
-    // Friends Challenge Mode (basic realtime with rooms)
-    // ---------------------------
-    const createRoomBtn = document.getElementById('create-room');
-    const joinRoomBtn = document.getElementById('join-room');
-    const roomNameInput = document.getElementById('room-name');
-    const roomArea = document.getElementById('room-area');
-    const roomInfo = document.getElementById('room-info');
-    const roomPlayers = document.getElementById('room-players');
-    const startRoomBtn = document.getElementById('start-room');
-    const roomScoreboard = document.getElementById('room-scoreboard');
-
-    let currentRoomId = null, roomUnsub = null;
-    createRoomBtn.onclick = async ()=>{
-      if (!currentUser) return alert("Please login");
-      const name = roomNameInput.value.trim();
-      if (!name) return alert("Enter room name");
-      const ref = doc(collection(db,'rooms'));
-      await setDoc(ref, { name, host: currentUser.uid, players: [{uid:currentUser.uid, email:currentUser.email, score:0}], status:'waiting', exam:exams[0].id, createdAt:new Date() });
-      currentRoomId = ref.id;
-      watchRoom(ref.id);
-      roomArea.classList.remove('hidden');
-    };
-    joinRoomBtn.onclick = async ()=>{
-      if (!currentUser) return alert("Please login");
-      const name = roomNameInput.value.trim();
-      if (!name) return alert("Enter room name to join");
-      const roomsSnap = await getDocs(query(collection(db,'rooms'), where('name','==',name)));
-      if (roomsSnap.empty) return alert("Room not found");
-      const docRef = roomsSnap.docs[0].ref;
-      const data = roomsSnap.docs[0].data();
-      const players = data.players || [];
-      if (!players.find(p=>p.uid===currentUser.uid)) players.push({uid:currentUser.uid,email:currentUser.email,score:0});
-      await updateDoc(docRef, { players });
-      currentRoomId = docRef.id;
-      watchRoom(currentRoomId);
-      roomArea.classList.remove('hidden');
-    };
-
-    function watchRoom(roomId){
-      if (roomUnsub) roomUnsub();
-      const rDoc = doc(db,'rooms',roomId);
-      roomUnsub = onSnapshot(rDoc, snap=>{
-        if (!snap.exists()) return;
-        const data = snap.data();
-        roomInfo.innerText = `Room: ${data.name} • Status: ${data.status} • Exam: ${data.exam}`;
-        roomPlayers.innerHTML = data.players.map(p=>`<div class="p-2 bg-white/5 rounded">${p.email} — ${p.score}</div>`).join('');
-        if (data.status==='started' && data.currentQuestionIndex !== undefined) {
-          questions = data.questions || [];
-          currentIndex = data.currentQuestionIndex || 0;
-          quizSection.classList.remove('hidden');
-          roomArea.classList.remove('hidden');
-          dashboard.classList.add('hidden');
-          renderQuestion();
-        }
-        roomScoreboard.innerHTML = '<h4 class="font-semibold">Scoreboard</h4>' + (data.players||[]).map(p=>`<div class="p-2 bg-white/5 rounded">${p.email}: ${p.score}</div>`).join('');
-      });
-    }
-
-    startRoomBtn.onclick = async ()=>{
-      if (!currentRoomId) return alert("No room");
-      const rDoc = doc(db,'rooms',currentRoomId);
-      const examId = currentExam || exams[0].id;
-      const qSnap = await getDocs(query(collection(db,examId), orderBy('id')));
-      const qs = qSnap.docs.map(d=>d.data());
-      await updateDoc(rDoc, { status:'started', exam:examId, questions:qs, currentQuestionIndex:0 });
-    };
-
-    async function updateRoomScore(points){
-      if (!currentRoomId) return;
-      const rDocRef = doc(db,'rooms',currentRoomId);
-      const rSnap = await getDoc(rDocRef);
-      if (!rSnap.exists()) return;
-      const data = rSnap.data();
-      const players = (data.players||[]).map(p => {
-        if (p.uid === currentUser.uid) p.score = (p.score||0)+points;
-        return p;
-      });
-      await updateDoc(rDocRef, { players });
-    }
-
-    // ---------------------------
-    // Auto-save on unload
-    // ---------------------------
+    // autosave on unload
     window.addEventListener('beforeunload', ()=>{
-      if (currentExam && currentUser) {
-        localStorage.setItem(`${currentExam}_answers_${currentUser.uid}`, JSON.stringify(answers));
-        localStorage.setItem(`${currentExam}_review_${currentUser.uid}`, JSON.stringify(reviewed));
+      if (currentExam && auth.currentUser) {
+        localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
+        localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed));
       }
     });
 
-    // ---------------------------
-    // Initialize Auth UI & leaderboard
-    // ---------------------------
+    // initial
     renderAuthUI();
-    loadLeaderboard();
 
-    // ---------------------------
-    // Background animation (stars + planes)
-    // Based on your original design; kept simple & performant
-    // ---------------------------
+    // background animation (kept simple)
     const starsCanvas = document.getElementById("stars");
     const planesCanvas = document.getElementById("planes");
     const starsCtx = starsCanvas.getContext("2d");
     const planesCtx = planesCanvas.getContext("2d");
-
-    function resizeCanvases(){
-      starsCanvas.width = planesCanvas.width = window.innerWidth;
-      starsCanvas.height = planesCanvas.height = window.innerHeight;
-    }
+    function resizeCanvases(){ starsCanvas.width = planesCanvas.width = window.innerWidth; starsCanvas.height = planesCanvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvases);
     resizeCanvases();
-
     let stars = [], planes = [];
     function initBackground(){
-      stars = [];
-      planes = [];
+      stars = []; planes = [];
       const count = Math.max(80, Math.floor((window.innerWidth * window.innerHeight) / 8000));
-      for (let i = 0; i < count; i++) {
-        stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*1.5, twinkle: Math.random()*1.5 });
-      }
-      for (let i = 0; i < 2; i++) {
-        planes.push({ x: -50, y: Math.random()*starsCanvas.height*0.4, dx: 2+Math.random()*2 });
-      }
+      for (let i = 0; i < count; i++) stars.push({ x: Math.random()*starsCanvas.width, y: Math.random()*starsCanvas.height, r: Math.random()*1.5, twinkle: Math.random()*1.5 });
+      for (let i = 0; i < 2; i++) planes.push({ x: -50, y: Math.random()*starsCanvas.height*0.4, dx: 2+Math.random()*2 });
     }
     initBackground();
-
     function drawBackground() {
-      // stars
       starsCtx.clearRect(0,0,starsCanvas.width,starsCanvas.height);
       stars.forEach(s => {
         starsCtx.beginPath();
@@ -823,36 +624,16 @@
         starsCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         starsCtx.fill();
       });
-      // planes
       planesCtx.clearRect(0,0,planesCanvas.width,planesCanvas.height);
       planes.forEach(p => {
-        planesCtx.fillStyle = "rgba(173,216,230,0.7)";
+        planesCtx.fillStyle = "rgba(173,216,230,0.07)";
         planesCtx.fillRect(p.x, p.y, 40, 3);
         p.x += p.dx;
-        if (p.x > planesCanvas.width + 100) {
-          p.x = -50;
-          p.y = Math.random()*planesCanvas.height*0.4;
-          p.dx = 2 + Math.random()*3;
-        }
+        if (p.x > planesCanvas.width + 100) { p.x = -50; p.y = Math.random()*planesCanvas.height*0.4; p.dx = 2 + Math.random()*3; }
       });
     }
     setInterval(drawBackground, 30);
 
-    // ---------------------------
-    // Footer fade-in observer
-    // ---------------------------
-    const footerEl = document.getElementById('site-footer');
-    const footerObserver = new IntersectionObserver(entries=>{
-      entries.forEach(e=>{
-        if (e.isIntersecting) footerEl.classList.add('visible');
-      });
-    }, { threshold: 0.1 });
-    footerObserver.observe(footerEl);
-
-    // ============================
-    // End of module
-    // ============================
   </script>
-
 </body>
 </html>
