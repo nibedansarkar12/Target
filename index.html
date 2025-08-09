@@ -603,16 +603,29 @@ document.addEventListener('DOMContentLoaded', function(){
   const overlay = document.getElementById('overlay');
 
   function showSection(id){
-    sections.forEach(s => s.classList.remove('active'));
-    const t = document.getElementById(id);
-    if(t) t.classList.add('active');
-    // active links
-    document.querySelectorAll('nav.top a, .sidebar nav a').forEach(a => a.classList.remove('active'));
-    document.querySelectorAll('[data-target="'+id+'"]').forEach(a => a.classList.add('active'));
-    // close sidebar
-    closeMenu();
-    // scroll top of main
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // সব section থেকে active class সরাও
+  sections.forEach(s => s.classList.remove('active'));
+
+  // যে section ওপেন হবে সেটাতে active class দাও
+  const t = document.getElementById(id);
+  if(t) t.classList.add('active');
+
+  // সব nav লিঙ্ক থেকে active সরাও
+  document.querySelectorAll('nav.top a, .sidebar nav a')
+    .forEach(a => a.classList.remove('active'));
+
+  // যে nav লিঙ্কের data-target একই, সেটাকে active করো
+  document.querySelectorAll('[data-target="'+id+'"]')
+    .forEach(a => a.classList.add('active'));
+
+  // সাইডবার বন্ধ করো
+  closeMenu();
+
+  // স্ক্রল পজিশন হেডারের ঠিক নিচে সেট করো
+  window.scrollTo({ 
+    top: document.querySelector('header').offsetHeight, 
+    behavior: 'smooth' 
+  });
   }
 
   navLinks.forEach(a => {
