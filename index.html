@@ -1,420 +1,150 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Target Zone — সাফল্যের ঠিকানা</title>
-  <meta name="description" content="Target Zone: SSC GD, WBP, KP, WBPSI, Jail Police ও অন্যান্য স্টেট লেভেল পুলিশ জব প্রস্তুতি।" />
-  <style>
-    /* ====== Reset & base ====== */
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family: "Noto Sans", "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(180deg,#0b1b2b 0%,#071428 60%);
-      color:#e6f1ff;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      overflow-x:hidden;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Target Zone - Home</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0a0a0a url('https://i.ibb.co/4p2fL5W/stars-bg.gif') repeat;
+        color: white;
     }
-    a{color:inherit;text-decoration:none}
-
-    /* ====== Header ====== */
-    header{
-      position:fixed;inset:0 0 auto 0;height:64px;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 1rem;z-index:1200;
-      background:linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.12));
-      backdrop-filter: blur(6px);
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 1000;
     }
-    .brand{display:flex;align-items:center;gap:0.9rem}
-    .brand img{height:44px;width:auto;border-radius:6px;display:block}
-    .brand h1{font-size:1.05rem;font-weight:800;line-height:1}
-    .brand p{font-size:0.78rem;opacity:0.9;margin-top:2px}
-
-    /* top nav always visible as requested */
-    nav.top-links{display:flex;gap:0.6rem;align-items:center}
-    nav.top-links a{color:#fff;padding:6px 10px;border-radius:8px;font-weight:700;opacity:0.98}
-    nav.top-links a:hover{background:rgba(255,255,255,0.04)}
-
-    .contact-short{font-weight:700;font-size:0.92rem;color:#fff;opacity:0.95}
-
-    /* ====== Hamburger (always visible) ====== */
-    .hamburger{
-      width:44px;height:44px;display:flex;align-items:center;justify-content:center;
-      cursor:pointer;border-radius:8px;border:1px solid rgba(255,255,255,0.04);
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    header h1 {
+        margin: 0;
+        font-size: 22px;
     }
-    .hamburger .bar{width:20px;height:2px;background:#fff;margin:3px 0;border-radius:2px;transition:transform .25s}
-
-    /* ====== Sidebar (slide-in, partial cover) ====== */
-    .sidebar{
-      position:fixed;top:0;left:-360px;width:340px;height:100vh;background:linear-gradient(180deg,#071226,#05101a);
-      padding:1.25rem;box-shadow:6px 0 34px rgba(0,0,0,0.6);transition:left .32s cubic-bezier(.2,.9,.25,1);z-index:1300;
-      color:#e6f6ff;display:flex;flex-direction:column;
+    nav {
+        display: flex;
+        gap: 20px;
     }
-    .sidebar.open{left:8px} /* small gap so it doesn't cover fully */
-    .sidebar .close{align-self:flex-end;font-size:26px;cursor:pointer;padding:6px}
-    .sidebar h3{margin:8px 0 6px 0;font-size:1.05rem}
-    .sidebar nav a{display:block;padding:10px 12px;margin:6px 0;border-radius:8px;color:#dff; font-weight:700}
-    .sidebar nav a:hover{background:rgba(255,255,255,0.03)}
-    .sidebar .ftr{margin-top:auto;font-size:0.86rem;opacity:0.95}
-
-    /* ====== Main content ====== */
-    main{position:relative;z-index:100;padding-top:84px;min-height:100vh}
-    .container{max-width:1200px;margin:1.6rem auto;padding:0 1rem}
-
-    /* hero */
-    .hero{display:grid;gap:1.1rem;grid-template-columns:1fr}
-    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:1.4rem;border-radius:12px;color:#fff;box-shadow:0 8px 30px rgba(3,8,20,0.6)}
-    .hero h2{font-size:2rem;margin-bottom:6px}
-    .lead{font-size:1rem;opacity:0.95;margin-bottom:10px}
-    .cta-row{display:flex;gap:0.8rem;flex-wrap:wrap}
-    .btn{padding:0.62rem 1rem;border-radius:8px;border:none;font-weight:800;cursor:pointer}
-    .btn.primary{background:linear-gradient(90deg,#ff7e5f,#ffb86b);color:#111}
-    .btn.ghost{background:rgba(255,255,255,0.04);color:#fff}
-
-    /* responsive hero two-col on wide */
-    @media(min-width:920px){ .hero{grid-template-columns:1fr 420px} }
-
-    /* sections */
-    .section{margin:1.4rem 0;padding:0}
-    .cards{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-    .course-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
-    .course-card h4{margin-bottom:8px}
-
-    /* faculty */
-    .faculty-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-    .fac-card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;text-align:center;color:#fff}
-    .fac-card img{width:96px;height:96px;border-radius:50%;object-fit:cover;margin:6px auto;display:block}
-
-    /* enroll form */
-    .form-row{display:flex;gap:0.6rem;flex-wrap:wrap}
-    .form-row> *{flex:1 1 200px}
-    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.01);color:#e8f7ff}
-    .label{font-size:0.88rem;color:#bfe0ff;margin-bottom:6px;display:block}
-
-    /* payment/map */
-    .payment-grid{display:flex;gap:0.8rem;flex-wrap:wrap}
-    .pay-card{flex:1 1 200px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02)}
-    .map-frame{width:100%;height:300px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-
-    footer{padding:1.2rem;text-align:center;color:#cfe8ff;opacity:0.95;margin-top:18px}
-
-    /* canvas background */
-    #bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
-
-    /* small screens tweaks (no hiding of items) */
-    @media(max-width:600px){
-      nav.top-links{font-size:0.95rem;gap:0.4rem;flex-wrap:wrap}
-      .brand h1{font-size:1rem}
-      .hero h2{font-size:1.4rem}
+    nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
     }
-  </style>
+    nav a:hover {
+        color: #ff9800;
+    }
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+    }
+    .hamburger div {
+        width: 25px;
+        height: 3px;
+        background: white;
+    }
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -250px;
+        width: 250px;
+        height: 100%;
+        background: #111;
+        padding: 20px;
+        transition: 0.3s;
+        z-index: 2000;
+    }
+    .sidebar.active {
+        right: 0;
+    }
+    .sidebar a {
+        display: block;
+        padding: 10px 0;
+        color: white;
+        text-decoration: none;
+    }
+    .sidebar a:hover {
+        color: #ff9800;
+    }
+    .close-btn {
+        font-size: 20px;
+        cursor: pointer;
+        color: red;
+        float: right;
+    }
+    /* Main content */
+    .content {
+        padding: 80px 20px;
+        max-width: 1000px;
+        margin: auto;
+    }
+    .card {
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0px 0px 10px #000;
+    }
+    @media (max-width: 768px) {
+        nav { display: none; }
+        .hamburger { display: flex; }
+    }
+</style>
 </head>
 <body>
 
-  <!-- animated background -->
-  <canvas id="bgCanvas"></canvas>
-
-  <!-- Header -->
-  <header>
-    <div class="brand">
-      <img id="logoImg" src="logo.png" alt="Target Zone Logo" onerror="this.style.display='none'">
-      <div>
-        <h1>Target Zone</h1>
-        <p>সাফল্যের ঠিকানা — Target Zone আপনার পাশে</p>
-      </div>
-    </div>
-
-    <!-- Top links (always visible) -->
-    <nav class="top-links" id="topLinks">
-      <a href="index.html">Home</a>
-      <a href="courses.html">Courses</a>
-      <a href="faculty.html">Faculty</a>
-      <a href="payments.html">Payments</a>
-      <a href="contact.html">Contact</a>
-      <a href="exam.html">Exam</a>
-    </nav>
-
-    <div style="display:flex;gap:0.6rem;align-items:center">
-      <div class="contact-short">9614373839 | 7679262362</div>
-      <div class="hamburger" id="hamburger" title="Open menu">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar" aria-hidden="true">
-    <div class="close" id="closeSidebar" title="Close">&times;</div>
-    <h3>Menu — মেনু</h3>
+<header>
+    <h1>Target Zone</h1>
     <nav>
-      <a href="index.html">Home</a>
-      <a href="courses.html">Courses</a>
-      <a href="faculty.html">Faculty</a>
-      <a href="payments.html">Payments</a>
-      <a href="contact.html">Contact</a>
-      <a href="exam.html">Exam Page</a>
-      <a href="#map">Location</a>
-      <a href="#terms">Privacy & Terms</a>
+        <a href="index.html">Home</a>
+        <a href="courses.html">Courses</a>
+        <a href="faculty.html">Faculty</a>
+        <a href="payments.html">Payments</a>
+        <a href="contact.html">Contact</a>
+        <a href="exam.html">Exam</a>
     </nav>
-
-    <div class="ftr">
-      <strong>Head:</strong> Nibedan Sarkar<br>
-      Vill‑Hardighi, P.O‑Bhikahar, P.S‑Tapan, Dist‑Dakshin Dinajpur, 733142<br>
-      <a href="tel:9614373839" style="color:#dff;font-weight:800">Call: 9614373839</a>
+    <div class="hamburger" onclick="document.querySelector('.sidebar').classList.add('active')">
+        <div></div>
+        <div></div>
+        <div></div>
     </div>
-  </aside>
+</header>
 
-  <!-- Main -->
-  <main>
-    <div class="container">
+<div class="sidebar">
+    <span class="close-btn" onclick="document.querySelector('.sidebar').classList.remove('active')">✖</span>
+    <a href="index.html">Home</a>
+    <a href="courses.html">Courses</a>
+    <a href="faculty.html">Faculty</a>
+    <a href="payments.html">Payments</a>
+    <a href="contact.html">Contact</a>
+    <a href="exam.html">Exam</a>
+</div>
 
-      <!-- HERO -->
-      <section class="hero">
-        <div class="hero-card">
-          <h2>Target Zone</h2>
-          <p class="lead">সফল ক্যারিয়ার—শুরু হয় এখানে। SSC GD, WBP, KP, WBPSI, Jail Police ও অন্যান্য স্টেট লেভেল পুলিশ চাকরির প্রস্তুতি।</p>
-          <div class="cta-row">
-            <button class="btn primary" onclick="location.href='contact.html'">Join Now</button>
-            <button class="btn ghost" onclick="location.href='courses.html'">View Courses</button>
-            <a class="btn ghost" href="exam.html" style="display:inline-flex;align-items:center;justify-content:center">Go to Mock Test</a>
-          </div>
-        </div>
-
-        <!-- quick contact card -->
-        <aside style="align-self:start">
-          <div class="hero-card">
-            <h4 style="color:#ffdca3;margin-bottom:8px">Contact</h4>
-            <div style="font-weight:700">Phone: <a href="tel:9614373839">9614373839</a></div>
-            <div style="margin-top:6px;opacity:0.95">Address:<br>Vill‑Hardighi, P.O‑Bhikahar, P.S‑Tapan, Dist‑Dakshin Dinajpur, 733142</div>
-          </div>
-        </aside>
-      </section>
-
-      <!-- ABOUT -->
-      <section id="about" class="section">
-        <h3 style="margin-bottom:8px">About Target Zone</h3>
-        <p style="opacity:0.92">Target Zone একটি লক্ষ্যভিত্তিক কোচিং সেন্টার — বিশেষভাবে পুলিশ ও স্টেট লেভেল পরীক্ষার জন্য প্রস্তুতি। Experienced faculty, topicwise practice, mock-tests এবং personal guidance।</p>
-      </section>
-
-      <!-- COURSES (preview) -->
-      <section id="courses" class="section">
-        <h3 style="margin-bottom:10px">Courses — কোর্সসমূহ</h3>
-        <div class="cards">
-          <div class="course-card"><h4>SSC GD</h4><p>প্রিলিম, ফাইনাল ও physical প্রস্তুতি।</p></div>
-          <div class="course-card"><h4>WBP</h4><p>West Bengal Police রিক্রুটমেন্ট প্রস্তুতি।</p></div>
-          <div class="course-card"><h4>KP</h4><p>State/Category specific police কোর্স।</p></div>
-          <div class="course-card"><h4>WBPSI</h4><p>WBPSI competitive coaching ও interview guidance।</p></div>
-          <div class="course-card"><h4>Jail Police</h4><p>Jail Police রিক্রুটমেন্ট কোর্স।</p></div>
-          <div class="course-card"><h4>WBPSC</h4><p>WBPSC mains ও interview প্রস্তুতি।</p></div>
-          <div class="course-card"><h4>Other State Level</h4><p>অন্যান্য রাজ্য পুলিশ চাকরির জন্য কাস্টম কোর্স।</p></div>
-        </div>
-      </section>
-
-      <!-- FACULTY preview -->
-      <section id="faculty" class="section">
-        <h3 style="margin-bottom:8px">Faculty — শিক্ষকবৃন্দ</h3>
-        <p style="opacity:0.92">Head of Institute: <strong>Nibedan Sarkar</strong> — প্রতিটি বিষয়ের জন্য আলাদা Extra Teacher রয়েছে।</p>
-        <div class="faculty-grid" style="margin-top:12px">
-          <div class="fac-card"><img src="teacher1.jpg" alt="teacher" onerror="this.style.display='none'"><strong>Nibedan Sarkar</strong><div style="opacity:0.9;margin-top:6px">Head — Interview & overall guidance</div></div>
-          <div class="fac-card"><img src="teacher-mock.jpg" alt="teacher" onerror="this.style.display='none'"><strong>Maths Teacher</strong><div style="opacity:0.9;margin-top:6px">Quant & Reasoning</div></div>
-          <div class="fac-card"><img src="teacher-gk.jpg" alt="teacher" onerror="this.style.display='none'"><strong>GK Teacher</strong><div style="opacity:0.9;margin-top:6px">Current Affairs & GK</div></div>
-        </div>
-      </section>
-
-      <!-- Enrollment form preview (writes to Firebase) -->
-      <section id="enroll" class="section">
-        <h3 style="margin-bottom:8px">Enrollment / Contact Form</h3>
-        <p style="opacity:0.92">নিচের ফর্মটি পূরণ করুন — আমরা দ্রুত যোগাযোগ করব।</p>
-
-        <div style="background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px;margin-top:8px">
-          <form id="enrollForm" onsubmit="return false;">
-            <div class="form-row">
-              <div><label class="label">নাম / Name</label><input id="name" placeholder="তোমার নাম" required></div>
-              <div><label class="label">Phone</label><input id="phone" placeholder="Phone number" required></div>
-            </div>
-            <div style="margin-top:10px">
-              <label class="label">Course</label>
-              <select id="course"><option>SSC GD</option><option>WBP</option><option>KP</option><option>WBPSI</option><option>Jail Police</option><option>WBPSC</option><option>Other State Level</option></select>
-            </div>
-            <div style="margin-top:10px"><label class="label">Message (Optional)</label><textarea id="message" rows="3" placeholder="মেসেজ"></textarea></div>
-
-            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-              <button class="btn primary" id="submitEnroll">Submit</button>
-              <button class="btn ghost" type="reset" onclick="document.getElementById('enrollForm').reset()">Reset</button>
-              <div id="enrollStatus" style="color:#dff;margin-left:8px"></div>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <!-- Payment preview + map -->
-      <section id="payment" class="section">
-        <h3 style="margin-bottom:8px">Online Payment — পেমেন্ট</h3>
-        <p style="opacity:0.92">UPI / Wallets: GPay, PhonePe, Paytm — <strong>7679262362</strong> — অথবা Bank Transfer.</p>
-
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:12px;max-width:1200px">
-          <div class="payment-grid">
-            <div class="pay-card"><h4>GPay / PhonePe / Paytm</h4><div style="font-weight:800;font-size:1.05rem">7679262362</div><div style="opacity:0.9">ছোট নোট লিখে নাম পাঠালে রেজিস্ট্রেশন কনফার্ম করা হবে</div></div>
-            <div class="pay-card"><h4>Bank Transfer</h4><div style="font-weight:800">Account: 2992702223</div><div style="opacity:0.9">IFSC: CBIN0282799 — Central Bank of India</div><div style="margin-top:6px;font-weight:800">Holder: Nibedan Sarkar</div></div>
-            <div class="pay-card"><h4>Other</h4><div style="opacity:0.9">Amazon Pay/Wallets accepted — payment txn id ফর্মে লিখে পাঠান।</div></div>
-          </div>
-
-          <div>
-            <div class="map-frame" id="mapFrame" title="Open in Maps">
-              <!-- embed (search query) so it always show; clicking opens short link -->
-              <iframe id="gmap" src="https://www.google.com/maps?q=Vill-Hardighi+Bhikahar+Tapan+Dakshin+Dinajpur&output=embed" width="100%" height="100%" style="border:0" allowfullscreen="" loading="lazy"></iframe>
-            </div>
-
-            <div style="background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;margin-top:8px;text-align:center">
-              <p style="opacity:0.9">Upload QR images as <code>qr-gpay.png</code> and <code>qr-paytm.png</code> into repo to show here.</p>
-              <div style="display:flex;gap:8px;justify-content:center">
-                <img src="qr-gpay.png" alt="gpay" style="width:88px;height:88px;object-fit:contain" onerror="this.style.display='none'">
-                <img src="qr-paytm.png" alt="paytm" style="width:88px;height:88px;object-fit:contain" onerror="this.style.display='none'">
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="terms" class="section" style="margin-top:18px">
-        <h4>Privacy & Terms</h4>
-        <p style="opacity:0.9">Enrollment data only used to contact and manage classes.</p>
-      </section>
-
-      <footer>&copy; 2025 Target Zone — Vill‑Hardighi, Bhikahar, Tapan | Call: 9614373839, 7679262362</footer>
+<div class="content">
+    <div class="card">
+        <h2>About Target Zone</h2>
+        <p>SSC GD, WBP, KP, WBPSI, Jail Police ও অন্যান্য স্টেট লেভেল পুলিশ চাকরির প্রস্তুতি। Experienced faculty, topic-wise practice, mock tests & personalized guidance.</p>
     </div>
-  </main>
 
-  <!-- ====== Scripts: Firebase + UI behavior + Animation ====== -->
-  <script type="module">
-    // ---------- Firebase config (from your provided file) ----------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    <div class="card">
+        <h2>Contact</h2>
+        <p>📞 9614373839 / 7679262362<br>
+        📍 Vill- Hardighi, P.O- Bhikahar, P.S- Tapan, Dist- Dakshin Dinajpur, Pin-733142</p>
+        <p><a href="https://maps.app.goo.gl/vSV1b7qdiYNybhc5A" target="_blank" style="color:#ff9800;">Google Map Link</a></p>
+    </div>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
-      authDomain: "target-zone-8fffd.firebaseapp.com",
-      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
-      projectId: "target-zone-8fffd",
-      storageBucket: "target-zone-8fffd.appspot.com",
-      messagingSenderId: "667579216123",
-      appId: "1:667579216123:web:37bb1fcc724743073d005e",
-      measurementId: "G-436XDYLGVX"
-    };
+<script>
+    // No extra JS needed except sidebar toggle
+</script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Enrollment form submit
-    const submitBtn = document.getElementById('submitEnroll');
-    const enrollStatus = document.getElementById('enrollStatus');
-
-    submitBtn.addEventListener('click', async () => {
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const course = document.getElementById('course').value;
-      const message = document.getElementById('message').value.trim();
-
-      if (!name || !phone) {
-        enrollStatus.style.color = '#ffd2d2';
-        enrollStatus.textContent = 'নাম ও ফোন নম্বর লাগবে।';
-        return;
-      }
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending...';
-
-      try {
-        const enrollRef = ref(db, 'enrollments');
-        const newRef = push(enrollRef);
-        await set(newRef, { name, phone, course, message, createdAt: serverTimestamp() });
-        enrollStatus.style.color = '#bfffd4';
-        enrollStatus.textContent = 'ধন্যবাদ! রেজিস্ট্রেশন জমা হয়েছে। আমরা শীঘ্রই যোগাযোগ করব।';
-        document.getElementById('enrollForm').reset();
-      } catch (err) {
-        console.error('Firebase write error', err);
-        enrollStatus.style.color = '#ffd2d2';
-        enrollStatus.textContent = 'দুঃখিত, জমা হয়নি। আবার চেষ্টা করুন।';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
-        setTimeout(()=> enrollStatus.textContent = '', 6000);
-      }
-    });
-
-    // ---------- Sidebar open/close ----------
-    const hamburger = document.getElementById('hamburger');
-    const sidebar = document.getElementById('sidebar');
-    const closeSidebar = document.getElementById('closeSidebar');
-
-    function openSidebar(){
-      sidebar.classList.add('open');
-      sidebar.setAttribute('aria-hidden','false');
-      document.body.style.overflow = 'hidden'; // prevent body scroll when open
-    }
-    function closeSidebarFn(){
-      sidebar.classList.remove('open');
-      sidebar.setAttribute('aria-hidden','true');
-      document.body.style.overflow = ''; // restore
-    }
-
-    hamburger.addEventListener('click', (e)=>{ e.stopPropagation(); openSidebar(); });
-    closeSidebar.addEventListener('click', (e)=>{ e.stopPropagation(); closeSidebarFn(); });
-
-    // close when clicking outside
-    window.addEventListener('click', (e)=>{
-      if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) closeSidebarFn();
-    });
-
-    // keyboard escape closes sidebar
-    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSidebarFn(); });
-
-    // ---------- Map short link handling ----------
-    const userShortMap = "https://maps.app.goo.gl/vSV1b7qdiYNybhc5A";
-    const mapFrame = document.getElementById('mapFrame');
-    mapFrame.addEventListener('click', ()=> window.open(userShortMap,'_blank'));
-
-    // ---------- Canvas background animation ----------
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    let W = canvas.width = innerWidth;
-    let H = canvas.height = innerHeight;
-    const stars = [], boxes = [];
-    const plane = { x: W * 0.05, y: H * 0.15, vx: 0.6 };
-
-    function rand(min,max){ return Math.random()*(max-min)+min; }
-    function initBG(){
-      stars.length=0; boxes.length=0;
-      for(let i=0;i<120;i++) stars.push({x:rand(0,W),y:rand(0,H),r:rand(0.6,1.8),a:rand(0.2,1),vy:rand(0.02,0.45)});
-      for(let i=0;i<8;i++) boxes.push({x:rand(0,W),y:rand(0,H),w:rand(40,120),h:rand(20,60),a:rand(0,Math.PI*2),va:rand(0.0006,0.003)});
-    }
-    function resize(){ W=canvas.width=innerWidth; H=canvas.height=innerHeight; initBG(); }
-    addEventListener('resize', resize);
-    initBG();
-
-    function draw(){
-      ctx.clearRect(0,0,W,H);
-      const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(2,7,20,0.85)'); g.addColorStop(1,'rgba(6,12,24,0.95)');
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-      // stars
-      for(const s of stars){ s.y -= s.vy; if(s.y<-5) s.y=H+5; ctx.globalAlpha=s.a; ctx.beginPath(); ctx.fillStyle='#fff'; ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill(); }
-      ctx.globalAlpha=1;
-      // boxes
-      for(const b of boxes){ b.a += b.va; ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.a*0.35); ctx.globalAlpha=0.06; ctx.fillStyle='#fff'; ctx.fillRect(-b.w/2,-b.h/2,b.w,b.h); ctx.restore(); }
-      ctx.globalAlpha=1;
-      // plane
-      plane.x += plane.vx; if(plane.x>W+200) plane.x=-200;
-      ctx.save(); ctx.translate(plane.x, plane.y); ctx.rotate(Math.sin(Date.now()/4500)*0.05); ctx.globalAlpha=0.95;
-      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-40,10); ctx.lineTo(-40,-10); ctx.closePath(); ctx.fillStyle='#ffd59a'; ctx.fill(); ctx.restore();
-
-      requestAnimationFrame(draw);
-    }
-    draw();
-
-  </script>
 </body>
 </html>
