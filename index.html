@@ -595,6 +595,12 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
 <!-- Tabs & Sidebar -->
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+  // পেজ লোড হলে হেডারের নিচ থেকে শুরু করো
+  window.scrollTo({ 
+    top: document.querySelector('header').offsetHeight, 
+    behavior: 'instant' 
+  });
+
   const navLinks = document.querySelectorAll('nav.top a[data-target], .sidebar nav a[data-target]');
   const sections = document.querySelectorAll('.section');
   const hamburger = document.getElementById('hamburger');
@@ -603,60 +609,57 @@ document.addEventListener('DOMContentLoaded', function(){
   const overlay = document.getElementById('overlay');
 
   function showSection(id){
-  // সব section থেকে active class সরাও
-  sections.forEach(s => s.classList.remove('active'));
+    // সব section থেকে active class সরাও
+    sections.forEach(s => s.classList.remove('active'));
 
-  // যে section ওপেন হবে সেটাতে active class দাও
-  const t = document.getElementById(id);
-  if(t) t.classList.add('active');
+    // যে section ওপেন হবে সেটাতে active class দাও
+    const t = document.getElementById(id);
+    if(t) t.classList.add('active');
 
-  // সব nav লিঙ্ক থেকে active সরাও
-  document.querySelectorAll('nav.top a, .sidebar nav a')
-    .forEach(a => a.classList.remove('active'));
+    // সব nav লিঙ্ক থেকে active সরাও
+    document.querySelectorAll('nav.top a, .sidebar nav a')
+      .forEach(a => a.classList.remove('active'));
 
-  // যে nav লিঙ্কের data-target একই, সেটাকে active করো
-  document.querySelectorAll('[data-target="'+id+'"]')
-    .forEach(a => a.classList.add('active'));
+    // যে nav লিঙ্কের data-target একই, সেটাকে active করো
+    document.querySelectorAll('[data-target="'+id+'"]')
+      .forEach(a => a.classList.add('active'));
 
-  // সাইডবার বন্ধ করো
-  closeMenu();
+    // সাইডবার বন্ধ করো
+    closeMenu();
 
-  // স্ক্রল পজিশন হেডারের ঠিক নিচে সেট করো
-  window.scrollTo({ 
-    top: document.querySelector('header').offsetHeight, 
-    behavior: 'smooth' 
-  });
+    // স্ক্রল পজিশন হেডারের ঠিক নিচে সেট করো
+    window.scrollTo({ 
+      top: document.querySelector('header').offsetHeight, 
+      behavior: 'smooth' 
+    });
   }
 
-  navLinks.forEach(a => {
-    a.addEventListener('click', function(e){
+  // ন্যাভ লিঙ্কে ক্লিক ইভেন্ট
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e){
       e.preventDefault();
-      const id = this.getAttribute('data-target');
-      if(id) showSection(id);
+      const target = this.getAttribute('data-target');
+      if(target) showSection(target);
     });
   });
 
-  // initial from hash
-  const hash = location.hash.replace('#','');
-  if(hash && document.getElementById(hash)) showSection(hash);
-  else showSection('home');
+  // হ্যামবার্গার মেনু
+  hamburger.addEventListener('click', function(){
+    sidebar.classList.add('active');
+    overlay.classList.add('active');
+  });
 
-  // sidebar
-  function openMenu(){ sidebar.classList.add('open'); overlay.classList.add('show'); sidebar.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden'; }
-  function closeMenu(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); sidebar.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); document.documentElement.style.overflow=''; document.body.style.overflow=''; }
-
-  hamburger.addEventListener('click', function(e){ e.stopPropagation(); openMenu(); });
-  if(closeSidebar) closeSidebar.addEventListener('click', function(e){ e.stopPropagation(); closeMenu(); });
+  // সাইডবার বন্ধ
+  closeSidebar.addEventListener('click', closeMenu);
   overlay.addEventListener('click', closeMenu);
-  window.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
-  window.addEventListener('resize', function(){ if(window.innerWidth > 920) closeMenu(); });
 
-  // links in course CTA that target contact should show the admission form
-  document.querySelectorAll('a[data-target="contact"]').forEach(a => a.addEventListener('click', function(e){ e.preventDefault(); showSection('contact'); }));
+  function closeMenu(){
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  }
 
-  // animate head-card in
-  const headCard = document.getElementById('headCard');
-  if(headCard) setTimeout(()=>{ headCard.style.opacity='1'; headCard.style.transform='none'; }, 260);
+  // ডিফল্ট সেকশন লোড
+  showSection('home');
 });
 </script>
 
