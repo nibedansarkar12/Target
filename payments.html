@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Target Zone — Payments</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family: "Noto Sans", "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(180deg,#031a30 0%, #000814 100%);
+    color:#e9f6ff;
+  }
+  a{text-decoration:none;color:inherit}
+  header{
+    position:fixed;top:0;left:0;right:0;height:64px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;z-index:1200;
+    background:linear-gradient(90deg, rgba(2,6,15,0.6), rgba(2,6,15,0.2));
+    border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  .brand{font-weight:800;font-size:1.05rem}
+  nav.top{display:flex;gap:12px}
+  nav.top a{color:#dff;font-weight:700;padding:6px 10px;border-radius:8px}
+  nav.top a:hover{background:rgba(255,255,255,0.03)}
+  main{padding-top:88px;max-width:1100px;margin:0 auto;padding-left:16px;padding-right:16px}
+  h1{font-size:1.6rem;margin-bottom:14px;color:#fff;text-align:center}
+  .pay-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:20px}
+  .pay-card{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;
+    padding:14px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.4);
+    transition:transform 0.2s;
+  }
+  .pay-card:hover{transform:translateY(-4px)}
+  .pay-card img.icon{width:60px;height:60px;margin-bottom:10px}
+  .pay-card .name{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+  .qr{width:140px;height:140px;margin:10px auto;border:4px solid rgba(255,255,255,0.1);border-radius:8px}
+  footer{margin-top:24px;text-align:center;opacity:0.8}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Target Zone</div>
+  <nav class="top">
+    <a href="index.html">Home</a>
+    <a href="courses.html">Courses</a>
+    <a href="faculty.html">Faculty</a>
+    <a href="payments.html" aria-current="page">Payments</a>
+    <a href="contact.html">Contact</a>
+    <a href="exam.html">Exam</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Payments — পেমেন্ট করুন</h1>
+  <p style="text-align:center;opacity:0.9">আপনি নিচের যেকোনো মাধ্যম ব্যবহার করে পেমেন্ট করতে পারেন</p>
+
+  <div class="pay-grid">
+    <!-- GPay -->
+    <a class="pay-card" href="upi://pay?pa=7679262362@okicici&pn=Nibedan%20Sarkar" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Google_Pay_Logo.svg" class="icon" alt="GPay">
+      <div class="name">Google Pay</div>
+      <div>7679262362</div>
+      <img src="https://via.placeholder.com/140x140.png?text=GPay+QR" alt="GPay QR" class="qr">
+    </a>
+
+    <!-- PhonePe -->
+    <a class="pay-card" href="upi://pay?pa=7679262362@ybl&pn=Nibedan%20Sarkar" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f0/PhonePe-Logo.svg" class="icon" alt="PhonePe">
+      <div class="name">PhonePe</div>
+      <div>7679262362</div>
+      <img src="https://via.placeholder.com/140x140.png?text=PhonePe+QR" alt="PhonePe QR" class="qr">
+    </a>
+
+    <!-- Paytm -->
+    <a class="pay-card" href="upi://pay?pa=7679262362@paytm&pn=Nibedan%20Sarkar" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Paytm_logo.png" class="icon" alt="Paytm">
+      <div class="name">Paytm</div>
+      <div>7679262362</div>
+      <img src="https://via.placeholder.com/140x140.png?text=Paytm+QR" alt="Paytm QR" class="qr">
+    </a>
+
+    <!-- Amazon Pay -->
+    <a class="pay-card" href="#" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Amazon_Pay_logo.svg" class="icon" alt="Amazon Pay">
+      <div class="name">Amazon Pay</div>
+      <div>7679262362</div>
+      <img src="https://via.placeholder.com/140x140.png?text=Amazon+Pay+QR" alt="Amazon Pay QR" class="qr">
+    </a>
+
+    <!-- Bank Transfer -->
+    <div class="pay-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Bank_font_awesome.svg" class="icon" alt="Bank">
+      <div class="name">Bank Transfer</div>
+      <div>Central Bank of India</div>
+      <div style="margin-top:6px;font-size:0.95rem">
+        A/C: 2992702223<br>
+        IFSC: CBIN0282799<br>
+        Name: Nibedan Sarkar
+      </div>
+    </div>
+  </div>
+
+  <footer>&copy; 2025 Target Zone — All Rights Reserved</footer>
+</main>
+
+<!-- background stars -->
+<script>
+(function(){
+  const canvas=document.createElement('canvas');
+  canvas.style.position='fixed';
+  canvas.style.inset='0';
+  canvas.style.zIndex='-1';
+  document.body.appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+  let W,H;const stars=[];
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+    stars.length=0;
+    for(let i=0;i<100;i++){stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5});}
+  }
+  window.addEventListener('resize',resize);
+  resize();
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#000814';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#fff';
+    stars.forEach(s=>{
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+</body>
+</html>
