@@ -67,7 +67,7 @@
   <button id="submitBtn" type="submit" class="col-span-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold text-lg transition-all duration-300">✅ Sign Up</button>
   <p id="message" class="col-span-2 text-center text-sm"></p>
 </form>
-<p class="text-center text-sm mt-6 text-gray-700">Already have an account? <a href="index.html" class="text-blue-600 hover:underline">Login here</a></p>
+<p class="text-center text-sm mt-6 text-gray-700">Already have an account? <a href="exam.html" class="text-blue-600 hover:underline">Login here</a></p>
 
   </div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -153,7 +153,7 @@
           timerProgressBar: true,
           showConfirmButton: false
         }).then(() => {
-          window.location.href = "index.html";
+          window.location.href = "exam.html";
         });
       } catch (err) {
         Swal.fire({ icon: 'error', title: 'Signup Failed', text: err.message });
