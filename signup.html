@@ -134,7 +134,7 @@
       try {
         await createUserWithEmailAndPassword(auth, email, password);
 
-        await addDoc(collection(db, "students"), {
+        await addDoc(collection(db, "users"), {
           uid,
           name,
           whatsapp,
