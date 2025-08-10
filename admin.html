@@ -336,16 +336,30 @@
 
     // Load Users
     async function loadUsers(){
-      const table=document.getElementById("users-list");
-      table.innerHTML="<tr><td colspan='2'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,"users"));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const u=docSnap.data();
-        rows+=`<tr><td>${u.email}</td><td>${u.name||"Unknown"}</td></tr>`;
-      });
-      table.innerHTML=rows||"<tr><td colspan='2'>কোনো ইউজার নেই</td></tr>";
+    async function loadUsers(){
+  const table = document.getElementById("users-list");
+  table.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+  
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    let rows = "";
+    querySnapshot.forEach(docSnap => {
+      const d = docSnap.data();
+      rows += `<tr>
+        <td>${d.name || ""}</td>
+        <td>${d.email || ""}</td>
+        <td>${d.whatsapp || ""}</td>
+        <td>${d.education || ""}</td>
+        <td>${d.status || ""}</td>
+      </tr>`;
+    });
+    table.innerHTML = rows || "<tr><td colspan='5'>No users found</td></tr>";
+  } catch (error) {
+    console.error("Error loading users: ", error);
+    table.innerHTML = "<tr><td colspan='5'>Error loading users</td></tr>";
+  }
     }
+      
 
     // Music Toggle
     const music=document.getElementById("bg-music");
