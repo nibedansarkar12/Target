@@ -70,8 +70,17 @@ nav.top a.active{background:linear-gradient(90deg, rgba(255,126,95,0.10), rgba(1
 .overlay.show{ display:block }
 
 /* ===== Main ===== */
-main{ position:relative; z-index:100; padding-top:40px; min-height:100vh; max-width:1100px; margin:0 auto; padding-left:16px; padding-right:16px; }
-/* note: padding-top reduced so content appears closer to header */
+main{
+  position:relative;
+  z-index:100;
+  padding-top:80px; /* <-- IMPORTANT: header height (64px) + small gap */
+  min-height:100vh;
+  max-width:1100px;
+  margin:0 auto;
+  padding-left:16px;
+  padding-right:16px;
+}
+  
 
 /* Sections */
 .section{ display:none; padding:14px 0 36px 0; animation:fadeIn .32s ease both; border-bottom:1px solid rgba(255,255,255,0.02) }
@@ -152,10 +161,20 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
   .hamburger{ margin-left:-6px }
   .courses-grid{ grid-template-columns:1fr }
   .pay-grid{ grid-template-columns:1fr }
-  main{ padding-left:12px; padding-right:12px }
-  .head-meta{ flex-direction:row }
+  /* main এর জন্য মোবাইল স্পেশাল */
+  main{ padding-left:12px; padding-right:12px; padding-top:88px; } /* একটু বেশি gap মোবাইলে ভালো লাগে */
   .head-meta img{ width:80px; height:80px }
 }
+#bgCanvas{
+  position:fixed;
+  inset:0;           /* top:0; right:0; bottom:0; left:0; */
+  width:100%;
+  height:100%;
+  z-index:0;         /* main/header have higher z-index so canvas stays behind */
+  pointer-events:none; /* clicks go through canvas */
+  display:block;
+}
+  
 </style>
 </head>
 <body>
