@@ -448,57 +448,51 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
     <p style="opacity:0.92; margin-top:8px">UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।</p>
 
     <div class="pay-grid">
-      <!-- Google Pay -->
-      <div class="pay-card">
-        <img class="icon" src="https://raw.githubusercontent.com/favicon.ico" alt="GPay" onerror="this.style.display='none'">
-        <div class="pay-info">
-          <strong>Google Pay</strong>
-          <div style="opacity:0.9">UPI / Mobile Wallet — 7679262362</div>
-        </div>
-        <div>
-          <!-- UPI deep link -->
-          <a class="btn primary" id="gpayBtn" href="#" title="Pay with GPay">Pay Now</a>
-        </div>
-      </div>
+  <!-- Google Pay -->
+  <div class="pay-card icon-only" title="Pay with Google Pay">
+    <img class="icon" src="gpay.png" alt="Google Pay" onerror="this.remove()">
+    <a class="btn primary" 
+       href="intent://pay?pa=rajnitirgalpokotha@oksbi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;"
+       target="_blank">
+      Pay Now
+    </a>
+  </div>
 
-      <!-- PhonePe -->
-      <div class="pay-card">
-        <img class="icon" src="https://raw.githubusercontent.com/favicon.ico" alt="PhonePe" onerror="this.style.display='none'">
-        <div class="pay-info">
-          <strong>PhonePe</strong>
-          <div style="opacity:0.9">UPI / Mobile Wallet — 7679262362</div>
-        </div>
-        <div>
-          <a class="btn primary" id="phonepeBtn" href="#" title="Pay with PhonePe">Pay Now</a>
-        </div>
-      </div>
+  <!-- PhonePe -->
+  <div class="pay-card icon-only" title="Pay with PhonePe">
+    <img class="icon" src="phonepe.png" alt="PhonePe" onerror="this.remove()">
+    <a class="btn primary" 
+       href="intent://pay?pa=7679262362@axl&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.phonepe.app;end;"
+       target="_blank">
+      Pay Now
+    </a>
+  </div>
 
-      <!-- Paytm -->
-      <div class="pay-card">
-        <img class="icon" src="https://raw.githubusercontent.com/favicon.ico" alt="Paytm" onerror="this.style.display='none'">
-        <div class="pay-info">
-          <strong>Paytm</strong>
-          <div style="opacity:0.9">UPI / Mobile Wallet — 7679262362</div>
-        </div>
-        <div>
-          <a class="btn primary" id="paytmBtn" href="#" title="Pay with Paytm">Pay Now</a>
-        </div>
-      </div>
+  <!-- Paytm -->
+  <div class="pay-card icon-only" title="Pay with Paytm">
+    <img class="icon" src="paytm.png" alt="Paytm" onerror="this.remove()">
+    <a class="btn primary" 
+       href="intent://pay?pa=7679262362@ptaxis&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=net.one97.paytm;end;"
+       target="_blank">
+      Pay Now
+    </a>
+  </div>
 
-      <!-- Bank -->
-      <div class="pay-card">
-        <img class="icon" src="https://raw.githubusercontent.com/favicon.ico" alt="Bank" onerror="this.style.display='none'">
-        <div class="pay-info">
-          <strong>Bank Transfer</strong>
-          <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
-          <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
-          <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
-        </div>
-        <div>
-          <button class="copy-btn" id="copyBank">Copy</button>
-        </div>
-      </div>
+  <!-- Bank -->
+  <div class="pay-card bank-card">
+    <img class="icon" src="bank.png" alt="Bank" onerror="this.remove()">
+    <div class="pay-info">
+      <strong>Bank Transfer</strong>
+      <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
+      <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
+      <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
     </div>
+    <div>
+      <button class="copy-btn" id="copyBank">Copy</button>
+    </div>
+  </div>
+</div>
+
 
     <!-- Upload payment proof -->
     <div class="upload-box" aria-live="polite">
