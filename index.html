@@ -174,6 +174,12 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
   pointer-events:none; /* clicks go through canvas */
   display:block;
 }
+  #qrModal img {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+#qrModal .btn {
+  margin-top: 10px;
+}
   
 </style>
 </head>
@@ -442,77 +448,84 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
 </section>
 
 
-  <!-- PAYMENTS -->
-  <section id="payments" class="section" aria-labelledby="payments-heading">
-    <h2 id="payments-heading">Payments & Proof Upload</h2>
-    <p style="opacity:0.92; margin-top:8px">UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।</p>
+<!-- PAYMENTS -->
+<section id="payments" class="section" aria-labelledby="payments-heading">
+  <h2 id="payments-heading">Payments & Proof Upload</h2>
+  <p style="opacity:0.92; margin-top:8px">
+    UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।
+  </p>
 
-    <div class="pay-grid">
-  <!-- Google Pay -->
-  <div class="pay-card icon-only" title="Pay with Google Pay">
-    <img class="icon" src="gpay.png" alt="Google Pay" onerror="this.remove()">
-    <a class="btn primary" 
-       href="intent://pay?pa=rajnitirgalpokotha@oksbi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;"
-       target="_blank">
-      Pay Now
-    </a>
-  </div>
+  <div class="pay-grid">
 
-  <!-- PhonePe -->
-  <div class="pay-card icon-only" title="Pay with PhonePe">
-    <img class="icon" src="phonepe.png" alt="PhonePe" onerror="this.remove()">
-    <a class="btn primary" 
-       href="intent://pay?pa=7679262362@axl&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.phonepe.app;end;"
-       target="_blank">
-      Pay Now
-    </a>
-  </div>
-
-  <!-- Paytm -->
-  <div class="pay-card icon-only" title="Pay with Paytm">
-    <img class="icon" src="paytm.png" alt="Paytm" onerror="this.remove()">
-    <a class="btn primary" 
-       href="intent://pay?pa=7679262362@ptaxis&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=net.one97.paytm;end;"
-       target="_blank">
-      Pay Now
-    </a>
-  </div>
-
-  <!-- Bank -->
-  <div class="pay-card bank-card">
-    <img class="icon" src="bank.png" alt="Bank" onerror="this.remove()">
-    <div class="pay-info">
-      <strong>Bank Transfer</strong>
-      <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
-      <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
-      <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
+    <!-- Google Pay -->
+    <div class="pay-card icon-only" title="Pay with Google Pay">
+      <img class="icon" src="gpay.png" alt="Google Pay" onerror="this.remove()">
+      <a class="btn primary" 
+         href="intent://pay?pa=rajnitirgalpokotha@oksbi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;"
+         target="_blank">
+        Pay Now
+      </a>
+      <button class="btn ghost" onclick="showQR('GooglePay_QR.png')">Download QR</button>
     </div>
-    <div>
-      <button class="copy-btn" id="copyBank">Copy</button>
+
+    <!-- PhonePe -->
+    <div class="pay-card icon-only" title="Pay with PhonePe">
+      <img class="icon" src="phonepe.png" alt="PhonePe" onerror="this.remove()">
+      <a class="btn primary" 
+         href="intent://pay?pa=7679262362@axl&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.phonepe.app;end;"
+         target="_blank">
+        Pay Now
+      </a>
+      <button class="btn ghost" onclick="showQR('phonepe QR.png')">Download QR</button>
     </div>
-  </div>
-</div>
 
+    <!-- Paytm -->
+    <div class="pay-card icon-only" title="Pay with Paytm">
+      <img class="icon" src="paytm.png" alt="Paytm" onerror="this.remove()">
+      <a class="btn primary" 
+         href="intent://pay?pa=7679262362@ptaxis&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=net.one97.paytm;end;"
+         target="_blank">
+        Pay Now
+      </a>
+      <button class="btn ghost" onclick="showQR('Paytm QR.png')">Download QR</button>
+    </div>
 
-    <!-- Upload payment proof -->
-    <div class="upload-box" aria-live="polite">
-      <h4 style="margin-bottom:8px">Upload Payment Proof</h4>
-      <p style="opacity:0.88; margin-bottom:8px">Payment করার পরে এখানে screenshot/upload করে দিন — আমরা পরে যাচাই করে যোগাযোগ করব।</p>
-      <input type="file" id="proofFile" accept="image/*,application/pdf"><br>
-      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-        <input id="proofName" placeholder="Your name" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
-        <input id="proofPhone" placeholder="Phone" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
-        <button class="btn primary" id="uploadProofBtn">Upload</button>
+    <!-- Bank -->
+    <div class="pay-card bank-card">
+      <img class="icon" src="bank.png" alt="Bank" onerror="this.remove()">
+      <div class="pay-info">
+        <strong>Bank Transfer</strong>
+        <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
+        <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
+        <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
       </div>
-      <div id="proofStatus" style="margin-top:8px;color:#dff;"></div>
+      <div>
+        <button class="copy-btn" id="copyBank">Copy</button>
+      </div>
     </div>
 
-    <!-- Map -->
-    <div class="map-frame" style="margin-top:12px">
-      <iframe src="https://www.google.com/maps?q=Target+Zone,+Hardighi,+West+Bengal,+733142&output=embed" width="100%" height="100%" style="border:0" allowfullscreen="" loading="lazy"></iframe>
+  </div>
 
+  <!-- Upload payment proof -->
+  <div class="upload-box" aria-live="polite">
+    <h4 style="margin-bottom:8px">Upload Payment Proof</h4>
+    <p style="opacity:0.88; margin-bottom:8px">
+      Payment করার পরে এখানে screenshot/upload করে দিন — আমরা পরে যাচাই করে যোগাযোগ করব।
+    </p>
+    <input type="file" id="proofFile" accept="image/*,application/pdf"><br>
+    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+      <input id="proofName" placeholder="Your name" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
+      <input id="proofPhone" placeholder="Phone" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
+      <button class="btn primary" id="uploadProofBtn">Upload</button>
     </div>
-  </section>
+    <div id="proofStatus" style="margin-top:8px;color:#dff;"></div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-frame" style="margin-top:12px">
+    <iframe src="https://www.google.com/maps?q=Target+Zone,+Hardighi,+West+Bengal,+733142&output=embed" width="100%" height="100%" style="border:0" allowfullscreen="" loading="lazy"></iframe>
+  </div>
+        </section>
 
   <!-- CONTACT / Admission Form -->
   <section id="contact" class="section" aria-labelledby="contact-heading">
@@ -840,6 +853,25 @@ document.addEventListener('DOMContentLoaded', function(){
   draw();
 })();
 </script>
+  <script>
+function showQR(imgSrc){
+  document.getElementById('qrImage').src = imgSrc;
+  document.getElementById('downloadQR').href = imgSrc;
+  document.getElementById('qrModal').style.display = 'flex';
+}
+function closeQR(){
+  document.getElementById('qrModal').style.display = 'none';
+}
+  </script>
+  <!-- QR Modal -->
+<div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:20px; border-radius:10px; text-align:center; max-width:90%; position:relative;">
+    <span onclick="closeQR()" style="position:absolute; right:10px; top:5px; font-size:20px; cursor:pointer;">&times;</span>
+    <img id="qrImage" src="" alt="QR Code" style="max-width:300px; width:100%; height:auto; border-radius:8px;">
+    <br><br>
+    <a id="downloadQR" class="btn primary" download="payment-qr.png">Download QR</a>
+  </div>
+</div>
 
 </body>
 </html>
