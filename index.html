@@ -176,7 +176,7 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
 }
   
 </style>
-  <style>
+/* ===== Payments Section ===== */
 .payment-grid {
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -190,6 +190,7 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
   padding:20px;
   text-align:center;
   box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  color:#000;
 }
 .payment-logo {
   width:80px;
@@ -245,7 +246,6 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
 .qr-actions a:hover {
   background:#0056b3;
 }
-  </style>
 </head>
 <body>
 
@@ -513,93 +513,13 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
 
 
   <!-- PAYMENTS -->
-  <section id="payments" class="section" aria-labelledby="payments-heading">
-  <h2 id="payments-heading">Payments & Proof Upload</h2>
-  <p style="opacity:0.92; margin-top:8px">
-    UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।
-  </p>
-
-  <div class="pay-grid">
-    <!-- Google Pay -->
-    <div class="pay-card">
-      <img class="icon" src="gpay.png" alt="Google Pay">
-      <div class="pay-info">
-        <strong>Google Pay</strong>
-        <a class="btn primary"
-           href="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
-          Pay Now
-        </a>
-        <div style="margin-top:8px">
-          <img src="GooglePay_QR.png" alt="Google Pay QR" class="qr-img">
-        </div>
-      </div>
-    </div>
-
-    <!-- PhonePe -->
-    <div class="pay-card">
-      <img class="icon" src="phonepe.png" alt="PhonePe">
-      <div class="pay-info">
-        <strong>PhonePe</strong>
-        <a class="btn primary"
-           href="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
-          Pay Now
-        </a>
-        <div style="margin-top:8px">
-          <img src="phonepe QR.png" alt="PhonePe QR" class="qr-img">
-        </div>
-      </div>
-    </div>
-
-    <!-- Paytm -->
-    <div class="pay-card">
-      <img class="icon" src="paytm.png" alt="Paytm">
-      <div class="pay-info">
-        <strong>Paytm</strong>
-        <a class="btn primary"
-           href="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
-          Pay Now
-        </a>
-        <div style="margin-top:8px">
-          <img src="Paytm QR.png" alt="Paytm QR" class="qr-img">
-        </div>
-      </div>
-    </div>
-
-    <!-- Bank -->
-    <div class="pay-card bank-card">
-      <img class="icon" src="bank.png" alt="Bank">
-      <div class="pay-info">
-        <strong>Bank Transfer</strong>
-        <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
-        <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
-        <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
-      </div>
-      <div>
-        <button class="copy-btn" id="copyBank">Copy</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Upload payment proof -->
-  <div class="upload-box">
-    <h4 style="margin-bottom:8px">Upload Payment Proof</h4>
-    <p style="opacity:0.88; margin-bottom:8px">
-      Payment করার পরে এখানে screenshot/upload করে দিন — আমরা পরে যাচাই করে যোগাযোগ করব।
-    </p>
-    <input type="file" id="proofFile" accept="image/*,application/pdf"><br>
-    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-      <input id="proofName" placeholder="Your name">
-      <input id="proofPhone" placeholder="Phone">
-      <button class="btn primary" id="uploadProofBtn">Upload</button>
-
-<section id="payments" style="padding:40px 20px;">
+  <section id="payments" style="padding:40px 20px;">
   <h2 style="text-align:center;margin-bottom:30px;">Payments</h2>
   
   <div class="payment-grid">
-    
     <!-- Google Pay -->
     <div class="payment-card">
-      <img src="gpay.png" alt="Google Pay" class="payment-logo">
+      <img src="GooglePay_QR.png" alt="Google Pay" class="payment-logo">
       <h3>Google Pay</h3>
       <button class="btn" 
               data-qr="GooglePay_QR.png" 
@@ -607,10 +527,9 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
         Pay Now
       </button>
     </div>
-    
     <!-- PhonePe -->
     <div class="payment-card">
-      <img src="phonepe.png" alt="PhonePe" class="payment-logo">
+      <img src="phonepe QR.png" alt="PhonePe" class="payment-logo">
       <h3>PhonePe</h3>
       <button class="btn" 
               data-qr="phonepe QR.png" 
@@ -618,10 +537,9 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
         Pay Now
       </button>
     </div>
-    
     <!-- Paytm -->
     <div class="payment-card">
-      <img src="paytm.png" alt="Paytm" class="payment-logo">
+      <img src="Paytm QR.png" alt="Paytm" class="payment-logo">
       <h3>Paytm</h3>
       <button class="btn" 
               data-qr="Paytm QR.png" 
@@ -629,9 +547,8 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
         Pay Now
       </button>
     </div>
-    
   </div>
-</section>
+  </section>
   <!-- CONTACT / Admission Form -->
   <section id="contact" class="section" aria-labelledby="contact-heading">
     <h2 id="contact-heading">Admission Form / Contact</h2>
@@ -987,7 +904,7 @@ document.addEventListener("DOMContentLoaded", function(){
     });
   });
 });
-  </script>
+</script>
 
 </body>
 </html>
