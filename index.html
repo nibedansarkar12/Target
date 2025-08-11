@@ -444,74 +444,92 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
 
   <!-- PAYMENTS -->
   <section id="payments" class="section" aria-labelledby="payments-heading">
-    <h2 id="payments-heading">Payments & Proof Upload</h2>
-    <p style="opacity:0.92; margin-top:8px">UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।</p>
+  <h2 id="payments-heading">Payments & Proof Upload</h2>
+  <p style="opacity:0.92; margin-top:8px">
+    UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।
+  </p>
 
-    <div class="pay-grid">
-  <!-- Google Pay -->
-  <div class="pay-card icon-only" title="Pay with Google Pay">
-    <img class="icon" src="gpay.png" alt="Google Pay" onerror="this.remove()">
-    <a class="btn primary" 
-       href="intent://pay?pa=rajnitirgalpokotha@oksbi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;"
-       target="_blank">
-      Pay Now
-    </a>
-  </div>
-
-  <!-- PhonePe -->
-  <div class="pay-card icon-only" title="Pay with PhonePe">
-    <img class="icon" src="phonepe.png" alt="PhonePe" onerror="this.remove()">
-    <a class="btn primary" 
-       href="intent://pay?pa=7679262362@axl&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.phonepe.app;end;"
-       target="_blank">
-      Pay Now
-    </a>
-  </div>
-
-  <!-- Paytm -->
-  <div class="pay-card icon-only" title="Pay with Paytm">
-    <img class="icon" src="paytm.png" alt="Paytm" onerror="this.remove()">
-    <a class="btn primary" 
-       href="intent://pay?pa=7679262362@ptaxis&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=net.one97.paytm;end;"
-       target="_blank">
-      Pay Now
-    </a>
-  </div>
-
-  <!-- Bank -->
-  <div class="pay-card bank-card">
-    <img class="icon" src="bank.png" alt="Bank" onerror="this.remove()">
-    <div class="pay-info">
-      <strong>Bank Transfer</strong>
-      <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
-      <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
-      <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
-    </div>
-    <div>
-      <button class="copy-btn" id="copyBank">Copy</button>
-    </div>
-  </div>
-</div>
-
-
-    <!-- Upload payment proof -->
-    <div class="upload-box" aria-live="polite">
-      <h4 style="margin-bottom:8px">Upload Payment Proof</h4>
-      <p style="opacity:0.88; margin-bottom:8px">Payment করার পরে এখানে screenshot/upload করে দিন — আমরা পরে যাচাই করে যোগাযোগ করব।</p>
-      <input type="file" id="proofFile" accept="image/*,application/pdf"><br>
-      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-        <input id="proofName" placeholder="Your name" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
-        <input id="proofPhone" placeholder="Phone" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
-        <button class="btn primary" id="uploadProofBtn">Upload</button>
+  <div class="pay-grid">
+    <!-- Google Pay -->
+    <div class="pay-card">
+      <img class="icon" src="gpay.png" alt="Google Pay">
+      <div class="pay-info">
+        <strong>Google Pay</strong>
+        <a class="btn primary"
+           href="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
+          Pay Now
+        </a>
+        <div style="margin-top:8px">
+          <img src="GooglePay_QR.png" alt="Google Pay QR" style="width:120px; border-radius:8px;">
+        </div>
       </div>
-      <div id="proofStatus" style="margin-top:8px;color:#dff;"></div>
     </div>
 
-    <!-- Map -->
-    <div class="map-frame" style="margin-top:12px">
-      <iframe src="https://www.google.com/maps?q=Target+Zone,+Hardighi,+West+Bengal,+733142&output=embed" width="100%" height="100%" style="border:0" allowfullscreen="" loading="lazy"></iframe>
-
+    <!-- PhonePe -->
+    <div class="pay-card">
+      <img class="icon" src="phonepe.png" alt="PhonePe">
+      <div class="pay-info">
+        <strong>PhonePe</strong>
+        <a class="btn primary"
+           href="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
+          Pay Now
+        </a>
+        <div style="margin-top:8px">
+          <img src="phonepe QR.png" alt="PhonePe QR" style="width:120px; border-radius:8px;">
+        </div>
+      </div>
     </div>
+
+    <!-- Paytm -->
+    <div class="pay-card">
+      <img class="icon" src="paytm.png" alt="Paytm">
+      <div class="pay-info">
+        <strong>Paytm</strong>
+        <a class="btn primary"
+           href="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
+          Pay Now
+        </a>
+        <div style="margin-top:8px">
+          <img src="Paytm QR.png" alt="Paytm QR" style="width:120px; border-radius:8px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank -->
+    <div class="pay-card bank-card">
+      <img class="icon" src="bank.png" alt="Bank">
+      <div class="pay-info">
+        <strong>Bank Transfer</strong>
+        <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
+        <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
+        <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
+      </div>
+      <div>
+        <button class="copy-btn" id="copyBank">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload payment proof -->
+  <div class="upload-box">
+    <h4 style="margin-bottom:8px">Upload Payment Proof</h4>
+    <p style="opacity:0.88; margin-bottom:8px">
+      Payment করার পরে এখানে screenshot/upload করে দিন — আমরা পরে যাচাই করে যোগাযোগ করব।
+    </p>
+    <input type="file" id="proofFile" accept="image/*,application/pdf"><br>
+    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+      <input id="proofName" placeholder="Your name">
+      <input id="proofPhone" placeholder="Phone">
+      <button class="btn primary" id="uploadProofBtn">Upload</button>
+    </div>
+    <div id="proofStatus" style="margin-top:8px;color:#dff;"></div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-frame" style="margin-top:12px">
+    <iframe src="https://www.google.com/maps?q=Target+Zone,+Hardighi,+West+Bengal,+733142&output=embed"
+            width="100%" height="100%" style="border:0" allowfullscreen loading="lazy"></iframe>
+  </div>
   </section>
 
   <!-- CONTACT / Admission Form -->
