@@ -177,14 +177,37 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
   
 </style>
   <style>
-.qr-img {
-  width:120px;
-  border-radius:8px;
-  cursor:pointer;
-  transition:transform 0.2s;
+.payment-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+  max-width:800px;
+  margin:auto;
 }
-.qr-img:hover { transform:scale(1.05); }
+.payment-card {
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+.payment-logo {
+  width:80px;
+  margin-bottom:10px;
+}
+.btn {
+  background:#007bff;
+  color:#fff;
+  padding:10px 15px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+.btn:hover {
+  background:#0056b3;
+}
 
+/* Popup Design */
 .qr-popup {
   position:fixed;
   top:0; left:0;
@@ -194,22 +217,33 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
   justify-content:center;
   align-items:center;
   z-index:9999;
-  flex-direction:column;
 }
-.qr-popup img {
-  max-width:90%;
-  max-height:80%;
-  border-radius:10px;
+.qr-content {
   background:#fff;
+  padding:20px;
+  border-radius:12px;
+  text-align:center;
+  max-width:300px;
+  width:90%;
 }
-.qr-popup a {
-  margin-top:12px;
-  background:#fff;
-  padding:8px 14px;
-  border-radius:6px;
-  font-weight:bold;
+.qr-content img {
+  width:100%;
+  border-radius:8px;
+}
+.qr-actions {
+  margin-top:15px;
+}
+.qr-actions a {
+  display:block;
+  margin:5px 0;
+  padding:8px;
+  background:#007bff;
+  color:#fff;
   text-decoration:none;
-  color:#000;
+  border-radius:6px;
+}
+.qr-actions a:hover {
+  background:#0056b3;
 }
   </style>
 </head>
@@ -557,17 +591,47 @@ footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity
       <input id="proofName" placeholder="Your name">
       <input id="proofPhone" placeholder="Phone">
       <button class="btn primary" id="uploadProofBtn">Upload</button>
+
+<section id="payments" style="padding:40px 20px;">
+  <h2 style="text-align:center;margin-bottom:30px;">Payments</h2>
+  
+  <div class="payment-grid">
+    
+    <!-- Google Pay -->
+    <div class="payment-card">
+      <img src="gpay.png" alt="Google Pay" class="payment-logo">
+      <h3>Google Pay</h3>
+      <button class="btn" 
+              data-qr="GooglePay_QR.png" 
+              data-upi="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
+        Pay Now
+      </button>
     </div>
-    <div id="proofStatus" style="margin-top:8px;color:#dff;"></div>
+    
+    <!-- PhonePe -->
+    <div class="payment-card">
+      <img src="phonepe.png" alt="PhonePe" class="payment-logo">
+      <h3>PhonePe</h3>
+      <button class="btn" 
+              data-qr="phonepe QR.png" 
+              data-upi="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
+        Pay Now
+      </button>
+    </div>
+    
+    <!-- Paytm -->
+    <div class="payment-card">
+      <img src="paytm.png" alt="Paytm" class="payment-logo">
+      <h3>Paytm</h3>
+      <button class="btn" 
+              data-qr="Paytm QR.png" 
+              data-upi="upi://pay?pa=7679262362@upi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR">
+        Pay Now
+      </button>
+    </div>
+    
   </div>
-
-  <!-- Map -->
-  <div class="map-frame" style="margin-top:12px">
-    <iframe src="https://www.google.com/maps?q=Target+Zone,+Hardighi,+West+Bengal,+733142&output=embed"
-            width="100%" height="100%" style="border:0" allowfullscreen loading="lazy"></iframe>
-  </div>
-  </section>
-
+</section>
   <!-- CONTACT / Admission Form -->
   <section id="contact" class="section" aria-labelledby="contact-heading">
     <h2 id="contact-heading">Admission Form / Contact</h2>
@@ -896,15 +960,29 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
   <script>
 document.addEventListener("DOMContentLoaded", function(){
-  document.querySelectorAll(".qr-img").forEach(img => {
-    img.addEventListener("click", function(){
-      const popup = document.createElement("div");
+  document.querySelectorAll(".payment-card .btn").forEach(btn => {
+    btn.addEventListener("click", function(){
+      let qrSrc = this.getAttribute("data-qr");
+      let upiLink = this.getAttribute("data-upi");
+      
+      let popup = document.createElement("div");
       popup.className = "qr-popup";
       popup.innerHTML = `
-        <img src="${img.src}" alt="${img.alt}">
-        <a href="${img.src}" download>Download QR</a>
+        <div class="qr-content">
+          <img src="${qrSrc}" alt="QR Code">
+          <div class="qr-actions">
+            <a href="${upiLink}">Open in UPI App</a>
+            <a href="${qrSrc}" download>Download QR</a>
+            <a href="#" id="closePopup" style="background:#dc3545;">Close</a>
+          </div>
+        </div>
       `;
-      popup.addEventListener("click", () => popup.remove());
+      
+      popup.querySelector("#closePopup").addEventListener("click", function(e){
+        e.preventDefault();
+        popup.remove();
+      });
+      
       document.body.appendChild(popup);
     });
   });
