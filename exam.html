@@ -144,13 +144,37 @@
       finally{ btn.disabled=false; btn.textContent="✅ Login"; }
     });
 
-    // Google login
-    document.getElementById("googleBtn").addEventListener("click",async()=>{
-      const provider=new GoogleAuthProvider();
-      try{ await signInWithPopup(auth,provider);
-        Swal.fire({icon:'success',title:'Google Login Successful!',timer:2000,showConfirmButton:false}).then(()=>location.href="quiz.html");
-      }catch(err){ Swal.fire({icon:'error',title:'Google Login Failed',text:err.message}); }
-    });
+    // Google login (updated to also save user in Firestore)
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+document.getElementById("googleBtn").addEventListener("click", async () => {
+  const provider = new GoogleAuthProvider();
+  try {
+    const res = await signInWithPopup(auth, provider);
+    const user = res.user;
+
+    const db = getFirestore(app);
+
+    // Firestore এ ইউজার সেভ করো (merge:true দিলে আগের ডাটা থাকলে আপডেট হবে না)
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      name: user.displayName || "",
+      email: user.email || "",
+      createdAt: serverTimestamp(),
+      google: true
+    }, { merge: true });
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Google Login Successful!',
+      timer: 2000,
+      showConfirmButton: false
+    }).then(() => location.href = "quiz.html");
+
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Google Login Failed', text: err.message });
+  }
+});
   </script>
 </body>
 </html>
