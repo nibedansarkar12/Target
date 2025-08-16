@@ -51,19 +51,75 @@ nav.top a.active{background:linear-gradient(90deg, rgba(255,126,95,0.10), rgba(1
 
 /* header-right intentionally minimal */
 .header-right{display:flex;align-items:center;gap:8px}
-
 /* ===== Sidebar (drawer) ===== */
-.sidebar{
-  position:fixed; top:0; left:0; height:100%; width:320px; max-width:86vw;
-  transform: translateX(-110%); transition: transform .36s cubic-bezier(.2,.9,.25,1);
-  background: linear-gradient(180deg,#081426,#04101a); padding:18px; z-index:1300; box-shadow: 18px 30px 80px rgba(2,6,12,0.7);
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 320px;
+  max-width: 86vw;
+  transform: translateX(-110%);
+  transition: transform .36s cubic-bezier(.2,.9,.25,1);
+  background: linear-gradient(180deg,#081426,#04101a);
+  padding: 18px;
+  z-index: 1300;
+  box-shadow: 18px 30px 80px rgba(2,6,12,0.7);
+
+  /* ✅ Scrollbar enable */
+  overflow-y: auto;
+  scrollbar-width: thin;           /* Firefox */
+  scrollbar-color: #555 #111;      /* Firefox */
 }
-.sidebar.open{ transform: translateX(0) }
-.sidebar .close{ display:block; align-self:flex-end; font-size:26px; cursor:pointer; margin-bottom:6px }
-.sidebar nav a{ display:block; padding:12px 14px; margin:6px 0; border-radius:8px; font-weight:700; color:#ddf; border-left:3px solid transparent; }
-.sidebar nav a:hover{ background:rgba(255,255,255,0.03) }
-.sidebar nav a.active{ border-left-color:var(--primary); background:linear-gradient(90deg, rgba(255,126,95,0.06), rgba(107,209,255,0.02)) }
-.sidebar .muted{ margin-top:auto; opacity:0.9; font-size:0.92rem; }
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar .close {
+  display: block;
+  align-self: flex-end;
+  font-size: 26px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.sidebar nav a {
+  display: block;
+  padding: 12px 14px;
+  margin: 6px 0;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #ddf;
+  border-left: 3px solid transparent;
+}
+
+.sidebar nav a:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.sidebar nav a.active {
+  border-left-color: var(--primary);
+  background: linear-gradient(90deg, rgba(255,126,95,0.06), rgba(107,209,255,0.02));
+}
+
+.sidebar .muted {
+  margin-top: auto;
+  opacity: 0.9;
+  font-size: 0.92rem;
+}
+
+/* ✅ Custom Scrollbar (Chrome/Edge/Webkit) */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: #111;
+  }
 
 /* Overlay */
 .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.48); display:none; z-index:1250 }
