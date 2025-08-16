@@ -1,173 +1,129 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>লগইন পেজ | SSC GD Mock Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Target Zone – Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     body {
-      background: linear-gradient(to right, #ffecd2, #fcb69f);
       font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+      min-height: 100vh; margin: 0; padding: 24px 12px;
+      background: linear-gradient(to bottom, #87cefa, #e0f7fa);
+      background-attachment: fixed; overflow-x: hidden; position: relative;
+      transition: background .3s ease;
     }
+    body.dark { background: linear-gradient(to bottom, #0f172a, #1e293b); color:#e2e8f0; }
 
-    .login-box {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      max-width: 400px;
-      width: 100%;
-    }
+    /* Sun + Clouds */
+    .sun { position: fixed; top: 5%; right: 8%; width: 130px; height: 130px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #ffe27a 0%, #ffc938 55%, #ff9f1a 100%);
+      box-shadow:0 0 60px rgba(255,200,0,.55),0 0 120px rgba(255,180,0,.35);
+      animation:sunPulse 6s ease-in-out infinite alternate; z-index:1; }
+    @keyframes sunPulse { from{transform:scale(1)} to{transform:scale(1.08)} }
+    .cloud { position: fixed; background:#fff; border-radius:50%; opacity:.7;
+      animation: float linear infinite; box-shadow:40px 20px 60px rgba(0,0,0,.08); z-index:2; }
+    .cloud.one { width:220px; height:68px; top:18%; left:-260px; animation-duration:75s; }
+    .cloud.two { width:170px; height:56px; top:38%; left:-220px; animation-duration:95s; }
+    .cloud.three { width:280px; height:80px; top:62%; left:-320px; animation-duration:115s; }
+    @keyframes float { from{transform:translateX(0)} to{transform:translateX(120vw)} }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #333;
-    }
+    /* Form */
+    .form-card { background:rgba(255,255,255,.68); backdrop-filter:blur(12px); border-radius:1.5rem;
+      box-shadow:0 20px 50px rgba(0,0,0,.2); transition:all .25s ease; position:relative; z-index:5; }
+    .form-card:hover { background:rgba(255,255,255,.92); transform:translateY(-2px) scale(1.01); }
 
-    label {
-      font-size: 16px;
-      color: #555;
-      display: block;
-      margin-bottom: 6px;
-    }
+    /* Inputs */
+    .t-input { background:rgba(255,255,255,.7); border:1px solid rgba(0,0,0,.12); transition:.25s }
+    .t-input:focus { background:#fff; border-color:#4facfe; box-shadow:0 0 0 4px rgba(79,172,254,.28); outline:none }
+    .t-input::placeholder { animation:pulsePlaceholder 2s infinite; }
+    @keyframes pulsePlaceholder { 0%,100%{opacity:.7} 50%{opacity:1} }
+    .input-error { border-color:#f87171 !important; box-shadow:0 0 0 3px rgba(248,113,113,.2) }
 
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-      transition: 0.3s;
-    }
-
-    input:focus {
-      border-color: #ff7e5f;
-      outline: none;
-      box-shadow: 0 0 5px rgba(255,126,95,0.4);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #ff7e5f;
-      border: none;
-      color: white;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #ff5722;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 13px;
-      color: #777;
-    }
-
-    .admin-link {
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    .admin-link a {
-      color: #333;
-      font-size: 14px;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .admin-link a:hover {
-      color: #ff5722;
-    }
-
-    .error {
-      color: red;
-      font-size: 14px;
-      text-align: center;
-      margin-top: 10px;
-    }
+    /* Glow button */
+    .btn-glow{ transition:.3s; position:relative; overflow:hidden; }
+    .btn-glow::after{ content:""; position:absolute; inset:0; border-radius:inherit;
+      box-shadow:0 0 15px 3px rgba(79,172,254,.6); opacity:0; transition:.3s; }
+    .btn-glow:hover::after{ opacity:1; }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <h2>TZ এর মক টেস্টে স্বাগতম</h2>
+  <!-- Background -->
+  <div class="sun"></div>
+  <div class="cloud one"></div>
+  <div class="cloud two"></div>
+  <div class="cloud three"></div>
 
-    <label for="email">ইমেইল আইডি</label>
-    <input type="text" id="email" placeholder="ইমেইল লিখুন" />
-
-    <label for="password">পাসওয়ার্ড</label>
-    <input type="password" id="password" placeholder="পাসওয়ার্ড লিখুন" />
-
-    <button id="login-btn">লগইন করুন</button>
-<p style="text-align:center; margin-top: 15px; font-size: 14px;">
-  👤 একাউন্ট নেই?
-  <a href="signup.html" style="color: #007bff; font-weight: bold; text-decoration: none;">
-    সাইন আপ করুন
-  </a>
-</p>
-    <div class="error" id="error-msg"></div>
-
-    <div class="admin-link">
-      <a href="admin-login.html">অ্যাডমিন লগইন</a>
-    </div>
-
-    <div class="footer">© 2025 Target Zone</div>
+  <!-- Dark mode toggle -->
+  <div class="fixed top-4 right-4 z-50">
+    <button id="themeToggle" class="bg-gray-200 dark:bg-gray-700 p-2 rounded-full">🌙</button>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Login Form -->
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="form-card p-6 md:p-8 w-full max-w-md mx-auto">
+      <h2 class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+        🔐 Target Zone – Login
+      </h2>
+
+      <form id="loginForm" class="grid grid-cols-1 gap-4" novalidate>
+        <input id="email" type="email" class="t-input px-4 py-3 rounded-lg shadow-sm" placeholder="📧 Email *" required>
+        <div class="relative">
+          <input id="password" type="password" class="t-input w-full px-4 py-3 rounded-lg shadow-sm pr-10" placeholder="🔐 Password *" required>
+          <span id="togglePw" class="absolute right-3 top-3 cursor-pointer">👁️</span>
+        </div>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="remember" class="mt-1">
+          <span class="text-sm">Remember me</span>
+        </label>
+
+        <button id="loginBtn" type="submit" class="btn-glow w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold text-lg">✅ Login</button>
+        <button id="googleBtn" type="button" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold">🔑 Sign in with Google</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase Login -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
-      authDomain: "target-zone-8fffd.firebaseapp.com",
-      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
-      projectId: "target-zone-8fffd",
-      storageBucket: "target-zone-8fffd.appspot.com",
-      messagingSenderId: "667579216123",
-      appId: "1:667579216123:web:37bb1fcc724743073d005e",
-      measurementId: "G-436XDYLGVX"
-    };
+    const firebaseConfig={apiKey:"AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",authDomain:"target-zone-8fffd.firebaseapp.com",projectId:"target-zone-8fffd",storageBucket:"target-zone-8fffd.appspot.com",messagingSenderId:"667579216123",appId:"1:667579216123:web:37bb1fcc724743073d005e"};
+    const app=initializeApp(firebaseConfig); const auth=getAuth(app);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    // Dark mode
+    document.getElementById("themeToggle").addEventListener("click",()=>{ document.body.classList.toggle("dark") });
 
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const loginBtn = document.getElementById("login-btn");
-    const errorMsg = document.getElementById("error-msg");
+    // Show/hide password
+    const pw=document.getElementById("password");
+    document.getElementById("togglePw").addEventListener("click",()=>{ pw.type=pw.type==="password"?"text":"password" });
 
-    loginBtn.addEventListener("click", () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
+    // Auto scroll to error
+    const validateForm=()=>{ let valid=true,firstBad; document.querySelectorAll("#loginForm input[required]").forEach(el=>{
+        if(!el.value.trim()){ el.classList.add("input-error"); valid=false; if(!firstBad) firstBad=el; }
+        else el.classList.remove("input-error");
+    }); if(!valid && firstBad) firstBad.scrollIntoView({behavior:"smooth",block:"center"}); return valid; };
 
-      if (!email || !password) {
-        errorMsg.textContent = "ইমেইল এবং পাসওয়ার্ড দিন।";
-        return;
-      }
+    // Email login
+    document.getElementById("loginForm").addEventListener("submit",async e=>{
+      e.preventDefault(); if(!validateForm()){ Swal.fire({icon:'error',title:'Missing Fields'}); return; }
+      const btn=document.getElementById("loginBtn"); btn.disabled=true; btn.textContent="Processing...";
+      const email=document.getElementById("email").value.trim(); const password=pw.value;
+      try{ await signInWithEmailAndPassword(auth,email,password);
+        Swal.fire({icon:'success',title:'Login Successful!',timer:2000,showConfirmButton:false}).then(()=>location.href="dashboard.html");
+      }catch(err){ Swal.fire({icon:'error',title:'Login Failed',text:err.message}); }
+      finally{ btn.disabled=false; btn.textContent="✅ Login"; }
+    });
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          // ✅ লগইন সফল → quiz.html এ যাও
-          window.location.href = "quiz.html";
-        })
-        .catch((error) => {
-          console.error("Login error:", error);
-          errorMsg.textContent = "ইমেইল বা পাসওয়ার্ড ভুল।";
-        });
+    // Google login
+    document.getElementById("googleBtn").addEventListener("click",async()=>{
+      const provider=new GoogleAuthProvider();
+      try{ await signInWithPopup(auth,provider);
+        Swal.fire({icon:'success',title:'Google Login Successful!',timer:2000,showConfirmButton:false}).then(()=>location.href="dashboard.html");
+      }catch(err){ Swal.fire({icon:'error',title:'Google Login Failed',text:err.message}); }
     });
   </script>
 </body>
