@@ -3,126 +3,196 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Target Zone - Signup</title>
+
+  <!-- Tailwind & SweetAlert -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
-    background-attachment: fixed;
-    overflow: hidden;
-  }
+    /* ---- Dreamy sky background (scroll enabled) ---- */
+    body{
+      font-family:'Segoe UI',sans-serif;
+      min-height:100vh;
+      background:linear-gradient(to bottom,#a1c4fd,#c2e9fb);
+      background-attachment:fixed;
+      overflow-x:hidden;
+      padding:24px 12px;
+      position:relative;
+    }
 
-  /* floating clouds */
-  .cloud {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    opacity: 0.7;
-    animation: float linear infinite;
-  }
+    /* ---- Floating clouds ---- */
+    .cloud{
+      position:absolute;background:#fff;border-radius:50%;opacity:.6;
+      animation:float linear infinite; box-shadow:40px 20px 60px rgba(0,0,0,.08);
+    }
+    .cloud.one{width:220px;height:68px;top:12%;left:-260px;animation-duration:60s}
+    .cloud.two{width:170px;height:56px;top:36%;left:-220px;animation-duration:85s}
+    .cloud.three{width:280px;height:78px;top:60%;left:-320px;animation-duration:105s}
+    @keyframes float{from{transform:translateX(0)}to{transform:translateX(120vw)}}
 
-  .cloud.one { width: 200px; height: 60px; top: 15%; left: -250px; animation-duration: 60s; }
-  .cloud.two { width: 150px; height: 50px; top: 35%; left: -200px; animation-duration: 80s; }
-  .cloud.three { width: 250px; height: 70px; top: 55%; left: -300px; animation-duration: 100s; }
+    /* ---- Left illustration (student) ---- */
+    .student{
+      width: 18rem; max-width: 45vw;
+      animation:bounce 5s ease-in-out infinite;
+      filter: drop-shadow(0 10px 25px rgba(0,0,0,.15));
+    }
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
 
-  @keyframes float {
-    from { transform: translateX(0); }
-    to { transform: translateX(120vw); }
-  }
+    /* ---- Glassy form container ---- */
+    .glass{
+      background:rgba(255,255,255,.78);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border-radius:1.5rem;
+      box-shadow:0 20px 50px rgba(0,0,0,.18);
+      transition:.25s ease;
+    }
+    .glass:hover{background:rgba(255,255,255,.92);transform:translateY(-2px)}
 
-  /* smiling student */
-  .student {
-    position: absolute;
-    bottom: 5%;
-    left: 5%;
-    width: 200px;
-    animation: bounce 4s ease-in-out infinite;
-    z-index: 4;
-  }
+    /* ---- Inputs: semi-transparent + focus glow ---- */
+    .t-input{
+      background:rgba(255,255,255,.65)!important;
+      border:1px solid rgba(0,0,0,.12);
+      transition:.25s;
+    }
+    .t-input:focus{
+      background:rgba(255,255,255,.95)!important;
+      border-color:#4facfe;
+      box-shadow:0 0 0 4px rgba(79,172,254,.25);
+      outline:none;
+    }
 
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-  }
+    /* ---- Validation helper ---- */
+    .input-error{border-color:#f87171!important; box-shadow:0 0 0 3px rgba(248,113,113,.2)}
 
-  .form-container {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 2rem;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    padding: 2rem;
-    backdrop-filter: blur(10px);
-    animation: fadeIn 1s ease-in-out;
-    position: relative;
-    z-index: 5;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  h2 {
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-    </style>
+    /* ---- Calendar icon in DOB ---- */
+    .dob-wrap{position:relative}
+    .dob-icon{
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      cursor:pointer; opacity:.85;
+    }
+    .dob-icon svg{width:22px; height:22px}
+  </style>
 </head>
-<body class="min-h-screen flex items-center justify-center px-4">
+<body>
+  <!-- Background clouds -->
   <div class="cloud one"></div>
-<div class="cloud two"></div>
-<div class="cloud three"></div>
+  <div class="cloud two"></div>
+  <div class="cloud three"></div>
 
-<!-- smiling student illustration -->
-<img src="student.png" alt="Smiling Student" class="student">
-  <div class="form-container w-full max-w-4xl">
-    <h2 class="text-3xl font-extrabold text-center text-blue-700 mb-8">🎯 Target Zone - Signup Form</h2>
-    <form id="signupForm" class="grid grid-cols-1 md:grid-cols-2 gap-6" enctype="multipart/form-data" novalidate>
-      <input type="text" id="name" placeholder="👤 Full Name *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
-      <input type="tel" id="whatsapp" placeholder="📱 WhatsApp Number *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
-      <input type="email" id="email" placeholder="📧 Email *" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm" required>
-      <div class="col-span-2">
-        <input type="password" id="password" placeholder="🔐 Password *" class="w-full px-4 py-3 border rounded-lg shadow-sm" required>
-        <p class="text-xs text-gray-600 mt-1">Must be 8+ chars, include uppercase, lowercase, number & symbol.</p>
-      </div><select id="education" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
-    <option value="">🎓 Educational Qualification</option>
-    <option>Madhyamik</option>
-    <option>HS</option>
-    <option>Graduate</option>
-    <option>Post Graduate</option>
-    <option>Other</option>
-  </select>
+  <!-- Page content: 2-column on md+  -->
+  <div class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-start">
+    <!-- LEFT: illustration area (keeps your side design visible) -->
+    <div class="flex justify-center md:justify-start">
+      <!-- smiling student (put student.png in same folder) -->
+      <img src="student.png" alt="Smiling Student" class="student mt-6 md:mt-12">
+    </div>
 
-  <select id="status" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm">
-    <option value="">🧑‍🎓 Current Status</option>
-    <option>Student</option>
-    <option>Job Seeker</option>
-    <option>Employed</option>
-  </select>
+    <!-- RIGHT: Signup Form (glassy card, not full page) -->
+    <div class="glass p-6 md:p-8">
+      <h2 class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+        🎯 Target Zone - Signup Form
+      </h2>
 
-  <input type="text" id="uid" class="col-span-2 px-4 py-3 border rounded-lg shadow-sm bg-gray-100" placeholder="🆔 UID (Auto Generate)" readonly>
+      <form id="signupForm" class="grid grid-cols-1 gap-4" enctype="multipart/form-data" novalidate>
+        <!-- Name -->
+        <input type="text" id="name" required
+               placeholder="👤 Full Name *"
+               class="t-input px-4 py-3 rounded-lg shadow-sm">
 
-  <div class="col-span-2 flex items-start gap-2">
-    <input type="checkbox" id="subscribe" class="mt-1">
-    <label for="subscribe" class="text-sm">🔔 I want to receive important updates and offers</label>
+        <!-- WhatsApp -->
+        <input type="tel" id="whatsapp" required
+               placeholder="📱 WhatsApp Number *"
+               class="t-input px-4 py-3 rounded-lg shadow-sm">
+
+        <!-- Email -->
+        <input type="email" id="email" required
+               placeholder="📧 Email *"
+               class="t-input px-4 py-3 rounded-lg shadow-sm">
+
+        <!-- DOB (manual + calendar icon) -->
+        <div class="dob-wrap">
+          <input type="text" id="dob" required
+                 inputmode="numeric"
+                 placeholder="📅 __/__/20__"
+                 class="t-input w-full px-4 py-3 rounded-lg shadow-sm"
+                 aria-describedby="dobHelp">
+          <span class="dob-icon" id="dobIcon" title="Pick from calendar">
+            <!-- inline SVG calendar icon (always visible) -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="1.75"></rect>
+              <line x1="16" y1="2.5" x2="16" y2="6" stroke-width="1.75"></line>
+              <line x1="8" y1="2.5" x2="8" y2="6" stroke-width="1.75"></line>
+              <line x1="3" y1="10" x2="21" y2="10" stroke-width="1.75"></line>
+            </svg>
+          </span>
+          <p id="dobHelp" class="text-xs text-gray-600 mt-1">Format: DD/MM/20YY (বা আইকন চাপলে ক্যালেন্ডার থেকে নাও)।</p>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <input type="password" id="password" required
+                 placeholder="🔐 Password *"
+                 class="t-input w-full px-4 py-3 rounded-lg shadow-sm">
+          <p class="text-xs text-gray-600 mt-1">
+            Must be 8+ chars, include uppercase, lowercase, number & symbol.
+          </p>
+        </div>
+
+        <!-- Education -->
+        <select id="education" required class="t-input px-4 py-3 rounded-lg shadow-sm">
+          <option value="">🎓 Educational Qualification *</option>
+          <option>Madhyamik</option>
+          <option>HS</option>
+          <option>Graduate</option>
+          <option>Post Graduate</option>
+          <option>Other</option>
+        </select>
+
+        <!-- Status -->
+        <select id="status" required class="t-input px-4 py-3 rounded-lg shadow-sm">
+          <option value="">🧑‍🎓 Current Status *</option>
+          <option>Student</option>
+          <option>Job Seeker</option>
+          <option>Employed</option>
+        </select>
+
+        <!-- Auto UID (read-only) -->
+        <input type="text" id="uid" class="t-input px-4 py-3 rounded-lg shadow-sm bg-white"
+               placeholder="🆔 UID (Auto Generate)" readonly>
+
+        <!-- Subscribe -->
+        <label class="flex items-start gap-2 select-none">
+          <input type="checkbox" id="subscribe" class="mt-1">
+          <span class="text-sm">🔔 I want to receive important updates and offers</span>
+        </label>
+
+        <!-- Terms -->
+        <label class="flex items-start gap-2 select-none">
+          <input type="checkbox" id="terms" required class="mt-1">
+          <span class="text-sm">
+            I agree to the <a href="terms.html" class="text-blue-600 underline" target="_blank">Terms and Conditions</a>.
+          </span>
+        </label>
+
+        <!-- Submit -->
+        <button id="submitBtn" type="submit"
+                class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold text-lg transition-all">
+          ✅ Sign Up
+        </button>
+
+        <p id="message" class="text-center text-sm"></p>
+      </form>
+
+      <p class="text-center text-sm mt-6 text-gray-700">
+        Already have an account?
+        <a href="exam.html" class="text-blue-600 hover:underline">Login here</a>
+      </p>
+    </div>
   </div>
 
-  <div class="col-span-2 flex items-start gap-2">
-    <input type="checkbox" id="terms" class="mt-1" required>
-    <label for="terms" class="text-sm">I agree to the <a href="terms.html" class="text-blue-600 underline" target="_blank">Terms and Conditions</a>.</label>
-  </div>
-
-  <button id="submitBtn" type="submit" class="col-span-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-lg font-semibold text-lg transition-all duration-300">✅ Sign Up</button>
-  <p id="message" class="col-span-2 text-center text-sm"></p>
-</form>
-<p class="text-center text-sm mt-6 text-gray-700">Already have an account? <a href="exam.html" class="text-blue-600 hover:underline">Login here</a></p>
-
-  </div>  <script type="module">
+  <!-- Firebase + App Logic -->
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -143,17 +213,21 @@
     const form = document.getElementById("signupForm");
     const uidField = document.getElementById("uid");
     const nameField = document.getElementById("name");
+    const dobField  = document.getElementById("dob");
+    const dobIcon   = document.getElementById("dobIcon");
 
+    // Auto UID from name
     nameField.addEventListener("input", () => {
-      const prefix = nameField.value.trim().charAt(0).toUpperCase();
+      const prefix = nameField.value.trim().charAt(0).toUpperCase() || "U";
       const serial = Math.floor(1000 + Math.random() * 9000);
       uidField.value = `${prefix}${serial}`;
     });
 
+    // Validate required inputs
     const validateForm = () => {
       let valid = true;
       form.querySelectorAll("input[required], select[required], textarea[required]").forEach(input => {
-        if (!input.value.trim()) {
+        if (!input.value.trim() || (input.type==="checkbox" && !input.checked)) {
           input.classList.add("input-error");
           valid = false;
         } else {
@@ -163,6 +237,46 @@
       return valid;
     };
 
+    // DOB: calendar icon => open native picker
+    function openDatePicker(){
+      const wasText = dobField.type === "text";
+      dobField.type = "date";
+      // Prefer native showPicker if available
+      if (typeof dobField.showPicker === "function") {
+        dobField.showPicker();
+      } else {
+        dobField.focus();
+        dobField.click();
+      }
+      // If user cancels without picking, revert back on blur so placeholder shows
+      if (wasText) {
+        const revert = (e)=>{
+          if (!dobField.value) dobField.type = "text";
+          dobField.removeEventListener("blur", revert);
+        };
+        dobField.addEventListener("blur", revert);
+      }
+    }
+    dobIcon.addEventListener("click", openDatePicker);
+
+    // If user manually types DD/MM/20YY, keep as text; if they pick date, keep as date value.
+    // Normalizing text input (optional light check)
+    function normalizeDOBText(v){
+      // Accept 1-2D / 1-2M / 20YY -> pad zeros
+      const m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](20\d{2})$/);
+      if(!m) return v;
+      const d = m[1].padStart(2,"0");
+      const mo = m[2].padStart(2,"0");
+      const y = m[3];
+      return `${d}/${mo}/${y}`;
+    }
+    dobField.addEventListener("input", ()=>{
+      if (dobField.type === "text") {
+        dobField.value = normalizeDOBText(dobField.value);
+      }
+    });
+
+    // Submit handler
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -184,6 +298,16 @@
       const uid = uidField.value;
       const subscribe = document.getElementById("subscribe").checked;
 
+      // Read DOB as string (supports both text and date types)
+      let dob = dobField.value;
+      if (dobField.type === "date" && dob) {
+        // store as ISO (YYYY-MM-DD) for consistency
+        // dob is already YYYY-MM-DD in input[type=date]
+      } else {
+        // manual text like DD/MM/20YY
+        dob = normalizeDOBText(dob);
+      }
+
       try {
         await createUserWithEmailAndPassword(auth, email, password);
 
@@ -192,6 +316,7 @@
           name,
           whatsapp,
           email,
+          dob,               // <- store DOB
           education,
           status,
           subscribe,
@@ -215,5 +340,6 @@
         submitBtn.textContent = "✅ Sign Up";
       }
     });
-  </script></body>
+  </script>
+</body>
 </html>
