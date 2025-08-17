@@ -16,6 +16,15 @@
     .nav-btn:hover { background:linear-gradient(90deg,#ff7e5f,#feb47b,#6a11cb); color:white; transform:translateX(5px); }
     .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:999; }
     .modal img { max-width:90%; max-height:90%; border:5px solid white; border-radius:10px; }
+    .finance-bg {
+  background: linear-gradient(135deg, #ff7e5f, #feb47b, #6a11cb, #2575fc);
+  animation: gradientShift 10s ease infinite;
+}
+@keyframes gradientShift {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
   </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -35,6 +44,7 @@
       <button onclick="showSection('add')" class="nav-btn w-full py-2 px-3 rounded">➕ Add Question</button>
       <button onclick="showSection('results')" class="nav-btn w-full py-2 px-3 rounded">📊 View Results</button>
       <button onclick="showSection('users')" class="nav-btn w-full py-2 px-3 rounded">👥 Manage Users</button>
+      <button onclick="showSection('finance')" class="nav-btn w-full py-2 px-3 rounded">💼 Salary & More</button>
         <button onclick="showSection('submissions')" class="nav-btn w-full py-2 px-3 rounded">💰 Payments & Forms</button>
   </nav>
     <div class="p-4 border-t border-white/20">
@@ -119,6 +129,44 @@
         <tbody id="admissions-list"></tbody>
       </table>
     </section>
+    <!-- Finance Section -->
+<section id="section-finance" class="glass p-6 rounded-lg shadow-lg hidden">
+  <h3 class="text-2xl font-bold rainbow mb-6">💼 Salary, Birthdays & More</h3>
+  
+  <!-- Card Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+    
+    <!-- Salary Card -->
+    <div onclick="openSalary()" class="cursor-pointer p-6 bg-white/20 rounded-2xl shadow-lg hover:scale-105 transition">
+      <h4 class="text-xl font-bold">🪙 Salary</h4>
+      <p>Track payments, dues & yearly records</p>
+    </div>
+    
+    <!-- Birthday Card -->
+    <div onclick="openBirthday()" class="cursor-pointer p-6 bg-white/20 rounded-2xl shadow-lg hover:scale-105 transition">
+      <h4 class="text-xl font-bold">🎉 Birthdays</h4>
+      <p>Today’s wishes & WhatsApp/SMS</p>
+    </div>
+
+    <!-- Attendance Card -->
+    <div onclick="openAttendance()" class="cursor-pointer p-6 bg-white/20 rounded-2xl shadow-lg hover:scale-105 transition">
+      <h4 class="text-xl font-bold">📅 Attendance</h4>
+      <p>Mark daily presence & view reports</p>
+    </div>
+
+    <!-- Reports Card -->
+    <div onclick="openReports()" class="cursor-pointer p-6 bg-gray-400/20 rounded-2xl shadow-lg line-through">
+      <h4 class="text-xl font-bold">📊 Reports</h4>
+      <p>Coming soon</p>
+    </div>
+  </div>
+
+  <!-- Dynamic Panels -->
+  <div id="salary-panel" class="hidden mt-8"></div>
+  <div id="birthday-panel" class="hidden mt-8"></div>
+  <div id="attendance-panel" class="hidden mt-8"></div>
+  <div id="reports-panel" class="hidden mt-8"></div>
+          </section>
 
 </main>
 
@@ -351,6 +399,119 @@
         if(admissionsTable) admissionsTable.innerHTML = "<tr><td colspan='6'>Error loading admissions</td></tr>";
       }
     }
+    // === Finance Section Logic ===
+
+// Salary
+window.openSalary = async () => {
+  hideFinancePanels();
+  const panel = document.getElementById("salary-panel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <h3 class="text-xl font-bold mb-4">🪙 Salary Management</h3>
+    <div id="batch-list" class="space-y-2"></div>
+  `;
+  // Load batches dynamically (demo)
+  const batchList = document.getElementById("batch-list");
+  batchList.innerHTML = `
+    <button onclick="loadStudents('Batch A')" class="bg-blue-500 text-white px-3 py-2 rounded">Batch A</button>
+    <button onclick="loadStudents('Batch B')" class="bg-blue-500 text-white px-3 py-2 rounded">Batch B</button>
+  `;
+};
+
+window.loadStudents = async (batch) => {
+  const panel = document.getElementById("salary-panel");
+  panel.innerHTML = `<h4 class="text-lg font-semibold mb-3">${batch} - Students</h4>
+    <ul class="space-y-2">
+      <li><button onclick="openStudentFinance('S1','Student One')" class="underline text-blue-200">Student One</button></li>
+      <li><button onclick="openStudentFinance('S2','Student Two')" class="underline text-blue-200">Student Two</button></li>
+    </ul>`;
+};
+
+window.openStudentFinance = async (id,name) => {
+  const panel = document.getElementById("salary-panel");
+  panel.innerHTML = `
+    <h4 class="text-lg font-bold mb-4">💰 Finance Record - ${name}</h4>
+    <table class="w-full border mb-4">
+      <thead><tr><th>Month</th><th>Paid</th><th>Due</th></tr></thead>
+      <tbody id="finance-rows"></tbody>
+    </table>
+    <div class="flex gap-3">
+      <input id="amount" type="number" placeholder="Enter Amount" class="border rounded px-2 py-1">
+      <button onclick="addPayment('${id}')" class="bg-green-500 px-3 py-1 rounded">➕ Add Payment</button>
+    </div>
+  `;
+  // Dummy data
+  document.getElementById("finance-rows").innerHTML = `
+    <tr><td>January</td><td>500</td><td>200</td></tr>
+    <tr><td>February</td><td>700</td><td>0</td></tr>
+  `;
+};
+
+window.addPayment = async (studentId) => {
+  const amount = document.getElementById("amount").value;
+  alert(`Payment of ₹${amount} added for ${studentId} ✅`);
+  // TODO: Save to Firebase salaries collection
+};
+
+// Birthday
+window.openBirthday = async () => {
+  hideFinancePanels();
+  const panel = document.getElementById("birthday-panel");
+  panel.classList.remove("hidden");
+  const today = new Date().toISOString().slice(5,10); // MM-DD
+  // Demo birthday list
+  const students = [
+    {name:"Student One",dob:"08-17",phone:"1234567890"},
+    {name:"Student Two",dob:"12-25",phone:"9876543210"}
+  ];
+  let html = `<h3 class="text-xl font-bold mb-4">🎉 Today’s Birthdays</h3>`;
+  const todays = students.filter(s=>s.dob===today);
+  if(todays.length===0) html += `<p>No birthdays today</p>`;
+  todays.forEach(s=>{
+    const msg = `শুভ জন্মদিন ${s.name}! 🎉 তোমার জীবন আনন্দে ভরে উঠুক।`;
+    html += `
+      <div class="p-4 bg-pink-200 rounded mb-3 text-black">
+        🎂 ${s.name} 
+        <div class="mt-2 flex gap-3">
+          <a href="https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}" target="_blank" class="bg-green-500 text-white px-3 py-1 rounded">WhatsApp</a>
+          <a href="sms:${s.phone}?body=${encodeURIComponent(msg)}" class="bg-blue-500 text-white px-3 py-1 rounded">SMS</a>
+        </div>
+      </div>
+    `;
+  });
+  panel.innerHTML = html;
+};
+
+// Attendance
+window.openAttendance = async () => {
+  hideFinancePanels();
+  const panel = document.getElementById("attendance-panel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <h3 class="text-xl font-bold mb-4">📅 Attendance</h3>
+    <table class="w-full border">
+      <thead><tr><th>Name</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Student One</td><td><button class="bg-green-500 px-2 py-1 rounded">Present</button></td></tr>
+        <tr><td>Student Two</td><td><button class="bg-red-500 px-2 py-1 rounded">Absent</button></td></tr>
+      </tbody>
+    </table>
+  `;
+};
+
+// Reports (future)
+window.openReports = async () => {
+  hideFinancePanels();
+  const panel = document.getElementById("reports-panel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `<h3 class="text-xl">📊 Reports Coming Soon</h3>`;
+};
+
+// Helper to hide all
+function hideFinancePanels(){
+  ["salary-panel","birthday-panel","attendance-panel","reports-panel"]
+  .forEach(id=>document.getElementById(id).classList.add("hidden"));
+}
     // ---- end additions ----
 
 </script>
