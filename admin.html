@@ -1,182 +1,206 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <title>Target Zone - Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Target Zone — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); color:white; font-family:'Segoe UI',sans-serif; overflow:hidden; }
-    .sidebar { background: linear-gradient(180deg,#1e3c72,#2a5298); transition: transform 0.4s ease; }
-    .glass { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); color:black; animation: glow 4s infinite alternate; }
-    @keyframes glow { from {box-shadow:0 0 5px #6a11cb;} to {box-shadow:0 0 25px #2575fc;} }
-    .rainbow { background: linear-gradient(90deg,#ff7e5f,#feb47b,#ff6a00,#ee0979,#6a11cb,#2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight:bold; }
-    .nav-btn { display:flex; align-items:center; gap:10px; transition:all 0.3s; background:rgba(255,255,255,0.1); }
-    .nav-btn:hover { background:linear-gradient(90deg,#ff7e5f,#feb47b,#6a11cb); color:white; transform:translateX(5px); }
-    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:999; }
-    .modal img { max-width:90%; max-height:90%; border:5px solid white; border-radius:10px; }
-    .finance-bg {
-  background: linear-gradient(135deg, #ff7e5f, #feb47b, #6a11cb, #2575fc);
-  animation: gradientShift 10s ease infinite;
-}
-@keyframes gradientShift {
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
+    :root{ --bg:#0a0f1a; --panel: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.08); --muted:#a5b4fc; }
+    html,body{ margin:0; padding:0; background: radial-gradient(1200px 800px at 10% -10%, rgba(34,211,238,.14), transparent), radial-gradient(900px 700px at 120% 0, rgba(99,102,241,.18), transparent), var(--bg); color:#e5e7eb; font-family:Inter, system-ui, Segoe UI, Roboto, Arial; }
+    .container{ max-width:1200px; margin:0 auto; padding:18px; }
+    .nav{ display:flex; gap:10px; flex-wrap:wrap; }
+    .nav button{ border:none; padding:8px 12px; border-radius:10px; background:var(--panel); color:#fff; cursor:pointer; border:1px solid var(--border); }
+    .nav button.active{ outline:2px solid #22d3ee; }
+    .panel{ background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); padding:16px; border-radius:14px; border:1px solid var(--border); box-shadow: 0 14px 40px rgba(2,6,23,.45); }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .col{ flex:1 1 360px; }
+    input, select, textarea, button{ font-family:inherit; }
+    input, select, textarea{ background: rgba(255,255,255,0.06); border:1px solid var(--border); color:#fff; padding:10px 12px; border-radius:10px; width:100%; }
+    label{ font-weight:700; font-size:.95rem; color:#fff; display:block; margin:2px 0 6px; }
+    .btn{ border:none; border-radius:10px; padding:10px 12px; background:#16a34a; color:white; font-weight:800; cursor:pointer; }
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ border-bottom:1px solid var(--border); padding:10px; text-align:left; }
+    .muted{ color:var(--muted); }
+    .chip{ padding:4px 8px; border-radius:8px; background: rgba(255,255,255,0.06); border:1px solid var(--border); font-weight:800; font-size:.8rem; }
   </style>
 </head>
-<body class="h-screen flex overflow-hidden">
-  <!-- Background Animation -->
-  <canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full -z-10"></canvas>
-
-  <!-- Sidebar -->
-  <aside id="sidebar" class="sidebar fixed md:static w-64 h-full text-white z-50 hidden md:flex flex-col">
-    <div class="p-5 flex justify-between items-center border-b border-white/20">
+<body>
+  <div class="container">
+    <header style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <h1 style="margin:0; font-weight:900;">🎯 Target Zone — Admin Panel</h1>
       <div>
-        <h1 class="rainbow text-2xl">🌈 Target Zone</h1>
-        <p id="admin-email" class="text-sm"></p>
+        <button id="logout-btn" class="btn" style="background:#ef4444;">Logout</button>
       </div>
-      <button id="close-sidebar" class="md:hidden text-xl">❌</button>
-    </div>
-    <nav class="p-4 space-y-3 flex-1">
-      <button onclick="showSection('add')" class="nav-btn w-full py-2 px-3 rounded">➕ Add Question</button>
-      <button onclick="showSection('results')" class="nav-btn w-full py-2 px-3 rounded">📊 View Results</button>
-      <button onclick="showSection('users')" class="nav-btn w-full py-2 px-3 rounded">👥 Manage Users</button>
-      <button onclick="showSection('finance')" class="nav-btn w-full py-2 px-3 rounded">💼 Salary & More</button>
-        <button onclick="showSection('submissions')" class="nav-btn w-full py-2 px-3 rounded">💰 Payments & Forms</button>
-  </nav>
-    <div class="p-4 border-t border-white/20">
-      <button onclick="logout()" class="w-full bg-red-600 py-2 rounded">🚪 Logout</button>
-    </div>
-  </aside>
+    </header>
 
-  <!-- Main -->
-  <main class="flex-1 p-6 overflow-y-auto">
-    <div class="flex justify-between items-center mb-6">
-      <button id="menu-btn" class="md:hidden bg-yellow-400 px-3 py-2 rounded">☰</button>
-      <h2 class="rainbow text-3xl">🛠️ Admin Panel</h2>
-      <div class="flex items-center gap-3">
-       <audio id="bg-music" loop muted autoplay>
-  <source src="https://raw.githubusercontent.com/nibedansarkar12/Target/main/15_August_Song_Dance___Rakto_Nadir_Dhara___Independence_Day_Dance___Bengali_Patriotic_song_2022(256k).mp3" type="audio/mp3">
-</audio>
-        <button id="music-btn" class="bg-green-500 px-3 py-1 rounded">🔊 Play Sound</button>
-      </div>
-    </div>
+    <nav class="nav" style="margin-top:12px;">
+      <button onclick="showSection('add')" class="active">Add Questions</button>
+      <button onclick="showSection('results')">Results</button>
+      <button onclick="showSection('users')">Users</button>
+      <button onclick="showSection('extras')">Payments & Forms</button>
+      <button onclick="showSection('analytics')">Analytics</button>
+    </nav>
 
-    <!-- Add Question -->
-    <section id="section-add" class="glass p-6 rounded-lg shadow-lg hidden">
-      <form id="question-form">
-        <h3 class="text-xl font-bold mb-4">➕ Add New Question</h3>
-        <select id="category" class="w-full border rounded px-3 py-2 mb-3" onchange="loadQuestions(this.value)">
-          <option value="">--Select Category--</option>
-          <option value="ssc">SSC</option>
-          <option value="railways">Railways</option>
-          <option value="tet">TET</option>
-        </select>
-        <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
-        <input type="file" id="photo" accept="image/*" class="w-full mb-3">
-        <div class="grid grid-cols-2 gap-3">
-          <label><input type="radio" name="correct" value="0"> <input id="option1" class="w-full border rounded px-3 py-2" placeholder="Option A"></label>
-          <label><input type="radio" name="correct" value="1"> <input id="option2" class="w-full border rounded px-3 py-2" placeholder="Option B"></label>
-          <label><input type="radio" name="correct" value="2"> <input id="option3" class="w-full border rounded px-3 py-2" placeholder="Option C"></label>
-          <label><input type="radio" name="correct" value="3"> <input id="option4" class="w-full border rounded px-3 py-2" placeholder="Option D"></label>
+    <!-- ========== ADD QUESTIONS ========== -->
+    <section id="section-add" class="panel" style="margin-top:14px;">
+      <div class="row">
+        <div class="col">
+          <label>মেইন টপিক (Exam)</label>
+          <select id="category" onchange="handleCategoryChange(this.value)">
+            <option value="">— Select —</option>
+            <option value="ssc">SSC</option>
+            <option value="railways">Railways</option>
+            <option value="tet">TET</option>
+            <option value="wbset">WB SET</option>
+            <option value="wbjee">WBJEE</option>
+            <option value="madhyamik">Madhyamik</option>
+          </select>
         </div>
-        <button type="button" onclick="addQuestion()" class="w-full bg-blue-600 text-white py-2 rounded mt-4">💾 Save Question</button>
-      </form>
-      <h3 class="text-lg font-semibold mt-6">📋 Added Questions</h3>
-      <table class="w-full text-left border mt-3">
-        <thead><tr><th>Question</th><th>Answer</th><th>Delete</th></tr></thead>
-        <tbody id="questions-list"></tbody>
+        <div class="col">
+          <label>Topic</label>
+          <input id="topic" placeholder="e.g. Polity / Mensuration" />
+        </div>
+      </div>
+
+      <!-- Set Manager (NEW) -->
+      <div id="set-manager" class="panel" style="margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <strong>Set Manager</strong>
+          <div id="active-set-wrap" class="chip" style="display:none; align-items:center; gap:8px;">Active Set: <span id="active-set-name">—</span> <button id="clear-set" class="btn" style="background:#ef4444;padding:4px 8px;">Clear</button></div>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <div class="col">
+            <label>নতুন সেটের নাম</label>
+            <div style="display:flex; gap:8px;">
+              <input id="set-name-input" placeholder="e.g. SET-A (Jan 2025)" />
+              <button class="btn" onclick="useOrCreateSet()">Create / Use</button>
+            </div>
+            <div class="muted" style="margin-top:6px;">নতুন নাম লিখে <b>Create / Use</b> চাপলে সেটি Active হবে। লোড নেওয়ার সময় নামটি বদলাবে না—আপনি নিজে Clear না করা পর্যন্ত থাকবে।</div>
+          </div>
+          <div class="col">
+            <label>পূর্বের তৈরি করা সেট থেকে বাছাই করুন</label>
+            <details id="sets-chooser">
+              <summary style="cursor:pointer; user-select:none;">Click to open list</summary>
+              <div id="existing-sets" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap:8px; margin-top:8px;"></div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div class="col">
+          <label>Question</label>
+          <textarea id="question" rows="3" placeholder="Write the question text..."></textarea>
+        </div>
+        <div class="col">
+          <label>Image (optional)</label>
+          <input type="file" id="image" accept="image/*" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <div class="col"><label>Option A</label><input id="optionA"></div>
+        <div class="col"><label>Option B</label><input id="optionB"></div>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <div class="col"><label>Option C</label><input id="optionC"></div>
+        <div class="col"><label>Option D</label><input id="optionD"></div>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <div class="col">
+          <label>Correct Answer</label>
+          <select id="correct">
+            <option value="">— Select —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Difficulty</label>
+          <select id="difficulty">
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button class="btn" onclick="addQuestion()">Save Question</button>
+        <button class="btn" style="background:#0ea5e9;" onclick="loadQuestions(document.getElementById('category').value)">Reload Questions</button>
+      </div>
+
+      <div style="margin-top:16px;">
+        <h3 style="margin:0 0 8px 0; font-weight:900;">Questions in <span class="chip" id="q-cat">—</span> <span id="q-set-badge" class="chip" style="display:none;">Set: <span id="q-set"></span></span></h3>
+        <table>
+          <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Topic</th><th>Actions</th></tr></thead>
+          <tbody id="questions-body"><tr><td colspan="5" class="muted">No data</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== RESULTS ========== -->
+    <section id="section-results" class="panel hidden" style="margin-top:14px;">
+      <h3 style="margin:0 0 10px 0; font-weight:900;">Results</h3>
+      <div class="row">
+        <div class="col">
+          <canvas id="results-chart" height="240"></canvas>
+        </div>
+        <div class="col">
+          <table>
+            <thead><tr><th>User</th><th>Exam</th><th>Score</th><th>Total</th><th>Date</th></tr></thead>
+            <tbody id="results-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== USERS ========== -->
+    <section id="section-users" class="panel hidden" style="margin-top:14px;">
+      <h3 style="margin:0 0 10px 0; font-weight:900;">Users</h3>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Created</th></tr></thead>
+        <tbody id="users-body"></tbody>
       </table>
     </section>
 
-    <!-- Results -->
-    <section id="section-results" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4">📊 View Results</h3>
-      <canvas id="resultsChart" class="mb-6"></canvas>
-      <table class="w-full text-left border">
-        <thead><tr><th>Email</th><th>Exam</th><th>Score</th><th>Submitted</th></tr></thead>
-        <tbody id="results-list"></tbody>
-      </table>
+    <!-- ========== EXTRAS ========== -->
+    <section id="section-extras" class="panel hidden" style="margin-top:14px;">
+      <h3 style="margin:0 0 10px 0; font-weight:900;">Payments & Forms</h3>
+      <div class="row">
+        <div class="col">
+          <div class="panel">
+            <strong>Form Submissions</strong>
+            <table style="margin-top:10px;">
+              <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Time</th></tr></thead>
+              <tbody id="submissions-body"><tr><td colspan="5" class="muted">No data</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Users -->
-    <section id="section-users" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4">👥 Manage Users</h3>
-      <table class="w-full text-left border">
-        <thead><tr><th>Email</th><th>Name</th></tr></thead>
-        <tbody id="users-list"></tbody>
-      </table>
+    <!-- ========== ANALYTICS (placeholder) ========== -->
+    <section id="section-analytics" class="panel hidden" style="margin-top:14px;">
+      <h3 style="margin:0 0 10px 0; font-weight:900;">Analytics</h3>
+      <div class="muted">Overview graphs & counters can be placed here.</div>
     </section>
-  
-    <!-- Payments & Forms Section -->
-    <section id="section-submissions" class="glass p-6 rounded-lg shadow-lg hidden">
-      <h3 class="text-xl font-bold mb-4 flex items-center gap-2">💰 Payment Proofs</h3>
-      <table class="w-full text-left border mb-6">
-        <thead class="bg-gray-200">
-          <tr><th class="p-2">Name</th><th>Phone</th><th>Proof</th><th>Date</th></tr>
-        </thead>
-        <tbody id="payments-list"></tbody>
-      </table>
-
-      <h3 class="text-xl font-bold mb-4 flex items-center gap-2">📄 Admission Forms</h3>
-      <table class="w-full text-left border">
-        <thead class="bg-gray-200">
-          <tr><th class="p-2">Name</th><th>Phone</th><th>Course</th><th>Address</th><th>Message</th><th>Date</th></tr>
-        </thead>
-        <tbody id="admissions-list"></tbody>
-      </table>
-    </section>
-    <!-- Finance Section -->
-<section id="section-finance" class="glass p-6 rounded-lg shadow-lg hidden">
-  <h3 class="text-2xl font-bold rainbow mb-6">💼 Salary, Birthdays & More</h3>
-  
-  <!-- Card Grid -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-    
-    <!-- Salary Card -->
-    <div onclick="openSalary()" class="cursor-pointer p-6 bg-white/20 rounded-2xl shadow-lg hover:scale-105 transition">
-      <h4 class="text-xl font-bold">🪙 Salary</h4>
-      <p>Track payments, dues & yearly records</p>
-    </div>
-    
-    <!-- Birthday Card -->
-    <div onclick="openBirthday()" class="cursor-pointer p-6 bg-white/20 rounded-2xl shadow-lg hover:scale-105 transition">
-      <h4 class="text-xl font-bold">🎉 Birthdays</h4>
-      <p>Today’s wishes & WhatsApp/SMS</p>
-    </div>
-
-    <!-- Attendance Card -->
-    <div onclick="openAttendance()" class="cursor-pointer p-6 bg-white/20 rounded-2xl shadow-lg hover:scale-105 transition">
-      <h4 class="text-xl font-bold">📅 Attendance</h4>
-      <p>Mark daily presence & view reports</p>
-    </div>
-
-    <!-- Reports Card -->
-    <div onclick="openReports()" class="cursor-pointer p-6 bg-gray-400/20 rounded-2xl shadow-lg line-through">
-      <h4 class="text-xl font-bold">📊 Reports</h4>
-      <p>Coming soon</p>
-    </div>
   </div>
 
-  <!-- Dynamic Panels -->
-  <div id="salary-panel" class="hidden mt-8"></div>
-  <div id="birthday-panel" class="hidden mt-8"></div>
-  <div id="attendance-panel" class="hidden mt-8"></div>
-  <div id="reports-panel" class="hidden mt-8"></div>
-          </section>
-
-</main>
-
-  <!-- Firebase & Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, query, orderBy, enableIndexedDbPersistence
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
-    import { getDatabase, ref as dbRef, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
@@ -189,354 +213,199 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
     const storage = getStorage(app);
-    const rtdb = getDatabase(app);
+    const auth = getAuth(app);
 
-    let currentCategory="";
+    try{ enableIndexedDbPersistence(db); }catch(e){ console.warn('persistence', e.message) }
 
-    onAuthStateChanged(auth,user=>{
-      if(!user){ window.location.href="index.html"; }
-      else{ document.getElementById("admin-email").textContent="👤 "+user.email; }
+    // ====== Navigation ======
+    function showSection(key){
+      const map = { add:'section-add', results:'section-results', users:'section-users', extras:'section-extras', analytics:'section-analytics' };
+      Object.values(map).forEach(id=> document.getElementById(id).classList.add('hidden'));
+      document.getElementById(map[key]).classList.remove('hidden');
+      document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+      const idx = ['add','results','users','extras','analytics'].indexOf(key);
+      if(idx>-1) document.querySelectorAll('.nav button')[idx].classList.add('active');
+    }
+    window.showSection = showSection;
+
+    document.getElementById('logout-btn').onclick = ()=> signOut(auth);
+
+    onAuthStateChanged(auth, (user)=>{
+      if(!user){ alert('Please login to access admin.'); location.href = '/'; return; }
+      // initial list loads
+      loadResults(); loadUsers();
     });
 
-    window.logout=async()=>{ await signOut(auth); window.location.href="index.html"; };
+    // ====== Set Manager State ======
+    let currentCategory = '';
+    const activeSets = JSON.parse(localStorage.getItem('tz_active_sets') || '{}');
+    function persistActive(){ localStorage.setItem('tz_active_sets', JSON.stringify(activeSets)); }
 
-    // Add Question
-    window.addQuestion=async()=>{
-      const cat=document.getElementById("category").value;
-      currentCategory=cat;
-      const ques=document.getElementById("question").value;
-      const opts=[1,2,3,4].map(i=>document.getElementById("option"+i).value);
-      const correctIndex=document.querySelector('input[name="correct"]:checked')?.value;
-      const photoFile=document.getElementById("photo").files[0];
-      if(!ques||correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
-
-      let photoURL="";
-      if(photoFile){
-        const storageRef=ref(storage,`questions/${Date.now()}-${photoFile.name}`);
-        await uploadBytes(storageRef,photoFile);
-        photoURL=await getDownloadURL(storageRef);
-      }
-
-      await addDoc(collection(db,cat),{
-        id: Date.now(),
-        question:ques,options:opts,
-        answer:opts[correctIndex],photo:photoURL,
-        createdAt:new Date()
-      });
-
-      alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
-      document.getElementById("question-form").reset();
-      loadQuestions(cat);
-    };
-
-    // Load Questions
-    window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
-      });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+    window.handleCategoryChange = (cat)=>{
+      currentCategory = cat || '';
+      document.getElementById('q-cat').textContent = currentCategory || '—';
+      renderActiveSetBadge();
+      loadSets(currentCategory);
+      loadQuestions(currentCategory);
     }
 
-    // Delete Question
-    window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
-
-    // Modal Preview
-    window.openModal=(url)=>{
-      const modal=document.createElement("div");
-      modal.className="modal";
-      modal.innerHTML=`<img src="${url}" onclick="this.parentElement.remove()">`;
-      document.body.appendChild(modal);
+    function renderActiveSetBadge(){
+      const wrap = document.getElementById('active-set-wrap');
+      const nameEl = document.getElementById('active-set-name');
+      const qBadge = document.getElementById('q-set-badge');
+      const qName = document.getElementById('q-set');
+      const v = currentCategory && activeSets[currentCategory];
+      if (v){ wrap.style.display='inline-flex'; nameEl.textContent = v; qBadge.style.display='inline-flex'; qName.textContent = v; }
+      else { wrap.style.display='none'; qBadge.style.display='none'; qName.textContent = ''; }
     }
 
-    // Show Section
-    window.showSection=async(id)=>{
-      document.querySelectorAll("section").forEach(sec=>sec.classList.add("hidden"));
-      document.getElementById("section-"+id).classList.remove("hidden");
-      if(id==="results") loadResults();
-      if(id==="users") loadUsers();
-      if(id==="submissions") loadSubmissions();
-      if(id==="users") loadUsers();
-    }
+    document.getElementById('clear-set').onclick = ()=>{ if(!currentCategory) return; delete activeSets[currentCategory]; persistActive(); renderActiveSetBadge(); loadQuestions(currentCategory); };
 
-    // Load Results with Pie Chart
-    async function loadResults(){
-      const table=document.getElementById("results-list");
-      table.innerHTML="<tr><td colspan='4'>লোড হচ্ছে...</td></tr>";
-      const q=query(collection(db,"results"),orderBy("submittedAt","desc"));
-      const snapshot=await getDocs(q);
-      let rows="",correct=0,wrong=0,unattempted=0;
-      snapshot.forEach(docSnap=>{
-        const r=docSnap.data();
-        correct+=r.correct||0;
-        wrong+=r.wrong||0;
-        unattempted+=r.unattempted||0;
-        rows+=`<tr><td>${r.email}</td><td>${r.exam}</td><td>${r.score}/${r.total}</td><td>${r.submittedAt ? new Date(r.submittedAt.seconds*1000).toLocaleString():"N/A"}</td></tr>`;
-      });
-      table.innerHTML=rows||"<tr><td colspan='4'>কোনো রেজাল্ট নেই</td></tr>";
-      new Chart(document.getElementById("resultsChart"),{
-        type:"pie",
-        data:{labels:["Correct","Wrong","Unattempted"],datasets:[{data:[correct,wrong,unattempted],backgroundColor:["#4caf50","#f44336","#9e9e9e"]}]}
-      });
-    }
-
-    // Load Users
-    
-    
-      
-
-    // Music Toggle
-    const music=document.getElementById("bg-music");
-    const musicBtn=document.getElementById("music-btn");
-    musicBtn.addEventListener("click",()=>{
-      if(music.muted){ music.muted=false; music.play(); musicBtn.textContent="🔇 Mute Sound"; }
-      else{ music.muted=true; musicBtn.textContent="🔊 Play Sound"; }
-    });
-  
-    
-
-
-
-    // ---- Admin additions: clean loadUsers & loadSubmissions ----
-    async function loadUsers(){
-      const table = document.getElementById("users-list");
-      if(!table) return;
-      table.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
-      try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        let rows = "";
-        querySnapshot.forEach(docSnap => {
-          const d = docSnap.data() || {};
-          rows += `<tr>
-            <td>${d.name || ""}</td>
-            <td>${d.email || ""}</td>
-            <td>${d.whatsapp || ""}</td>
-            <td>${d.education || ""}</td>
-            <td>${d.status || ""}</td>
-          </tr>`;
+    async function loadSets(cat){
+      const box = document.getElementById('existing-sets');
+      box.innerHTML = '<div class="muted">Loading…</div>';
+      if(!cat){ box.innerHTML = '<div class="muted">Select a category</div>'; return; }
+      try{
+        const snap = await getDocs(collection(db,'exams',cat,'sets'));
+        if (snap.empty){ box.innerHTML = '<div class="muted">No sets yet</div>'; return; }
+        box.innerHTML = '';
+        snap.forEach(d=>{
+          const data = d.data(); const name = data.name || d.id; const el = document.createElement('button');
+          el.className = 'chip'; el.style.cssText = 'text-align:left; padding:8px;'; el.textContent = name; el.title = 'Click to make active & load questions';
+          el.onclick = ()=>{ activeSets[cat] = name; persistActive(); renderActiveSetBadge(); loadQuestions(cat); };
+          box.appendChild(el);
         });
-        table.innerHTML = rows || "<tr><td colspan='5'>No users found</td></tr>";
-      } catch (error) {
-        console.error("Error loading users: ", error);
-        table.innerHTML = "<tr><td colspan='5'>Error loading users</td></tr>";
-      }
+      }catch(e){ box.innerHTML = `<div class="muted">Error: ${e.message}</div>`; }
     }
 
-    function formatTimestamp(ts){
-      if(!ts) return "";
+    window.useOrCreateSet = async function(){
+      const cat = currentCategory || document.getElementById('category').value;
+      const name = (document.getElementById('set-name-input').value||'').trim();
+      if(!cat){ alert('ক্যাটেগরি বাছাই করুন'); return; }
+      if(!name){ alert('সেটের নাম লিখুন'); return; }
       try{
-        if(typeof ts === 'number') return new Date(ts).toLocaleString();
-        if(ts.seconds) return new Date(ts.seconds*1000).toLocaleString();
-        return new Date(ts).toLocaleString();
-      }catch(e){
-        return "";
-      }
+        await setDoc(doc(db,'exams',cat,'sets',name), { name, createdAt: new Date() }, { merge:true });
+        activeSets[cat] = name; persistActive(); renderActiveSetBadge();
+        loadSets(cat); // refresh list
+        // do NOT clear the input automatically (admin requested persistence)
+        loadQuestions(cat); // only questions table reloads
+      }catch(e){ alert(e.message); }
     }
 
+    // ====== Question CRUD (with nested path if a Set is active) ======
+    window.addQuestion = async function(){
+      const cat = currentCategory || document.getElementById('category').value;
+      if(!cat){ alert('ক্যাটেগরি লাগবে'); return; }
+
+      const topic = (document.getElementById('topic').value||'').trim() || 'General';
+      const qText = (document.getElementById('question').value||'').trim();
+      const A = document.getElementById('optionA').value||'';
+      const B = document.getElementById('optionB').value||'';
+      const C = document.getElementById('optionC').value||'';
+      const D = document.getElementById('optionD').value||'';
+      const correct = document.getElementById('correct').value||'';
+      const difficulty = document.getElementById('difficulty').value||'Easy';
+      if(!qText || !correct){ alert('Question & Correct answer required'); return; }
+
+      // optional image upload
+      let imageUrl = null; const file = document.getElementById('image').files[0];
+      if(file){ const r = sRef(storage, `questions/${Date.now()}_${file.name}`); await uploadBytes(r, file); imageUrl = await getDownloadURL(r); }
+
+      const docData = {
+        id: Date.now(), question: qText, options: [A,B,C,D], answer: { 'A':A, 'B':B, 'C':C, 'D':D }[correct] || correct,
+        correctOption: correct, topic, difficulty, imageUrl, createdAt: new Date()
+      };
+
+      try{
+        const active = activeSets[cat];
+        if(active){
+          await addDoc(collection(db, 'exams', cat, 'sets', active, 'questions'), docData);
+        } else {
+          // backward compatibility: old flat collection
+          await addDoc(collection(db, cat), docData);
+        }
+        alert('Saved');
+        loadQuestions(cat); // only table reloads; set name persists
+      }catch(e){ alert(e.message); }
+    }
+
+    window.loadQuestions = async function(cat){
+      if(!cat){ document.getElementById('questions-body').innerHTML = '<tr><td colspan="5" class="muted">Select a category</td></tr>'; return; }
+      document.getElementById('q-cat').textContent = cat;
+      renderActiveSetBadge();
+      const tbody = document.getElementById('questions-body');
+      tbody.innerHTML = '<tr><td colspan="5" class="muted">Loading…</td></tr>';
+      try{
+        const active = activeSets[cat];
+        let snap;
+        if(active){ snap = await getDocs(query(collection(db,'exams',cat,'sets',active,'questions'), orderBy('id'))); }
+        else { snap = await getDocs(query(collection(db,cat), orderBy('id'))); }
+        let i=0; tbody.innerHTML = '';
+        snap.forEach(d=>{
+          const q = d.data();
+          const tr = document.createElement('tr');
+          const ans = (q.correctOption) ? q.correctOption : (Array.isArray(q.options) ? ['A','B','C','D'][q.options.findIndex(x=>x===q.answer)] : q.answer);
+          tr.innerHTML = `<td>${++i}</td><td>${q.question||''}</td><td>${ans||''}</td><td>${q.topic||''}</td><td><button class="btn" style="background:#ef4444" data-del="${d.id}">Delete</button></td>`;
+          tbody.appendChild(tr);
+        });
+        if(!tbody.children.length) tbody.innerHTML = '<tr><td colspan="5" class="muted">No questions</td></tr>';
+        // bind deletes
+        tbody.querySelectorAll('[data-del]').forEach(btn=>{
+          btn.addEventListener('click', async ()=>{
+            if(!confirm('Delete this question?')) return;
+            try{
+              const active = activeSets[cat];
+              if(active){ await deleteDoc(doc(db,'exams',cat,'sets',active,'questions', btn.getAttribute('data-del'))); }
+              else { await deleteDoc(doc(db,cat, btn.getAttribute('data-del'))); }
+              loadQuestions(cat);
+            }catch(e){ alert(e.message); }
+          });
+        });
+      }catch(e){ tbody.innerHTML = `<tr><td colspan="5" class="muted">Error: ${e.message}</td></tr>`; }
+    }
+
+    // ====== RESULTS LIST & CHART ======
+    async function loadResults(){
+      const tbody = document.getElementById('results-body');
+      tbody.innerHTML = '<tr><td colspan="5" class="muted">Loading…</td></tr>';
+      try{
+        const snap = await getDocs(query(collection(db,'results'), orderBy('submittedAt','desc')));
+        const data = []; tbody.innerHTML = '';
+        snap.forEach(d=>{ const r=d.data(); data.push(r); const tr=document.createElement('tr'); tr.innerHTML = `<td>${r.displayName||r.email||'User'}</td><td>${r.exam}</td><td>${r.score}</td><td>${r.total}</td><td>${(r.submittedAt && r.submittedAt.toDate) ? r.submittedAt.toDate().toLocaleString() : ''}</td>`; tbody.appendChild(tr); });
+        renderResultsChart(data);
+      }catch(e){ tbody.innerHTML = `<tr><td colspan="5" class="muted">Error: ${e.message}</td></tr>`; }
+    }
+
+    function renderResultsChart(rows){
+      const ctx = document.getElementById('results-chart').getContext('2d');
+      const byExam = {};
+      rows.forEach(r=>{ byExam[r.exam] = (byExam[r.exam]||0) + (r.score||0); });
+      const labels = Object.keys(byExam); const values = Object.values(byExam);
+      new Chart(ctx, { type:'bar', data:{ labels, datasets:[{ label:'Total Correct (sum)', data:values }] }, options:{ plugins:{ legend:{ labels:{ color:'#fff' } } }, scales:{ x:{ ticks:{ color:'#fff' } }, y:{ ticks:{ color:'#fff' } } } } });
+    }
+
+    // ====== USERS ======
+    async function loadUsers(){
+      const tbody = document.getElementById('users-body');
+      tbody.innerHTML = '<tr><td colspan="3" class="muted">Loading…</td></tr>';
+      try{
+        const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+        tbody.innerHTML = '';
+        snap.forEach(d=>{ const u=d.data(); const tr=document.createElement('tr'); tr.innerHTML = `<td>${u.displayName||'-'}</td><td>${u.email||''}</td><td>${(u.createdAt && u.createdAt.toDate)? u.createdAt.toDate().toLocaleString(): ''}</td>`; tbody.appendChild(tr); });
+        if(!tbody.children.length) tbody.innerHTML = '<tr><td colspan="3" class="muted">No users</td></tr>';
+      }catch(e){ tbody.innerHTML = `<tr><td colspan="3" class="muted">Error: ${e.message}</td></tr>`; }
+    }
+
+    // ====== EXTRAS: FORM SUBMISSIONS ======
     async function loadSubmissions(){
-      const paymentsTable = document.getElementById("payments-list");
-      const admissionsTable = document.getElementById("admissions-list");
-      if(paymentsTable) paymentsTable.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-      if(admissionsTable) admissionsTable.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
-
-      try{
-        const paySnap = await get(dbRef(rtdb, "paymentProofs"));
-        let payRows = "";
-        if(paySnap.exists && paySnap.exists()){
-          paySnap.forEach(item=>{
-            const d = item.val() || {};
-            payRows += `<tr>
-              <td>${d.name || ""}</td>
-              <td>${d.phone || ""}</td>
-              <td><img src="${d.url || ""}" class="w-16 h-16 object-cover cursor-pointer" onclick="openModal('${d.url || ""}')"></td>
-              <td>${formatTimestamp(d.createdAt)}</td>
-            </tr>`;
-          });
-        } else {
-          payRows = "<tr><td colspan='4'>No Data</td></tr>";
-        }
-        if(paymentsTable) paymentsTable.innerHTML = payRows;
-      }catch(e){
-        console.error("Error loading payments:", e);
-        if(paymentsTable) paymentsTable.innerHTML = "<tr><td colspan='4'>Error loading payments</td></tr>";
-      }
-
-      try{
-        const admSnap = await get(dbRef(rtdb, "admissions"));
-        let admRows = "";
-        if(admSnap.exists && admSnap.exists()){
-          admSnap.forEach(item=>{
-            const d = item.val() || {};
-            admRows += `<tr>
-              <td>${d.name || ""}</td>
-              <td>${d.phone || ""}</td>
-              <td>${d.course || ""}</td>
-              <td>${d.address||""}</td>
-              <td>${d.message||""}</td>
-              <td>${formatTimestamp(d.createdAt)}</td>
-            </tr>`;
-          });
-        } else {
-          admRows = "<tr><td colspan='6'>No Data</td></tr>";
-        }
-        if(admissionsTable) admissionsTable.innerHTML = admRows;
-      }catch(e){
-        console.error("Error loading admissions:", e);
-        if(admissionsTable) admissionsTable.innerHTML = "<tr><td colspan='6'>Error loading admissions</td></tr>";
-      }
+      const tbody = document.getElementById('submissions-body');
+      tbody.innerHTML = '<tr><td colspan="5" class="muted">Loading…</td></tr>';
+      try{ const snap = await getDocs(query(collection(db,'submissions'), orderBy('createdAt','desc'))); tbody.innerHTML=''; snap.forEach(d=>{ const s=d.data(); const tr=document.createElement('tr'); tr.innerHTML = `<td>${s.name||''}</td><td>${s.email||''}</td><td>${s.phone||''}</td><td>${s.message||''}</td><td>${(s.createdAt && s.createdAt.toDate)? s.createdAt.toDate().toLocaleString(): ''}</td>`; tbody.appendChild(tr); }); if(!tbody.children.length) tbody.innerHTML = '<tr><td colspan="5" class="muted">No data</td></tr>'; }catch(e){ tbody.innerHTML = `<tr><td colspan="5" class="muted">Error: ${e.message}</td></tr>`; }
     }
-    // === Finance Section Logic ===
 
-// Salary
-window.openSalary = async () => {
-  hideFinancePanels();
-  const panel = document.getElementById("salary-panel");
-  panel.classList.remove("hidden");
-  panel.innerHTML = `
-    <h3 class="text-xl font-bold mb-4">🪙 Salary Management</h3>
-    <div id="batch-list" class="space-y-2"></div>
-  `;
-  // Load batches dynamically (demo)
-  const batchList = document.getElementById("batch-list");
-  batchList.innerHTML = `
-    <button onclick="loadStudents('Batch A')" class="bg-blue-500 text-white px-3 py-2 rounded">Batch A</button>
-    <button onclick="loadStudents('Batch B')" class="bg-blue-500 text-white px-3 py-2 rounded">Batch B</button>
-  `;
-};
-
-window.loadStudents = async (batch) => {
-  const panel = document.getElementById("salary-panel");
-  panel.innerHTML = `<h4 class="text-lg font-semibold mb-3">${batch} - Students</h4>
-    <ul class="space-y-2">
-      <li><button onclick="openStudentFinance('S1','Student One')" class="underline text-blue-200">Student One</button></li>
-      <li><button onclick="openStudentFinance('S2','Student Two')" class="underline text-blue-200">Student Two</button></li>
-    </ul>`;
-};
-
-window.openStudentFinance = async (id,name) => {
-  const panel = document.getElementById("salary-panel");
-  panel.innerHTML = `
-    <h4 class="text-lg font-bold mb-4">💰 Finance Record - ${name}</h4>
-    <table class="w-full border mb-4">
-      <thead><tr><th>Month</th><th>Paid</th><th>Due</th></tr></thead>
-      <tbody id="finance-rows"></tbody>
-    </table>
-    <div class="flex gap-3">
-      <input id="amount" type="number" placeholder="Enter Amount" class="border rounded px-2 py-1">
-      <button onclick="addPayment('${id}')" class="bg-green-500 px-3 py-1 rounded">➕ Add Payment</button>
-    </div>
-  `;
-  // Dummy data
-  document.getElementById("finance-rows").innerHTML = `
-    <tr><td>January</td><td>500</td><td>200</td></tr>
-    <tr><td>February</td><td>700</td><td>0</td></tr>
-  `;
-};
-
-window.addPayment = async (studentId) => {
-  const amount = document.getElementById("amount").value;
-  alert(`Payment of ₹${amount} added for ${studentId} ✅`);
-  // TODO: Save to Firebase salaries collection
-};
-
-// Birthday
-window.openBirthday = async () => {
-  hideFinancePanels();
-  const panel = document.getElementById("birthday-panel");
-  panel.classList.remove("hidden");
-  const today = new Date().toISOString().slice(5,10); // MM-DD
-  // Demo birthday list
-  const students = [
-    {name:"Student One",dob:"08-17",phone:"1234567890"},
-    {name:"Student Two",dob:"12-25",phone:"9876543210"}
-  ];
-  let html = `<h3 class="text-xl font-bold mb-4">🎉 Today’s Birthdays</h3>`;
-  const todays = students.filter(s=>s.dob===today);
-  if(todays.length===0) html += `<p>No birthdays today</p>`;
-  todays.forEach(s=>{
-    const msg = `শুভ জন্মদিন ${s.name}! 🎉 তোমার জীবন আনন্দে ভরে উঠুক।`;
-    html += `
-      <div class="p-4 bg-pink-200 rounded mb-3 text-black">
-        🎂 ${s.name} 
-        <div class="mt-2 flex gap-3">
-          <a href="https://wa.me/${s.phone}?text=${encodeURIComponent(msg)}" target="_blank" class="bg-green-500 text-white px-3 py-1 rounded">WhatsApp</a>
-          <a href="sms:${s.phone}?body=${encodeURIComponent(msg)}" class="bg-blue-500 text-white px-3 py-1 rounded">SMS</a>
-        </div>
-      </div>
-    `;
-  });
-  panel.innerHTML = html;
-};
-
-// Attendance
-window.openAttendance = async () => {
-  hideFinancePanels();
-  const panel = document.getElementById("attendance-panel");
-  panel.classList.remove("hidden");
-  panel.innerHTML = `
-    <h3 class="text-xl font-bold mb-4">📅 Attendance</h3>
-    <table class="w-full border">
-      <thead><tr><th>Name</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>Student One</td><td><button class="bg-green-500 px-2 py-1 rounded">Present</button></td></tr>
-        <tr><td>Student Two</td><td><button class="bg-red-500 px-2 py-1 rounded">Absent</button></td></tr>
-      </tbody>
-    </table>
-  `;
-};
-
-// Reports (future)
-window.openReports = async () => {
-  hideFinancePanels();
-  const panel = document.getElementById("reports-panel");
-  panel.classList.remove("hidden");
-  panel.innerHTML = `<h3 class="text-xl">📊 Reports Coming Soon</h3>`;
-};
-
-// Helper to hide all
-function hideFinancePanels(){
-  ["salary-panel","birthday-panel","attendance-panel","reports-panel"]
-  .forEach(id=>document.getElementById(id).classList.add("hidden"));
-}
-    // ---- end additions ----
-
-</script>
-
-  <script>
-    // Sidebar toggle
-    document.getElementById("menu-btn").addEventListener("click",()=>{document.getElementById("sidebar").classList.remove("hidden");});
-    document.getElementById("close-sidebar").addEventListener("click",()=>{document.getElementById("sidebar").classList.add("hidden");});
-
-    // Background Animation
-    const canvas=document.getElementById("bg-canvas");
-    const ctx=canvas.getContext("2d");
-    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-    let stars=[], planes=[];
-    for(let i=0;i<150;i++){stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2,dx:(Math.random()-0.5)*0.5,dy:(Math.random()-0.5)*0.5});}
-    for(let i=0;i<2;i++){planes.push({x:-50,y:Math.random()*canvas.height/2,dx:2+Math.random()*2,size:20});}
-    function draw(){
-      ctx.fillStyle="rgba(0,0,30,0.4)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle="white"; stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();s.x+=s.dx;s.y+=s.dy;if(s.x<0||s.x>canvas.width) s.dx*=-1;if(s.y<0||s.y>canvas.height) s.dy*=-1;});
-      planes.forEach(p=>{ctx.fillStyle="lightblue";ctx.fillRect(p.x,p.y,p.size,3);ctx.fillStyle="white";ctx.fillRect(p.x-5,p.y+1,10,1);p.x+=p.dx;if(p.x>canvas.width+50){p.x=-50;p.y=Math.random()*canvas.height/2;}});
-    }
-    setInterval(draw,30);
-  
-    
-
-</script>
+    // initial
+    loadSubmissions();
+  </script>
 </body>
 </html>
