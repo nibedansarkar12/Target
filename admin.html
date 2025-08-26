@@ -91,6 +91,9 @@
           <label><input type="radio" name="correct" value="3"> <input id="option4" class="w-full border rounded px-3 py-2" placeholder="Option D"></label>
         </div>
   <button type="button" onclick="addQuestion()" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
+        <button type="button" onclick="resetCategorySelection()" class="bg-red-500 text-white px-4 py-2 rounded mt-3">
+  🔙 Back
+        </button>
       </form>
       <h3 class="text-lg font-semibold mt-6">📋 Added Questions</h3>
 <div class="max-h-64 overflow-y-auto border rounded mt-3"> 
@@ -528,7 +531,10 @@ window.addSubcategory = async () => {
 // সাবক্যাটাগরি সিলেক্ট করলে মনে রাখা
 document.getElementById("subcategory").addEventListener("change", (e) => {
   currentSubcategory = e.target.value;
-  if (currentSubcategory) loadQuestions(currentSubcategory);
+  if (currentSubcategory) {
+    loadQuestions(currentSubcategory);
+    lockCategorySelection(); // ✅ নতুন যোগ
+  }
 });
 
 // প্রশ্ন যোগ করা (subcategory অনুযায়ী)
@@ -560,6 +566,35 @@ window.addQuestion = async () => {
   });
 
   alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
+  // ক্যাটাগরি/সাবক্যাটাগরি উপরে দেখানো + লক করা
+function lockCategorySelection() {
+  const cat = document.getElementById("category");
+  const sub = document.getElementById("subcategory");
+  
+  // টেক্সট আকারে উপরে দেখাও
+  let header = document.getElementById("selected-cat");
+  if (!header) {
+    header = document.createElement("div");
+    header.id = "selected-cat";
+    header.className = "p-3 mb-3 bg-yellow-200 text-black font-bold rounded";
+    document.getElementById("question-form").prepend(header);
+  }
+  header.textContent = `📌 Category: ${currentCategory.toUpperCase()} | Subcategory: ${currentSubcategory}`;
+
+  // একবার সিলেক্ট হলে disable করে দাও
+  cat.disabled = true;
+  sub.disabled = true;
+}
+
+// 👉 Reset / Back করার জন্য ফাংশন
+window.resetCategorySelection = () => {
+  currentCategory = "";
+  currentSubcategory = "";
+  document.getElementById("category").disabled = false;
+  document.getElementById("subcategory").disabled = false;
+  document.getElementById("selected-cat")?.remove();
+  document.getElementById("question-form").reset();
+};
 
   // ✅ reset করার আগে ক্যাটাগরি/সাবক্যাটাগরি save করো
   const savedCategory = currentCategory;
