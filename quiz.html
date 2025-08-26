@@ -569,45 +569,42 @@ renderExamCards();
   }
 });
 
-    async function startExam(examId){
-  currentExam = examId;
+    async function startExam(categoryId, subId, subName){
+  currentExam = subName;
   questions = [];
 
   try {
-    console.log("▶ Trying to load from collection:", examId);
-    const q = query(collection(db, examId), orderBy('id'));
+    console.log("▶ Trying to load from collection:", subName);
+    const q = query(collection(db, subName), orderBy('id'));
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      alert(`No questions found in subcategory: ${examId}`);
+      alert(`No questions found in "${subName}".`);
       return;
     }
 
     questions = snap.docs.map(d => d.data());
     console.log("✅ Loaded questions:", questions.length);
-  } catch(e){
+  } catch (e) {
     console.error("❌ Error loading questions:", e);
     alert("Error loading questions. Check console for details.");
     return;
   }
 
-  // পুরোনো UI হ্যান্ডলিং অংশ রেখে দিলাম
+  // UI updates
   dashboard.classList.add('hidden');
   quizSection.classList.remove('hidden');
-  document.getElementById('quiz-title').textContent = examId;
-  document.getElementById('exam-tag').textContent = examId.toUpperCase();
+  document.getElementById('quiz-title').textContent = subName;
+  document.getElementById('exam-tag').textContent = categoryId.toUpperCase();
 
+  // reset attempt state
+  answers = {}; reviewed = {};
   currentIndex = 0;
-  showQuestion();
-    }
-      // ensure answers / reviewed reset for fresh attempt (user insisted no auto-restore)
-      answers = {}; reviewed = {};
-      currentIndex = 0;
-      timeLeft = (questions.length * 60) || 80*60;
-      renderQuestion();
-      buildPalette();
-      startTimer();
-      try { history.pushState({section:'quiz'}, ''); } catch(e){}
+  timeLeft = (questions.length * 60) || 80*60;
+  renderQuestion();
+  buildPalette();
+  startTimer();
+  try { history.pushState({section:'quiz'}, ''); } catch(e){}
     }
 
     function renderQuestion(){
