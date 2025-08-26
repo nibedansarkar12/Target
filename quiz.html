@@ -396,26 +396,71 @@
 
     // initial UI render
     function renderExamCards(){
-      examCards.innerHTML = exams.map((ex,i) => `
-        <div class="exam-card bg-${(i%4)+1} card-bordered ${(i%4)==0? 'border-emerald': (i%4)==1? 'border-blue' : (i%4)==2? 'border-yellow' : 'border-accent'}" data-id="${ex.id}">
+  examCards.innerHTML = exams.map((ex,i) => `
+    <div class="exam-card bg-${(i%4)+1} card-bordered ${(i%4)==0? 'border-emerald': (i%4)==1? 'border-blue' : (i%4)==2? 'border-yellow' : 'border-accent'}" data-id="${ex.id}">
+      <div class="floating" style="background: linear-gradient(45deg, rgba(255,255,255,0.04), rgba(0,0,0,0.02));"></div>
+      <div class="top-row">
+        <div class="title-desc">
+          <div class="exam-icon">${ex.icon}</div>
+          <div style="display:flex; flex-direction:column; min-width:0;">
+            <h4 style="margin:0; font-weight:800;">${ex.name}</h4>
+            <div class="desc muted">${ex.desc}</div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+          <div class="muted" style="font-size:0.9rem;">Choose Subcategory</div>
+          <div><button class="view-subcats" data-id="${ex.id}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">View</button></div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+renderExamCards();
+    async function loadSubcategories(categoryId){
+  examCards.innerHTML = `<div class="muted">Loading ${categoryId} subcategories...</div>`;
+  try {
+    const snap = await getDocs(collection(db, categoryId + "_subcats"));
+    if (snap.empty) {
+      examCards.innerHTML = `<div class="muted">No subcategories found for ${categoryId}</div>`;
+      return;
+    }
+    let html = "";
+    let i=0;
+    snap.forEach(docSnap=>{
+      const sub = docSnap.data();
+      html += `
+        <div class="exam-card bg-${(i%4)+1} card-bordered ${(i%4)==0? 'border-emerald': (i%4)==1? 'border-blue' : (i%4)==2? 'border-yellow' : 'border-accent'}">
           <div class="floating" style="background: linear-gradient(45deg, rgba(255,255,255,0.04), rgba(0,0,0,0.02));"></div>
           <div class="top-row">
             <div class="title-desc">
-              <div class="exam-icon">${ex.icon}</div>
+              <div class="exam-icon">📘</div>
               <div style="display:flex; flex-direction:column; min-width:0;">
-                <h4 style="margin:0; font-weight:800;">${ex.name}</h4>
-                <div class="desc muted">${ex.desc}</div>
+                <h4 style="margin:0; font-weight:800;">${sub.name}</h4>
+                <div class="desc muted">Subcategory of ${categoryId}</div>
               </div>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
               <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
-              <div><button class="start-exam" data-id="${ex.id}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Start</button></div>
+              <div><button class="start-exam" data-id="${sub.name}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Start</button></div>
             </div>
           </div>
         </div>
-      `).join("");
+      `;
+      i++;
+    });
+    examCards.innerHTML = html;
+
+    // back button
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "← Back to Categories";
+    backBtn.className = "bg-white/6 px-3 py-1 rounded mt-4";
+    backBtn.onclick = renderExamCards;
+    examCards.appendChild(backBtn);
+
+  } catch(e){
+    examCards.innerHTML = `<div class="muted">Error loading subcategories: ${e.message}</div>`;
+  }
     }
-    renderExamCards();
 
     // app state
     let currentExam = null, questions = [], currentIndex = 0;
@@ -510,12 +555,20 @@
 
     // start exam
     examCards.addEventListener('click', async (ev) => {
-      const btn = ev.target.closest('.start-exam');
-      if (!btn) return;
-      if (!auth.currentUser) return alert("Please sign in first.");
-      const examId = btn.dataset.id;
-      await startExam(examId);
-    });
+  const viewBtn = ev.target.closest('.view-subcats');
+  if(viewBtn){
+    const catId = viewBtn.dataset.id;
+    loadSubcategories(catId);
+    return;
+  }
+  const startBtn = ev.target.closest('.start-exam');
+  if(startBtn){
+    if (!auth.currentUser) return alert("Please sign in first.");
+    const examId = startBtn.dataset.id;
+    await startExam(examId);
+    return;
+  }
+});
 
     async function startExam(examId){
       currentExam = examId;
