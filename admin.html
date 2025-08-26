@@ -211,34 +211,7 @@
 
     window.logout=async()=>{ await signOut(auth); window.location.href="index.html"; };
 
-    // Add Question
-    window.addQuestion=async()=>{
-      const cat=document.getElementById("category").value;
-      currentCategory=cat;
-      const ques=document.getElementById("question").value;
-      const opts=[1,2,3,4].map(i=>document.getElementById("option"+i).value);
-      const correctIndex=document.querySelector('input[name="correct"]:checked')?.value;
-      const photoFile=document.getElementById("photo").files[0];
-      if(!ques||correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
-
-      let photoURL="";
-      if(photoFile){
-        const storageRef=ref(storage,`questions/${Date.now()}-${photoFile.name}`);
-        await uploadBytes(storageRef,photoFile);
-        photoURL=await getDownloadURL(storageRef);
-      }
-
-      await addDoc(collection(db,cat),{
-        id: Date.now(),
-        question:ques,options:opts,
-        answer:opts[correctIndex],photo:photoURL,
-        createdAt:new Date()
-      });
-
-      alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
-      document.getElementById("question-form").reset();
-      loadQuestions(cat);
-    };
+    
 
     // Load Questions
     window.loadQuestions=async(category)=>{
@@ -588,17 +561,19 @@ window.addQuestion = async () => {
 
   alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
 
-  // ✅ Reset করার আগে ক্যাটাগরি/সাবক্যাটাগরি save করো
+  // ✅ reset করার আগে ক্যাটাগরি/সাবক্যাটাগরি save করো
   const savedCategory = currentCategory;
   const savedSubcategory = currentSubcategory;
 
+  // ফর্ম reset
   document.getElementById("question-form").reset();
 
-  // ✅ Reset এর পর আবার সেট করে দাও
+  // ✅ reset এর পর আবার সেট করে দাও
   document.getElementById("category").value = savedCategory;
   await loadSubcategories(savedCategory); 
   document.getElementById("subcategory").value = savedSubcategory;
 
+  // প্রশ্ন তালিকা আবার লোড
   loadQuestions(cat);
 };
     // ---- end additions ----
