@@ -75,6 +75,19 @@
           <option value="railways">Railways</option>
           <option value="tet">TET</option>
         </select>
+        <!-- Subcategory Section -->
+<div class="mb-3">
+  <label class="block mb-1 font-semibold">Subcategory</label>
+  <select id="subcategory" class="w-full border rounded px-3 py-2 mb-2" onchange="loadQuestionsWithSub(this.value)">
+    <option value="">--Select Subcategory--</option>
+  </select>
+  <div class="flex gap-2 mt-2">
+    <input type="text" id="new-sub" class="flex-1 border rounded px-3 py-2" placeholder="নতুন সাব-ক্যাটাগরি লিখুন...">
+    <button type="button" onclick="createSubcategory()" class="bg-green-600 text-white px-3 py-2 rounded">Create</button>
+  </div>
+  <p id="sub-msg" class="text-green-600 font-semibold mt-2 hidden"></p>
+</div>
+        
         <textarea id="question" rows="3" class="w-full border rounded px-3 py-2 mb-3" placeholder="প্রশ্ন লিখুন..."></textarea>
         <input type="file" id="photo" accept="image/*" class="w-full mb-3">
         <div class="grid grid-cols-2 gap-3">
@@ -201,60 +214,104 @@
     });
 
     window.logout=async()=>{ await signOut(auth); window.location.href="index.html"; };
+let currentCategory = "", currentSubcategory = "";
 
-    // Add Question
-    window.addQuestion=async()=>{
-      const cat=document.getElementById("category").value;
-      currentCategory=cat;
-      const ques=document.getElementById("question").value;
-      const opts=[1,2,3,4].map(i=>document.getElementById("option"+i).value);
-      const correctIndex=document.querySelector('input[name="correct"]:checked')?.value;
-      const photoFile=document.getElementById("photo").files[0];
-      if(!ques||correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
-
-      let photoURL="";
-      if(photoFile){
-        const storageRef=ref(storage,`questions/${Date.now()}-${photoFile.name}`);
-        await uploadBytes(storageRef,photoFile);
-        photoURL=await getDownloadURL(storageRef);
-      }
-
-      await addDoc(collection(db,cat),{
-        id: Date.now(),
-        question:ques,options:opts,
-        answer:opts[correctIndex],photo:photoURL,
-        createdAt:new Date()
-      });
-
-      alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
-      document.getElementById("question-form").reset();
-      loadQuestions(cat);
-    };
-
-    // Load Questions
-    window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
-      });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+// Load subcategories under a category
+window.loadSubcategories = async (cat) => {
+  currentCategory = cat;
+  const subSel = document.getElementById("subcategory");
+  subSel.innerHTML = "<option>লোড হচ্ছে...</option>";
+  const snap = await getDocs(collection(db, "subcategories"));
+  let html = "<option value=''>--Select Subcategory--</option>";
+  snap.forEach(docSnap => {
+    const s = docSnap.data();
+    if (s.category === cat) {
+      html += `<option value="${docSnap.id}">${s.name} (${s.status})</option>`;
     }
+  });
+  subSel.innerHTML = html;
+};
 
-    // Delete Question
-    window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
+// Create new subcategory
+window.createSubcategory = async () => {
+  const name = document.getElementById("new-sub").value.trim();
+  if (!name || !currentCategory) return alert("⚠️ ক্যাটাগরি ও সাব-ক্যাটাগরি দিন!");
 
+  const ref = await addDoc(collection(db, "subcategories"), {
+    name,
+    category: currentCategory,
+    status: "draft",
+    createdAt: new Date()
+  });
+
+  document.getElementById("sub-msg").textContent = "✅ সাব-ক্যাটাগরি তৈরি হয়েছে";
+  document.getElementById("sub-msg").classList.remove("hidden");
+  document.getElementById("new-sub").value = "";
+
+  await loadSubcategories(currentCategory);
+  document.getElementById("subcategory").value = ref.id; // auto select
+  loadQuestionsWithSub(ref.id); // auto load questions
+};
+
+// Load questions for subcategory
+window.loadQuestionsWithSub = async (subId) => {
+  currentSubcategory = subId;
+  const table = document.getElementById("questions-list");
+  if (!subId) { 
+    table.innerHTML = "<tr><td colspan='3'>কোনো সাব-ক্যাটাগরি নেই</td></tr>";
+    return;
+  }
+  const snap = await getDocs(collection(db, "subcategories", subId, "questions"));
+  let rows = "";
+  snap.forEach(docSnap => {
+    const q = docSnap.data();
+    rows += `
+      <tr>
+        <td>${q.question}</td>
+        <td>${q.answer}</td>
+        <td><button onclick="deleteQuestion('${subId}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
+      </tr>`;
+  });
+  table.innerHTML = rows || "<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+};
+
+// Override Add Question to save under subcategory
+window.addQuestion = async () => {
+  if (!currentSubcategory) return alert("⚠️ আগে সাব-ক্যাটাগরি সিলেক্ট করুন!");
+  const ques = document.getElementById("question").value;
+  const opts = [1,2,3,4].map(i => document.getElementById("option"+i).value);
+  const correctIndex = document.querySelector('input[name="correct"]:checked')?.value;
+  const photoFile = document.getElementById("photo").files[0];
+  if (!ques || correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+
+  let photoURL = "";
+  if (photoFile) {
+    const storageRef = ref(storage, `questions/${Date.now()}-${photoFile.name}`);
+    await uploadBytes(storageRef, photoFile);
+    photoURL = await getDownloadURL(storageRef);
+  }
+
+  await addDoc(collection(db, "subcategories", currentSubcategory, "questions"), {
+    id: Date.now(),
+    question: ques,
+    options: opts,
+    answer: opts[correctIndex],
+    photo: photoURL,
+    createdAt: new Date()
+  });
+
+  alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
+  document.getElementById("question-form").reset();
+  loadQuestionsWithSub(currentSubcategory);
+};
+
+// Delete question
+window.deleteQuestion = async (subId, id) => {
+  await deleteDoc(doc(db, "subcategories", subId, "questions", id));
+  loadQuestionsWithSub(subId);
+};
+
+    
     // Modal Preview
     window.openModal=(url)=>{
       const modal=document.createElement("div");
