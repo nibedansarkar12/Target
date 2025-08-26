@@ -93,10 +93,12 @@
         <button type="button" onclick="addQuestion()" class="w-full bg-blue-600 text-white py-2 rounded mt-4">💾 Save Question</button>
       </form>
       <h3 class="text-lg font-semibold mt-6">📋 Added Questions</h3>
-      <table class="w-full text-left border mt-3">
-        <thead><tr><th>Question</th><th>Answer</th><th>Delete</th></tr></thead>
-        <tbody id="questions-list"></tbody>
-      </table>
+<div class="max-h-64 overflow-y-auto border rounded mt-3"> 
+  <table class="w-full text-left border">
+    <thead><tr><th>Question</th><th>Answer</th><th>Delete</th></tr></thead>
+    <tbody id="questions-list"></tbody>
+  </table>
+</div>
     </section>
 
     <!-- Results -->
@@ -557,21 +559,24 @@ document.getElementById("subcategory").addEventListener("change", (e) => {
 });
 
 // প্রশ্ন যোগ করা (subcategory অনুযায়ী)
-const oldAddQuestion = window.addQuestion;
 window.addQuestion = async () => {
   const cat = currentSubcategory;
   if (!cat) return alert("⚠️ আগে সাবক্যাটাগরি সিলেক্ট করুন!");
+
   const ques = document.getElementById("question").value;
   const opts = [1,2,3,4].map(i=>document.getElementById("option"+i).value);
   const correctIndex = document.querySelector('input[name="correct"]:checked')?.value;
   const photoFile = document.getElementById("photo").files[0];
+
   if (!ques || correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+
   let photoURL = "";
   if (photoFile) {
     const storageRef = ref(storage, `questions/${Date.now()}-${photoFile.name}`);
     await uploadBytes(storageRef, photoFile);
     photoURL = await getDownloadURL(storageRef);
   }
+
   await addDoc(collection(db, cat), {
     id: Date.now(),
     question: ques,
@@ -580,8 +585,20 @@ window.addQuestion = async () => {
     photo: photoURL,
     createdAt: new Date()
   });
+
   alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
+
+  // ✅ Reset করার আগে ক্যাটাগরি/সাবক্যাটাগরি save করো
+  const savedCategory = currentCategory;
+  const savedSubcategory = currentSubcategory;
+
   document.getElementById("question-form").reset();
+
+  // ✅ Reset এর পর আবার সেট করে দাও
+  document.getElementById("category").value = savedCategory;
+  await loadSubcategories(savedCategory); 
+  document.getElementById("subcategory").value = savedSubcategory;
+
   loadQuestions(cat);
 };
     // ---- end additions ----
