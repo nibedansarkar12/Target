@@ -441,8 +441,7 @@ renderExamCards();
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
               <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
-              <div><button class="start-exam" data-id="${sub.name}" style="background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Start</button></div>
-            </div>
+              <button class="start-exam" data-id="${sub.name.trim()}">Start</button>
           </div>
         </div>
       `;
@@ -571,25 +570,36 @@ renderExamCards();
 });
 
     async function startExam(examId){
-      currentExam = examId;
-      dashboard.classList.add('hidden');
-      quizSection.classList.remove('hidden');
-      document.getElementById('quiz-title').textContent = exams.find(x=>x.id===examId).name;
-      document.getElementById('exam-tag').textContent = examId.toUpperCase();
+  currentExam = examId;
+  questions = [];
 
-      // fetch questions from Firestore collection named by examId
-      try {
-        const q = query(collection(db, examId), orderBy('id'));
-        const snap = await getDocs(q);
-        questions = snap.docs.map(d => d.data());
-      } catch(e){
-        // fallback demo question if no firestore collection exists
-        questions = [
-          {id:1, question:"বাংলাদেশের রাজধানী কোথা?", options:["ঢাকা","চট্টগ্রাম","রাজশাহী","খুলনা"], answer:"ঢাকা", difficulty:"Easy", topic:"Geography"},
-          {id:2, question:"2 + 2 = ?", options:["3","4","5","6"], answer:"4", difficulty:"Easy", topic:"Math"}
-        ];
-      }
+  try {
+    console.log("▶ Trying to load from collection:", examId);
+    const q = query(collection(db, examId), orderBy('id'));
+    const snap = await getDocs(q);
 
+    if (snap.empty) {
+      alert(`No questions found in subcategory: ${examId}`);
+      return;
+    }
+
+    questions = snap.docs.map(d => d.data());
+    console.log("✅ Loaded questions:", questions.length);
+  } catch(e){
+    console.error("❌ Error loading questions:", e);
+    alert("Error loading questions. Check console for details.");
+    return;
+  }
+
+  // পুরোনো UI হ্যান্ডলিং অংশ রেখে দিলাম
+  dashboard.classList.add('hidden');
+  quizSection.classList.remove('hidden');
+  document.getElementById('quiz-title').textContent = examId;
+  document.getElementById('exam-tag').textContent = examId.toUpperCase();
+
+  currentIndex = 0;
+  showQuestion();
+    }
       // ensure answers / reviewed reset for fresh attempt (user insisted no auto-restore)
       answers = {}; reviewed = {};
       currentIndex = 0;
