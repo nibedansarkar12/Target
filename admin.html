@@ -182,7 +182,7 @@
   <!-- Firebase & Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
     import { getDatabase, ref as dbRef, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
@@ -502,7 +502,11 @@ window.loadSubcategories = async (category) => {
   const subSelect = document.getElementById("subcategory");
   subSelect.innerHTML = "<option value=''>--Select Subcategory--</option>";
   if (!category) return;
-  const snapshot = await getDocs(collection(db, category + "_subcats"));
+
+  // শুধু ওই ক্যাটাগরির সাবক্যাটাগরি লোড করবো
+  const q = query(collection(db, "subcategories"), where("category", "==", category));
+  const snapshot = await getDocs(q);
+
   snapshot.forEach(docSnap => {
     const sub = docSnap.data();
     const opt = document.createElement("option");
@@ -510,6 +514,7 @@ window.loadSubcategories = async (category) => {
     opt.textContent = sub.name;
     subSelect.appendChild(opt);
   });
+
   if (currentSubcategory) {
     subSelect.value = currentSubcategory;
   }
