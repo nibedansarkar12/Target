@@ -591,27 +591,17 @@ renderExamCards();
     return;
   }
 });
-
-    async function startExam(examId){
-  currentExam = examId;
+async function startExam(subName){
+  currentExam = subName;
   questions = [];
 
   try {
-    console.log("▶ Trying to load from collection:", examId);
-
-    let q;
-    try {
-      // চেষ্টা করবে id অনুযায়ী সাজাতে
-      q = query(collection(db, examId), orderBy('id'));
-    } catch (err) {
-      console.warn("⚠️ orderBy('id') ফেল করেছে, তাই orderBy ছাড়া লোড করা হবে", err);
-      q = query(collection(db, examId));
-    }
-
+    // সাবক্যাটাগরির নামকেই collection ধরে load করবো
+    const q = query(collection(db, subName));
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      alert(`No questions found in subcategory: ${examId}`);
+      alert(`❌ ${subName} সাবক্যাটাগরিতে কোনো প্রশ্ন পাওয়া যায়নি!`);
       return;
     }
 
@@ -624,6 +614,25 @@ renderExamCards();
     return;
   }
 
+  // UI update
+  dashboard.classList.add('hidden');
+  quizSection.classList.remove('hidden');
+  document.getElementById('quiz-title').textContent = subName;
+  document.getElementById('exam-tag').textContent = subName.toUpperCase();
+
+  // Reset state
+  answers = {}; 
+  reviewed = {};
+  currentIndex = 0;
+  timeLeft = (questions.length * 60) || 80*60;
+
+  renderQuestion();
+  buildPalette();
+  startTimer();
+
+  try { history.pushState({section:'quiz'}, ''); } catch(e){}
+    }
+    
   // UI হ্যান্ডলিং
   dashboard.classList.add('hidden');
   quizSection.classList.remove('hidden');
