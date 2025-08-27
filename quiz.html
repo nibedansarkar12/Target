@@ -438,11 +438,14 @@ renderExamCards();
     async function loadSubcategories(categoryId){
   examCards.innerHTML = `<div class="muted">Loading ${categoryId} subcategories...</div>`;
   try {
-    const snap = await getDocs(collection(db, categoryId + "_subcats"));
+    const q = query(collection(db, "subcategories"), where("category", "==", categoryId));
+    const snap = await getDocs(q);
+
     if (snap.empty) {
       examCards.innerHTML = `<div class="muted">No subcategories found for ${categoryId}</div>`;
       return;
     }
+
     let html = "";
     let i=0;
     snap.forEach(docSnap=>{
@@ -455,12 +458,13 @@ renderExamCards();
               <div class="exam-icon">📘</div>
               <div style="display:flex; flex-direction:column; min-width:0;">
                 <h4 style="margin:0; font-weight:800;">${sub.name}</h4>
-                <div class="desc muted">Subcategory of ${categoryId}</div>
+                <div class="desc muted">${categoryId} Subcategory</div>
               </div>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
               <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
-              <button class="start-btn" onclick="startExam('${sub.id}')">Start</button>
+              <button class="start-btn" onclick="startExam('${sub.name}')">Start</button>
+            </div>
           </div>
         </div>
       `;
