@@ -523,11 +523,28 @@ window.loadSubcategories = async (category) => {
 // নতুন সাবক্যাটাগরি যোগ
 window.addSubcategory = async () => {
   const name = document.getElementById("new-subcat").value.trim();
-  if (!name || !currentCategory) return alert("⚠️ ক্যাটাগরি ও সাবক্যাটাগরি নাম দিন!");
-  await addDoc(collection(db, currentCategory + "_subcats"), { name });
+  if (!name || !currentCategory) {
+    return alert("⚠️ ক্যাটাগরি ও সাবক্যাটাগরি নাম দিন!");
+  }
+
+  // Firestore এ সাবক্যাটাগরি সেভ করা
+  await addDoc(collection(db, "subcategories"), { 
+    name, 
+    category: currentCategory 
+  });
+
   alert("✅ সাবক্যাটাগরি তৈরি হয়েছে!");
+
+  // ইনপুট ফাঁকা করা
   document.getElementById("new-subcat").value = "";
-  loadSubcategories(currentCategory);
+
+  // আবার ড্রপডাউন রিফ্রেশ করা
+  await loadSubcategories(currentCategory);
+
+  // নতুন যোগ হওয়া সাবক্যাটাগরি auto-select করা
+  const subSelect = document.getElementById("subcategory");
+  subSelect.value = name;
+  currentSubcategory = name;
 };
 
 // সাবক্যাটাগরি সিলেক্ট করলে মনে রাখা
