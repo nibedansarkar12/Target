@@ -592,38 +592,40 @@ renderExamCards();
   }
 });
 
-    async function startExam(examId){
-  currentExam = examId;
-  questions = [];
+    async function startExam(examId) {
+  console.log("▶ startExam called with examId:", examId);
 
   try {
-    console.log("▶ Trying to load from collection:", examId);
-
     let q;
     try {
-      // চেষ্টা করবে id অনুযায়ী সাজাতে
       q = query(collection(db, examId), orderBy('id'));
     } catch (err) {
-      console.warn("⚠️ orderBy('id') ফেল করেছে, তাই orderBy ছাড়া লোড করা হবে", err);
+      console.warn("⚠️ orderBy ফেল করেছে, fallback চালু");
       q = query(collection(db, examId));
     }
 
     const snap = await getDocs(q);
+    console.log("📦 Docs fetched:", snap.size);
 
-if (snap.empty) {
-  alert(`❌ No questions found in subcategory: ${examId}`);
-  showSection('dashboard');   // 🔙 আবার Dashboard এ ফেরত যাবে
-  return;
-}
+    if (snap.empty) {
+      alert(`❌ No questions found in subcategory: ${examId}`);
+      showSection('dashboard');
+      return;
+    }
 
-questions = snap.docs.map(d => d.data());
-console.log("✅ Loaded questions:", questions.length);
+    questions = snap.docs.map(d => d.data());
+    console.log("✅ Loaded questions array:", questions);
 
-} catch(e){
-  console.error("❌ Error loading questions:", e);
-  alert("Error loading questions. Check console for details.");
-  showSection('dashboard');   // ⚠️ error হলেও Dashboard এ ফেরত যাবে
-  return;
+    currentIndex = 0;
+    score = 0;
+    showSection('quiz-section');
+    loadQuestion();
+
+  } catch (e) {
+    console.error("❌ Error loading questions:", e);
+    alert("Error loading questions. Check console for details.");
+    showSection('dashboard');
+  }
 }
 
   // UI হ্যান্ডলিং
@@ -733,8 +735,8 @@ console.log("✅ Loaded questions:", questions.length);
       const attempted = Object.keys(answers).filter(k=>answers[k]).length;
       const percent = Math.round((attempted / questions.length)*100) || 0;
       document.getElementById('progress-bar').style.width = percent + '%';
-    }
-
+            }
+            
     // timer
     function startTimer(){
       if (timerInterval) clearInterval(timerInterval);
