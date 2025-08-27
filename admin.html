@@ -579,12 +579,12 @@ window.addQuestion = async () => {
   }
 
   await addDoc(collection(db, cat), {
-    id: Date.now(),   // 🔹 unique ID (timestamp)
+    id: Date.now(),             // ✅ unique timestamp ID
     question: ques,
     options: opts,
     answer: opts[correctIndex],
     photo: photoURL || "",
-    createdAt: new Date()
+    createdAt: new Date()       // optional metadata
   });
 
   alert("✅ প্রশ্ন যুক্ত হয়েছে!");
