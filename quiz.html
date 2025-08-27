@@ -610,19 +610,21 @@ renderExamCards();
 
     const snap = await getDocs(q);
 
-    if (snap.empty) {
-      alert(`No questions found in subcategory: ${examId}`);
-      return;
-    }
+if (snap.empty) {
+  alert(`❌ No questions found in subcategory: ${examId}`);
+  showSection('dashboard');   // 🔙 আবার Dashboard এ ফেরত যাবে
+  return;
+}
 
-    questions = snap.docs.map(d => d.data());
-    console.log("✅ Loaded questions:", questions.length);
+questions = snap.docs.map(d => d.data());
+console.log("✅ Loaded questions:", questions.length);
 
-  } catch(e){
-    console.error("❌ Error loading questions:", e);
-    alert("Error loading questions. Check console for details.");
-    return;
-  }
+} catch(e){
+  console.error("❌ Error loading questions:", e);
+  alert("Error loading questions. Check console for details.");
+  showSection('dashboard');   // ⚠️ error হলেও Dashboard এ ফেরত যাবে
+  return;
+}
 
   // UI হ্যান্ডলিং
   dashboard.classList.add('hidden');
