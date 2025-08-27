@@ -584,14 +584,13 @@ renderExamCards();
     loadSubcategories(catId);
     return;
   }
-  const startBtn = ev.target.closest('.start-exam');
-  if(startBtn){
-    if (!auth.currentUser) return alert("Please sign in first.");
-    const examId = startBtn.dataset.id;
-    await startExam(examId);
-    return;
-  }
-});
+  const startBtn = ev.target.closest('.start-btn');
+if(startBtn){
+  if (!auth.currentUser) return alert("Please sign in first.");
+  const examId = startBtn.getAttribute("onclick").match(/startExam\('(.+)'\)/)[1];
+  await startExam(examId);
+  return;
+}
 
     async function startExam(examId){
   currentExam = examId;
