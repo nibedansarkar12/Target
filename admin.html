@@ -527,8 +527,12 @@ window.addSubcategory = async () => {
     return alert("⚠️ ক্যাটাগরি ও সাবক্যাটাগরি নাম দিন!");
   }
 
+  // ইউনিক id বানানো (lowercase + space কে "_" এ রূপান্তর)
+  const id = name.toLowerCase().replace(/\s+/g, "_");
+
   // Firestore এ সাবক্যাটাগরি সেভ করা
   await addDoc(collection(db, "subcategories"), { 
+    id,          // ✅ নতুন id ফিল্ড
     name, 
     category: currentCategory 
   });
@@ -544,7 +548,7 @@ window.addSubcategory = async () => {
   // নতুন যোগ হওয়া সাবক্যাটাগরি auto-select করা
   const subSelect = document.getElementById("subcategory");
   subSelect.value = name;
-  currentSubcategory = name;
+  currentSubcategory = id;   // ✅ id হিসাবে মনে রাখা
 };
 
 // সাবক্যাটাগরি সিলেক্ট করলে মনে রাখা
