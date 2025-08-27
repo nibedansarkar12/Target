@@ -450,6 +450,9 @@ renderExamCards();
     let i=0;
     snap.forEach(docSnap=>{
       const sub = docSnap.data();
+      // 🔧 যদি sub.id না থাকে তাহলে sub.name থেকে fallback id বানানো হচ্ছে
+      const sid = sub.id || (sub.name ? sub.name.toLowerCase().replace(/\s+/g,"_") : "");
+
       html += `
         <div class="exam-card bg-${(i%4)+1} card-bordered ${(i%4)==0? 'border-emerald': (i%4)==1? 'border-blue' : (i%4)==2? 'border-yellow' : 'border-accent'}">
           <div class="floating" style="background: linear-gradient(45deg, rgba(255,255,255,0.04), rgba(0,0,0,0.02));"></div>
@@ -463,8 +466,7 @@ renderExamCards();
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
               <div class="muted" style="font-size:0.9rem;">MCQ Practice</div>
-              <button class="start-btn" onclick="startExam('${sub.id}')">Start</button>
-
+              <button class="start-btn" onclick="startExam('${sid}')">Start</button>
             </div>
           </div>
         </div>
@@ -473,6 +475,11 @@ renderExamCards();
     });
     examCards.innerHTML = html;
 
+  } catch (err) {
+    console.error("Error loading subcategories:", err);
+    examCards.innerHTML = `<div class="muted">Error loading subcategories.</div>`;
+  }
+}
     // back button
     const backBtn = document.createElement("button");
     backBtn.textContent = "← Back to Categories";
