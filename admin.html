@@ -536,12 +536,14 @@ window.addQuestion = async () => {
   const cat = currentSubcategory;
   if (!cat) return alert("⚠️ আগে সাবক্যাটাগরি সিলেক্ট করুন!");
 
-  const ques = document.getElementById("question").value;
-  const opts = [1,2,3,4].map(i=>document.getElementById("option"+i).value);
+  const ques = document.getElementById("question").value.trim();
+  const opts = [1,2,3,4].map(i => document.getElementById("option"+i).value.trim());
   const correctIndex = document.querySelector('input[name="correct"]:checked')?.value;
   const photoFile = document.getElementById("photo").files[0];
 
-  if (!ques || correctIndex===undefined) return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+  if (!ques || correctIndex === undefined) {
+    return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+  }
 
   let photoURL = "";
   if (photoFile) {
@@ -551,29 +553,20 @@ window.addQuestion = async () => {
   }
 
   await addDoc(collection(db, cat), {
-    id: Date.now(),
+    id: Date.now(),   // 🔹 unique ID (timestamp)
     question: ques,
     options: opts,
     answer: opts[correctIndex],
-    photo: photoURL,
+    photo: photoURL || "",
     createdAt: new Date()
   });
 
-  alert("✅ প্রশ্ন সংরক্ষণ হয়েছে!");
-
-  // ✅ reset করার আগে ক্যাটাগরি/সাবক্যাটাগরি save করো
-  const savedCategory = currentCategory;
-  const savedSubcategory = currentSubcategory;
+  alert("✅ প্রশ্ন যুক্ত হয়েছে!");
 
   // ফর্ম reset
   document.getElementById("question-form").reset();
 
-  // ✅ reset এর পর আবার সেট করে দাও
-  document.getElementById("category").value = savedCategory;
-  await loadSubcategories(savedCategory); 
-  document.getElementById("subcategory").value = savedSubcategory;
-
-  // প্রশ্ন তালিকা আবার লোড
+  // সাথে সাথে লিস্ট রিফ্রেশ
   loadQuestions(cat);
 };
     // ---- end additions ----
