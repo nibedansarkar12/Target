@@ -575,7 +575,16 @@ renderExamCards();
 
   try {
     console.log("▶ Trying to load from collection:", examId);
-    const q = query(collection(db, examId), orderBy('id'));
+
+    let q;
+    try {
+      // চেষ্টা করবে id অনুযায়ী সাজাতে
+      q = query(collection(db, examId), orderBy('id'));
+    } catch (err) {
+      console.warn("⚠️ orderBy('id') ফেল করেছে, তাই orderBy ছাড়া লোড করা হবে", err);
+      q = query(collection(db, examId));
+    }
+
     const snap = await getDocs(q);
 
     if (snap.empty) {
@@ -585,31 +594,31 @@ renderExamCards();
 
     questions = snap.docs.map(d => d.data());
     console.log("✅ Loaded questions:", questions.length);
+
   } catch(e){
     console.error("❌ Error loading questions:", e);
     alert("Error loading questions. Check console for details.");
     return;
   }
 
-  // পুরোনো UI হ্যান্ডলিং অংশ রেখে দিলাম
+  // UI হ্যান্ডলিং
   dashboard.classList.add('hidden');
   quizSection.classList.remove('hidden');
   document.getElementById('quiz-title').textContent = examId;
   document.getElementById('exam-tag').textContent = examId.toUpperCase();
 
+  // নতুন স্টেট রিসেট
+  answers = {}; 
+  reviewed = {};
   currentIndex = 0;
-  showQuestion();
-    }
-      // ensure answers / reviewed reset for fresh attempt (user insisted no auto-restore)
-      answers = {}; reviewed = {};
-      currentIndex = 0;
-      timeLeft = (questions.length * 60) || 80*60;
-      renderQuestion();
-      buildPalette();
-      startTimer();
-      try { history.pushState({section:'quiz'}, ''); } catch(e){}
-    }
+  timeLeft = (questions.length * 60) || 80*60;
 
+  renderQuestion();
+  buildPalette();
+  startTimer();
+
+  try { history.pushState({section:'quiz'}, ''); } catch(e){}
+}
     function renderQuestion(){
       const q = questions[currentIndex] || { question: 'No question', options:[] };
       document.getElementById('question-text').textContent = `Q${currentIndex+1}: ${q.question}`;
