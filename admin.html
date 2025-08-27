@@ -510,8 +510,8 @@ window.loadSubcategories = async (category) => {
   snapshot.forEach(docSnap => {
     const sub = docSnap.data();
     const opt = document.createElement("option");
-    opt.value = sub.name;
-    opt.textContent = sub.name;
+    opt.value = sub.id;          // ✅ value এখন id
+    opt.textContent = sub.name;  // dropdown এ name দেখা যাবে
     subSelect.appendChild(opt);
   });
 
@@ -519,6 +519,7 @@ window.loadSubcategories = async (category) => {
     subSelect.value = currentSubcategory;
   }
 };
+
 
 // নতুন সাবক্যাটাগরি যোগ
 window.addSubcategory = async () => {
