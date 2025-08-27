@@ -591,27 +591,25 @@ renderExamCards();
     return;
   }
 });
-
-    async function startExam(examId){
-  currentExam = examId;
+// 🔥 ফাইনাল ফিক্সড startExam
+async function startExam(subcatName){
+  currentExam = subcatName;
   questions = [];
 
   try {
-    console.log("▶ Trying to load from collection:", examId);
+    console.log("▶ Trying to load from subcategory:", subcatName);
 
     let q;
     try {
-      // চেষ্টা করবে id অনুযায়ী সাজাতে
-      q = query(collection(db, examId), orderBy('id'));
+      q = query(collection(db, subcatName), orderBy('id'));
     } catch (err) {
       console.warn("⚠️ orderBy('id') ফেল করেছে, তাই orderBy ছাড়া লোড করা হবে", err);
-      q = query(collection(db, examId));
+      q = query(collection(db, subcatName));
     }
 
     const snap = await getDocs(q);
-
     if (snap.empty) {
-      alert(`No questions found in subcategory: ${examId}`);
+      alert(`No questions found in subcategory: ${subcatName}`);
       return;
     }
 
@@ -624,13 +622,13 @@ renderExamCards();
     return;
   }
 
-  // UI হ্যান্ডলিং
-  dashboard.classList.add('hidden');
-  quizSection.classList.remove('hidden');
-  document.getElementById('quiz-title').textContent = examId;
-  document.getElementById('exam-tag').textContent = examId.toUpperCase();
+  // UI switch
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('quiz-section').classList.remove('hidden');
+  document.getElementById('quiz-title').textContent = subcatName;
+  document.getElementById('exam-tag').textContent = subcatName.toUpperCase();
 
-  // নতুন স্টেট রিসেট
+  // reset state
   answers = {}; 
   reviewed = {};
   currentIndex = 0;
@@ -639,35 +637,11 @@ renderExamCards();
   renderQuestion();
   buildPalette();
   startTimer();
-
-  try { history.pushState({section:'quiz'}, ''); } catch(e){}
 }
-    function renderQuestion(){
-      const q = questions[currentIndex] || { question: 'No question', options:[] };
-      document.getElementById('question-text').textContent = `Q${currentIndex+1}: ${q.question}`;
-      document.getElementById('difficulty-tag').textContent = `Difficulty: ${q.difficulty || 'N/A'} • Topic: ${q.topic || 'General'}`;
 
-      const ol = document.getElementById('options-list');
-      ol.innerHTML = '';
-      (q.options || []).forEach((opt, idx)=>{
-        const li = document.createElement('li');
-        li.setAttribute('data-opt', opt);
-        li.setAttribute('role','button');
-        li.setAttribute('tabindex','0');
-
-        const input = document.createElement('input');
-        input.type='radio'; input.name='option'; input.value=opt;
-        input.checked = (answers[currentIndex] === opt);
-
-        input.onchange = () => {
-          answers[currentIndex] = opt;
-          // autosave silently per attempt (but not used to auto-restore at new exam start)
-          if (auth.currentUser) {
-            try {
-              localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
-              localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed));
-            } catch(e){}
-          }
+window.startExam = startExam; // যাতে বাটন থেকে কাজ করে
+    
+      
           updatePalette(); updateProgress();
         };
 
