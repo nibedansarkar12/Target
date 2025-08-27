@@ -623,7 +623,11 @@ renderExamCards();
       return;
     }
 
-    questions = snap.docs.map(d => d.data());
+    // 🔥 আপডেট: data এর সাথে document id-ও রেখে দিচ্ছি
+    questions = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
     console.log("✅ Loaded questions:", questions.length);
 
   } catch(e){
@@ -650,34 +654,6 @@ renderExamCards();
 
   try { history.pushState({section:'quiz'}, ''); } catch(e){}
 }
-    function renderQuestion(){
-      const q = questions[currentIndex] || { question: 'No question', options:[] };
-      document.getElementById('question-text').textContent = `Q${currentIndex+1}: ${q.question}`;
-      document.getElementById('difficulty-tag').textContent = `Difficulty: ${q.difficulty || 'N/A'} • Topic: ${q.topic || 'General'}`;
-
-      const ol = document.getElementById('options-list');
-      ol.innerHTML = '';
-      (q.options || []).forEach((opt, idx)=>{
-        const li = document.createElement('li');
-        li.setAttribute('data-opt', opt);
-        li.setAttribute('role','button');
-        li.setAttribute('tabindex','0');
-
-        const input = document.createElement('input');
-        input.type='radio'; input.name='option'; input.value=opt;
-        input.checked = (answers[currentIndex] === opt);
-
-        input.onchange = () => {
-          answers[currentIndex] = opt;
-          // autosave silently per attempt (but not used to auto-restore at new exam start)
-          if (auth.currentUser) {
-            try {
-              localStorage.setItem(`${currentExam}_answers_${auth.currentUser.uid}`, JSON.stringify(answers));
-              localStorage.setItem(`${currentExam}_review_${auth.currentUser.uid}`, JSON.stringify(reviewed));
-            } catch(e){}
-          }
-          updatePalette(); updateProgress();
-        };
 
         const spanText = document.createElement('span');
         spanText.className = 'opt-text';
