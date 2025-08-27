@@ -214,25 +214,28 @@
     
 
     // Load Questions
-    window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
-      });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
-    }
+    // Load Questions (subcategory অনুযায়ী)
+window.loadQuestions = async (subcategoryId) => {
+  const cat = subcategoryId || currentSubcategory;
+  if (!cat) return;
+
+  const table = document.getElementById("questions-list");
+  table.innerHTML = "<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
+
+  const snapshot = await getDocs(collection(db, cat));
+  let rows = "";
+  snapshot.forEach(docSnap => {
+    const q = docSnap.data();
+    rows += `
+      <tr>
+        <td>${q.question}<br>${q.photo ? `<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">` : ""}</td>
+        <td>${q.answer}</td>
+        <td><button onclick="deleteQuestion('${cat}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
+      </tr>
+    `;
+  });
+  table.innerHTML = rows || "<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+};
 
     // Delete Question
     window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
@@ -548,7 +551,7 @@ window.addSubcategory = async () => {
 
   // নতুন যোগ হওয়া সাবক্যাটাগরি auto-select করা
   const subSelect = document.getElementById("subcategory");
-  subSelect.value = name;
+  subSelect.value = id;      // 🔧 এখানে name নয়, id ব্যবহার করতে হবে
   currentSubcategory = id;   // ✅ id হিসাবে মনে রাখা
 };
 
