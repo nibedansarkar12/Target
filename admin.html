@@ -543,13 +543,23 @@ window.addSubcategory = async () => {
 // সাবক্যাটাগরি সিলেক্ট করলে মনে রাখা
 document.getElementById("subcategory").addEventListener("change", (e) => {
   currentSubcategory = e.target.value;
-  if (currentSubcategory) loadQuestions(currentSubcategory);
+  if (!currentCategory || !currentSubcategory) return;
+
+  // নতুন কম্পোজিট কালেকশন নাম বানাও
+  const collName = `${currentCategory}__${currentSubcategory}`;
+  
+  // এখন ওই কম্পোজিট কালেকশন থেকে প্রশ্ন লোড হবে
+  loadQuestions(collName);
 });
 
 // প্রশ্ন যোগ করা (সরাসরি সাবক্যাটাগরি কালেকশনে যাবে)
 window.addQuestion = async () => {
-  const cat = currentSubcategory;
-  if (!cat) return alert("⚠️ আগে সাবক্যাটাগরি সিলেক্ট করুন!");
+  if (!currentCategory || !currentSubcategory) {
+    return alert("⚠️ আগে ক্যাটাগরি ও সাবক্যাটাগরি সিলেক্ট করুন!");
+  }
+
+  // 🔑 নতুন: category__subcategory নামের কালেকশন তৈরি হবে
+  const collName = `${currentCategory}__${currentSubcategory}`;
 
   const ques = document.getElementById("question").value.trim();
   const opts = [1, 2, 3, 4].map(i => document.getElementById("option" + i).value.trim());
@@ -567,8 +577,11 @@ window.addQuestion = async () => {
     photoURL = await getDownloadURL(storageRef);
   }
 
-  await addDoc(collection(db, cat), {   // ✅ সাবক্যাটাগরির id নামেই প্রশ্ন সেভ হবে
+  // 🔑 নতুন: collName ব্যবহার হচ্ছে
+  await addDoc(collection(db, collName), {
     id: Date.now(),
+    category: currentCategory,       // 👍 বাড়তি meta রাখলে ভবিষ্যতে সুবিধা হবে
+    subcategory: currentSubcategory, // 👍
     question: ques,
     options: opts,
     answer: opts[correctIndex],
@@ -578,7 +591,9 @@ window.addQuestion = async () => {
 
   alert("✅ প্রশ্ন যোগ হয়েছে!");
   document.getElementById("question-form").reset();
-  loadQuestions(cat);
+
+  // 🔑 নতুন: আবার collName দিয়েই লোড হবে
+  loadQuestions(collName);
 };
     // ---- end additions ----
 
