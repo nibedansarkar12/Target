@@ -577,8 +577,20 @@ window.addQuestion = async () => {
   });
 
   alert("✅ প্রশ্ন যোগ হয়েছে!");
-  document.getElementById("question-form").reset();
-  loadQuestions(cat);
+
+// বর্তমান category আর subcategory মান আগে সেভ করি
+const savedCat = document.getElementById("category-select").value;
+const savedSubcat = document.getElementById("subcategory-select").value;
+
+// form reset করি
+document.getElementById("question-form").reset();
+
+// reset-এর পর আবার পুরনো category + subcategory বসিয়ে দিই
+document.getElementById("category-select").value = savedCat;
+document.getElementById("subcategory-select").value = savedSubcat;
+
+// প্রশ্নের লিস্ট রিফ্রেশ করি
+loadQuestions(cat);
 };
     // ---- end additions ----
 
