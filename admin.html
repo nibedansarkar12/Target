@@ -215,28 +215,33 @@
 
     // Load Questions
     window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
-      });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
-    }
+    // প্রশ্ন লোড করা (শুধু নির্দিষ্ট category__subcategory এর জন্য)
+window.loadQuestions = async (collName) => {
+  if (!collName) return;
 
+  const table = document.getElementById("questions-list");
+  table.innerHTML = "<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
+
+  const snapshot = await getDocs(collection(db, collName));
+  let rows = "";
+  snapshot.forEach(docSnap => {
+    const q = docSnap.data();
+    rows += `
+      <tr>
+        <td>${q.question}<br>${q.photo ? `<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">` : ""}</td>
+        <td>${q.answer}</td>
+        <td><button onclick="deleteQuestion('${collName}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
+      </tr>
+    `;
+  });
+
+  table.innerHTML = rows || "<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+};
     // Delete Question
-    window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
-
+    window.deleteQuestion = async (collName, id) => { 
+  await deleteDoc(doc(db, collName, id)); 
+  loadQuestions(collName); 
+};
     // Modal Preview
     window.openModal=(url)=>{
       const modal=document.createElement("div");
@@ -590,11 +595,17 @@ window.addQuestion = async () => {
   });
 
   alert("✅ প্রশ্ন যোগ হয়েছে!");
-  document.getElementById("question-form").reset();
 
-  // 🔑 নতুন: আবার collName দিয়েই লোড হবে
-  loadQuestions(collName);
-};
+// শুধু প্রশ্ন, অপশন আর ফাইল ইনপুট clear করো
+document.getElementById("question").value = "";
+[1,2,3,4].forEach(i => document.getElementById("option"+i).value = "");
+document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = false);
+document.getElementById("photo").value = "";
+
+// category আর subcategory যেমন ছিল তেমনই থাকবে ✅
+
+// আবার collName দিয়েই লোড হবে
+loadQuestions(collName);
     // ---- end additions ----
 
 </script>
