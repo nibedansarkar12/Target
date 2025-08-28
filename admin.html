@@ -503,23 +503,17 @@ window.loadSubcategories = async (category) => {
   subSelect.innerHTML = "<option value=''>--Select Subcategory--</option>";
   if (!category) return;
 
-  // শুধু ওই ক্যাটাগরির সাবক্যাটাগরি লোড করবো
   const q = query(collection(db, "subcategories"), where("category", "==", category));
   const snapshot = await getDocs(q);
 
   snapshot.forEach(docSnap => {
     const sub = docSnap.data();
     const opt = document.createElement("option");
-    opt.value = sub.id;          // ✅ value এখন id
-    opt.textContent = sub.name;  // dropdown এ name দেখা যাবে
+    opt.value = sub.id;          // ✅ সাবক্যাটাগরির id হবে কালেকশন নাম
+    opt.textContent = sub.name;
     subSelect.appendChild(opt);
   });
-
-  if (currentSubcategory) {
-    subSelect.value = currentSubcategory;
-  }
 };
-
 
 // নতুন সাবক্যাটাগরি যোগ
 window.addSubcategory = async () => {
@@ -528,29 +522,23 @@ window.addSubcategory = async () => {
     return alert("⚠️ ক্যাটাগরি ও সাবক্যাটাগরি নাম দিন!");
   }
 
-  // ইউনিক id বানানো (lowercase + space কে "_" এ রূপান্তর)
   const id = name.toLowerCase().replace(/\s+/g, "_");
 
-  // Firestore এ সাবক্যাটাগরি সেভ করা
   await addDoc(collection(db, "subcategories"), { 
-    id,          // ✅ নতুন id ফিল্ড
+    id, 
     name, 
     category: currentCategory 
   });
 
   alert("✅ সাবক্যাটাগরি তৈরি হয়েছে!");
-
-  // ইনপুট ফাঁকা করা
   document.getElementById("new-subcat").value = "";
-
-  // আবার ড্রপডাউন রিফ্রেশ করা
   await loadSubcategories(currentCategory);
 
-  // নতুন যোগ হওয়া সাবক্যাটাগরি auto-select করা
-  const subSelect = document.getElementById("subcategory");
-  subSelect.value = name;
-  currentSubcategory = id;   // ✅ id হিসাবে মনে রাখা
+  // auto-select
+  document.getElementById("subcategory").value = id;
+  currentSubcategory = id;
 };
+
 
 // সাবক্যাটাগরি সিলেক্ট করলে মনে রাখা
 document.getElementById("subcategory").addEventListener("change", (e) => {
@@ -558,7 +546,7 @@ document.getElementById("subcategory").addEventListener("change", (e) => {
   if (currentSubcategory) loadQuestions(currentSubcategory);
 });
 
-// প্রশ্ন যোগ করা (subcategory অনুযায়ী সেভ হবে)
+// প্রশ্ন যোগ করা (সরাসরি সাবক্যাটাগরি কালেকশনে যাবে)
 window.addQuestion = async () => {
   const cat = currentSubcategory;
   if (!cat) return alert("⚠️ আগে সাবক্যাটাগরি সিলেক্ট করুন!");
@@ -579,14 +567,19 @@ window.addQuestion = async () => {
     photoURL = await getDownloadURL(storageRef);
   }
 
-  await addDoc(collection(db, cat), {
-    id: Date.now(),              // unique timestamp ID
+  await addDoc(collection(db, cat), {   // ✅ সাবক্যাটাগরির id নামেই প্রশ্ন সেভ হবে
+    id: Date.now(),
     question: ques,
     options: opts,
-    answer: opts[correctIndex],  // সঠিক উত্তর
+    answer: opts[correctIndex],
     photo: photoURL || "",
     createdAt: new Date()
   });
+
+  alert("✅ প্রশ্ন যোগ হয়েছে!");
+  document.getElementById("question-form").reset();
+  loadQuestions(cat);
+};
 
   alert("✅ প্রশ্ন যোগ হয়েছে!");
 
