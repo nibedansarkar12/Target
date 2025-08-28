@@ -558,18 +558,18 @@ document.getElementById("subcategory").addEventListener("change", (e) => {
   if (currentSubcategory) loadQuestions(currentSubcategory);
 });
 
-// প্রশ্ন যোগ করা (subcategory অনুযায়ী)
+// প্রশ্ন যোগ করা (subcategory অনুযায়ী সেভ হবে)
 window.addQuestion = async () => {
   const cat = currentSubcategory;
   if (!cat) return alert("⚠️ আগে সাবক্যাটাগরি সিলেক্ট করুন!");
 
   const ques = document.getElementById("question").value.trim();
-  const opts = [1,2,3,4].map(i => document.getElementById("option"+i).value.trim());
+  const opts = [1, 2, 3, 4].map(i => document.getElementById("option" + i).value.trim());
   const correctIndex = document.querySelector('input[name="correct"]:checked')?.value;
   const photoFile = document.getElementById("photo").files[0];
 
-  if (!ques || correctIndex === undefined) {
-    return alert("⚠️ প্রশ্ন ও উত্তর লিখুন!");
+  if (!ques || opts.some(o => !o) || correctIndex === undefined) {
+    return alert("⚠️ প্রশ্ন ও সব অপশন লিখুন এবং সঠিক উত্তর সিলেক্ট করুন!");
   }
 
   let photoURL = "";
@@ -580,15 +580,15 @@ window.addQuestion = async () => {
   }
 
   await addDoc(collection(db, cat), {
-    id: Date.now(),             // ✅ unique timestamp ID
+    id: Date.now(),              // unique timestamp ID
     question: ques,
     options: opts,
-    answer: opts[correctIndex],
+    answer: opts[correctIndex],  // সঠিক উত্তর
     photo: photoURL || "",
-    createdAt: new Date()       // optional metadata
+    createdAt: new Date()
   });
 
-  alert("✅ প্রশ্ন যুক্ত হয়েছে!");
+  alert("✅ প্রশ্ন যোগ হয়েছে!");
 
   // ফর্ম reset
   document.getElementById("question-form").reset();
