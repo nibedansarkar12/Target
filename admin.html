@@ -588,7 +588,7 @@ document.getElementById("subcategory").addEventListener("change", (e) => {
 });
 
 // প্রশ্ন যোগ করা (সরাসরি সাবক্যাটাগরি কালেকশনে যাবে)
-window.addQuestion = async () => {
+async function addQuestion() {
   if (!currentCategory || !currentSubcategory) {
     return alert("⚠️ আগে ক্যাটাগরি ও সাবক্যাটাগরি সিলেক্ট করুন!");
   }
@@ -635,7 +635,7 @@ window.addQuestion = async () => {
     return;
   }
 
-  // clear only inputs (keep category/subcategory selections intact)
+  // 👉 ফর্ম রিসেট না করে শুধু ইনপুট ফিল্ড ক্লিয়ার
   const qForm = document.getElementById("question-form");
   if (qForm) {
     const qEl = qForm.querySelector('#question');
@@ -649,9 +649,9 @@ window.addQuestion = async () => {
     if (photoInput) photoInput.value = '';
   }
 
-  // reload the table for this category__subcategory
+  // 👉 শেষে টেবিল রিফ্রেশ
   loadQuestions(collName);
-};
+    }
     // ---- end additions ----
 
 </script>
