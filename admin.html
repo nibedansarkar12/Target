@@ -590,8 +590,26 @@ window.addQuestion = async () => {
   });
 
   alert("✅ প্রশ্ন যোগ হয়েছে!");
-  document.getElementById("question-form").reset();
+  // === শুধু প্রশ্ন সম্পর্কিত ফিল্ড ক্লিয়ার হবে ===
+document.getElementById("question").value = "";
+["option1","option2","option3","option4"].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.value = "";
+});
 
+// সঠিক উত্তর রেডিও আনচেক
+document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = false);
+
+// ছবি ইনপুট ক্লিয়ার
+const photoInput = document.getElementById("photo");
+if(photoInput) photoInput.value = "";
+
+// নতুন সাবক্যাটাগরি ইনপুট ক্লিয়ার (যদি থাকে)
+const newSub = document.getElementById("new-subcat");
+if(newSub) newSub.value = "";
+
+// যাতে সাথে সাথে নতুন প্রশ্ন টাইপ করা যায়
+document.getElementById("question").focus();
   // 🔑 নতুন: আবার collName দিয়েই লোড হবে
   loadQuestions(collName);
 };
