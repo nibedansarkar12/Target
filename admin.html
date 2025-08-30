@@ -590,8 +590,16 @@ window.addQuestion = async () => {
   });
 
   alert("✅ প্রশ্ন যোগ হয়েছে!");
-  document.getElementById("question-form").reset();
-
+  // document.getElementById("question-form").reset();
+const qForm = document.getElementById("question-form");
+qForm.querySelector('#question').value = '';
+['option1','option2','option3','option4'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.value = '';
+});
+document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = false);
+const photo = document.getElementById('photo');
+if (photo) photo.value = '';
   // 🔑 নতুন: আবার collName দিয়েই লোড হবে
   loadQuestions(collName);
 };
