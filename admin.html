@@ -601,8 +601,7 @@ document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = fals
 const photo = document.getElementById('photo');
 if (photo) photo.value = '';
   // 🔑 নতুন: আবার collName দিয়েই লোড হবে
-  saveQuestions();
-loadQuestions(collName);
+  loadQuestions(currentCategory + "__" + currentSubcategory);
 };
     // ---- end additions ----
 
