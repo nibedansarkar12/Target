@@ -553,56 +553,67 @@ document.getElementById("subcategory").addEventListener("change", (e) => {
 });
 
 // প্রশ্ন যোগ করা (সরাসরি সাবক্যাটাগরি কালেকশনে যাবে)
-window.addQuestion = async () => {
-  if (!currentCategory || !currentSubcategory) {
-    return alert("⚠️ আগে ক্যাটাগরি ও সাবক্যাটাগরি সিলেক্ট করুন!");
-  }
-
-  // 🔑 নতুন: category__subcategory নামের কালেকশন তৈরি হবে
-  const collName = `${currentCategory}__${currentSubcategory}`;
-
+async function addQuestion() {
   const ques = document.getElementById("question").value.trim();
-  const opts = [1, 2, 3, 4].map(i => document.getElementById("option" + i).value.trim());
-  const correctIndex = document.querySelector('input[name="correct"]:checked')?.value;
-  const photoFile = document.getElementById("photo").files[0];
+  const opts = [
+    document.getElementById("option1").value.trim(),
+    document.getElementById("option2").value.trim(),
+    document.getElementById("option3").value.trim(),
+    document.getElementById("option4").value.trim(),
+  ];
+  const correctIndex = parseInt(document.querySelector('input[name="correct"]:checked')?.value, 10);
+  const photo = document.getElementById("photo").files[0];
 
-  if (!ques || opts.some(o => !o) || correctIndex === undefined) {
-    return alert("⚠️ প্রশ্ন ও সব অপশন লিখুন এবং সঠিক উত্তর সিলেক্ট করুন!");
+  // ভ্যালিডেশন
+  if (!ques || opts.some(o => !o) || Number.isNaN(correctIndex)) {
+    alert("⚠️ প্রশ্ন ও সব অপশন লিখুন এবং সঠিক উত্তর সিলেক্ট করুন!");
+    return;
   }
 
   let photoURL = "";
-  if (photoFile) {
-    const storageRef = ref(storage, `questions/${Date.now()}-${photoFile.name}`);
-    await uploadBytes(storageRef, photoFile);
+  if (photo) {
+    const storageRef = ref(storage, `photos/${Date.now()}_${photo.name}`);
+    await uploadBytes(storageRef, photo);
     photoURL = await getDownloadURL(storageRef);
   }
 
-  // 🔑 নতুন: collName ব্যবহার হচ্ছে
-  await addDoc(collection(db, collName), {
-    id: Date.now(),
-    category: currentCategory,       // 👍 বাড়তি meta রাখলে ভবিষ্যতে সুবিধা হবে
-    subcategory: currentSubcategory, // 👍
-    question: ques,
-    options: opts,
-    answer: opts[correctIndex],
-    photo: photoURL || "",
-    createdAt: new Date()
-  });
+  const collName = `${currentCategory}__${currentSubcategory}`;
 
-  alert("✅ প্রশ্ন যোগ হয়েছে!");
-  // document.getElementById("question-form").reset();
-const qForm = document.getElementById("question-form");
-qForm.querySelector('#question').value = '';
-['option1','option2','option3','option4'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.value = '';
-});
-document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = false);
-const photo = document.getElementById('photo');
-if (photo) photo.value = '';
-  // 🔑 নতুন: আবার collName দিয়েই লোড হবে
-  loadQuestions(currentCategory + "__" + currentSubcategory);
-};
+  try {
+    await addDoc(collection(db, collName), {
+      id: Date.now(),
+      category: currentCategory,
+      subcategory: currentSubcategory,
+      question: ques,
+      options: opts,
+      answer: opts[correctIndex],
+      photo: photoURL || "",
+      createdAt: new Date()
+    });
+    alert("✅ প্রশ্ন সেভ হয়েছে!");
+  } catch (e) {
+    console.error("Add question failed:", e);
+    alert("❌ প্রশ্ন যোগ করা যায়নি: " + (e.message || e));
+    return;
+  }
+
+  // 👉 ফর্ম রিসেট না করে শুধু ইনপুট ফিল্ড ক্লিয়ার
+  const qForm = document.getElementById("question-form");
+  if (qForm) {
+    const qEl = qForm.querySelector('#question');
+    if (qEl) qEl.value = '';
+    ['option1','option2','option3','option4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = false);
+    const photoInput = document.getElementById('photo');
+    if (photoInput) photoInput.value = '';
+  }
+
+  // 👉 শেষে টেবিল রিফ্রেশ (সঠিক ক্যাটাগরি + সাবক্যাটাগরি অনুযায়ী দেখাবে)
+  loadQuestions(currentCategory);
+}
     // ---- end additions ----
 
 </script>
