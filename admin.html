@@ -214,26 +214,59 @@
     
 
     // Load Questions
-    window.loadQuestions=async(category)=>{
-      if(!category) return;
-      currentCategory=category;
-      const table=document.getElementById("questions-list");
-      table.innerHTML="<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
-      const snapshot=await getDocs(collection(db,category));
-      let rows="";
-      snapshot.forEach(docSnap=>{
-        const q=docSnap.data();
-        rows+=`
-          <tr>
-            <td>${q.question}<br>${q.photo?`<img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
-            <td>${q.answer}</td>
-            <td><button onclick="deleteQuestion('${category}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
-          </tr>
-        `;
-      });
-      table.innerHTML=rows||"<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
-    }
+    
+// --- প্রতিস্থাপন করুন: window.loadQuestions = async (...) {...} ---
+window.loadQuestions = async (categoryOrColl) => {
+  if (!categoryOrColl) return;
+  const table = document.getElementById("questions-list");
+  table.innerHTML = "<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
 
+  // নোট: caller কখনও base category (e.g. "ssc"), কখনও composite (e.g. "ssc__math") পাঠাতে পারে
+  let collToQuery = categoryOrColl;
+
+  if (typeof categoryOrColl === "string" && categoryOrColl.includes("__")) {
+    // composite এসেছে: split করে globals sync করে নাও
+    const parts = categoryOrColl.split("__");
+    currentCategory = parts[0] || "";
+    currentSubcategory = parts[1] || "";
+    collToQuery = categoryOrColl;
+    const subSelect = document.getElementById("subcategory");
+    if (subSelect) subSelect.value = currentSubcategory;
+    const catSelect = document.getElementById("category");
+    if (catSelect) catSelect.value = currentCategory;
+  } else {
+    // base category এসেছে
+    currentCategory = categoryOrColl;
+    // যদি আগে থেকে currentSubcategory থাকে, তখন composite collection থেকে লোড করো
+    if (currentSubcategory) {
+      collToQuery = `${currentCategory}__${currentSubcategory}`;
+    } else {
+      collToQuery = currentCategory;
+    }
+    const catSelect = document.getElementById("category");
+    if (catSelect) catSelect.value = currentCategory;
+  }
+
+  try {
+    const snapshot = await getDocs(collection(db, collToQuery));
+    let rows = "";
+    snapshot.forEach(docSnap => {
+      const q = docSnap.data();
+      rows += `
+        <tr>
+          <td>${q.question || ""}${q.photo?`<br><img src="${q.photo}" class="w-20 cursor-pointer" onclick="openModal('${q.photo}')">`:""}</td>
+          <td>${q.answer || ""}</td>
+          <td><button onclick="deleteQuestion('${collToQuery}','${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
+        </tr>
+      `;
+    });
+    table.innerHTML = rows || "<tr><td colspan='3'>কোনো প্রশ্ন নেই</td></tr>";
+  } catch (err) {
+    console.error("loadQuestions error:", err);
+    table.innerHTML = `<tr><td colspan='3'>লোডে সমস্যা: ${err.message || err}</td></tr>`;
+  }
+};
+// --- end loadQuestions replacement ---
     // Delete Question
     window.deleteQuestion=async(cat,id)=>{ await deleteDoc(doc(db,cat,id)); loadQuestions(cat); };
 
@@ -535,9 +568,11 @@ window.addSubcategory = async () => {
   await loadSubcategories(currentCategory);
 
   // auto-select
+  // auto-select the new subcategory and immediately load its questions
   document.getElementById("subcategory").value = id;
   currentSubcategory = id;
-};
+  // load questions for the newly created subcategory
+  loadQuestions(`${currentCategory}__${currentSubcategory}`);
 
 
 // সাবক্যাটাগরি সিলেক্ট করলে মনে রাখা
@@ -553,34 +588,35 @@ document.getElementById("subcategory").addEventListener("change", (e) => {
 });
 
 // প্রশ্ন যোগ করা (সরাসরি সাবক্যাটাগরি কালেকশনে যাবে)
-async function addQuestion() {
-  const ques = document.getElementById("question").value.trim();
-  const opts = [
-    document.getElementById("option1").value.trim(),
-    document.getElementById("option2").value.trim(),
-    document.getElementById("option3").value.trim(),
-    document.getElementById("option4").value.trim(),
-  ];
-  const correctIndex = parseInt(document.querySelector('input[name="correct"]:checked')?.value, 10);
-  const photo = document.getElementById("photo").files[0];
-
-  // ভ্যালিডেশন
-  if (!ques || opts.some(o => !o) || Number.isNaN(correctIndex)) {
-    alert("⚠️ প্রশ্ন ও সব অপশন লিখুন এবং সঠিক উত্তর সিলেক্ট করুন!");
-    return;
-  }
-
-  let photoURL = "";
-  if (photo) {
-    const storageRef = ref(storage, `photos/${Date.now()}_${photo.name}`);
-    await uploadBytes(storageRef, photo);
-    photoURL = await getDownloadURL(storageRef);
+window.addQuestion = async () => {
+  if (!currentCategory || !currentSubcategory) {
+    return alert("⚠️ আগে ক্যাটাগরি ও সাবক্যাটাগরি সিলেক্ট করুন!");
   }
 
   const collName = `${currentCategory}__${currentSubcategory}`;
+  const quesEl = document.getElementById("question");
+  const ques = quesEl ? quesEl.value.trim() : "";
+  const opts = [1,2,3,4].map(i => {
+    const el = document.getElementById("option"+i);
+    return el ? el.value.trim() : "";
+  });
+  const correctRadio = document.querySelector('input[name="correct"]:checked');
+  const correctIndex = correctRadio ? parseInt(correctRadio.value, 10) : NaN;
+  const photoFile = document.getElementById("photo")?.files[0];
 
+  if (!ques || opts.some(o => !o) || Number.isNaN(correctIndex)) {
+    return alert("⚠️ প্রশ্ন ও সব অপশন লিখুন এবং সঠিক উত্তর সিলেক্ট করুন!");
+  }
+
+  let photoURL = "";
   try {
-    await addDoc(collection(db, collName), {
+    if (photoFile) {
+      const storageRef = ref(storage, `questions/${Date.now()}-${photoFile.name}`);
+      await uploadBytes(storageRef, photoFile);
+      photoURL = await getDownloadURL(storageRef);
+    }
+
+    const docRef = await addDoc(collection(db, collName), {
       id: Date.now(),
       category: currentCategory,
       subcategory: currentSubcategory,
@@ -590,6 +626,8 @@ async function addQuestion() {
       photo: photoURL || "",
       createdAt: new Date()
     });
+
+    console.log("Question added:", docRef.id, "to", collName);
     alert("✅ প্রশ্ন সেভ হয়েছে!");
   } catch (e) {
     console.error("Add question failed:", e);
@@ -597,7 +635,7 @@ async function addQuestion() {
     return;
   }
 
-  // 👉 ফর্ম রিসেট না করে শুধু ইনপুট ফিল্ড ক্লিয়ার
+  // clear only inputs (keep category/subcategory selections intact)
   const qForm = document.getElementById("question-form");
   if (qForm) {
     const qEl = qForm.querySelector('#question');
@@ -611,9 +649,9 @@ async function addQuestion() {
     if (photoInput) photoInput.value = '';
   }
 
-  // 👉 শেষে টেবিল রিফ্রেশ (সঠিক ক্যাটাগরি + সাবক্যাটাগরি অনুযায়ী দেখাবে)
-  loadQuestions(currentCategory);
-}
+  // reload the table for this category__subcategory
+  loadQuestions(collName);
+};
     // ---- end additions ----
 
 </script>
