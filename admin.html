@@ -58,11 +58,6 @@
       <button id="menu-btn" class="md:hidden bg-yellow-400 px-3 py-2 rounded">☰</button>
       <h2 class="rainbow text-3xl">🛠️ Admin Panel</h2>
       <div class="flex items-center gap-3">
-       <audio id="bg-music" loop muted autoplay>
-  <source src="https://raw.githubusercontent.com/nibedansarkar12/Target/main/15_August_Song_Dance___Rakto_Nadir_Dhara___Independence_Day_Dance___Bengali_Patriotic_song_2022(256k).mp3" type="audio/mp3">
-</audio>
-        <button id="music-btn" class="bg-green-500 px-3 py-1 rounded">🔊 Play Sound</button>
-      </div>
     </div>
 
     <!-- Add Question -->
@@ -677,6 +672,43 @@ window.addQuestion = async () => {
   
     
 
+</script>
+      <div class="flex items-center gap-3">
+  <!-- নতুন playlist audio -->
+  <audio id="bg-music" autoplay muted></audio>
+  <button id="music-btn" class="bg-green-500 px-3 py-1 rounded">🔊 Play Sound</button>
+</div>
+
+<script>
+  const playlist = [
+    "https://raw.githubusercontent.com/nibedansarkar12/Target/main/15_August_Song_Dance___Rakto_Nadir_Dhara___Independence_Day_Dance___Bengali_Patriotic_song_2022(256k).mp3",
+    "https://raw.githubusercontent.com/nibedansarkar12/Target/main/Bangla_nonstop_romantic_song____Kumar_Sanu____adhunik_Bangla_gaan____বাংলা_গান____90s_bengali_song(256k).mp3"
+  ];
+
+  let index = 0;
+  const player = document.getElementById("bg-music");
+  player.src = playlist[index];
+  player.loop = false;
+
+  // গান শেষ হলে পরের গান বাজবে
+  player.addEventListener("ended", () => {
+    index = (index + 1) % playlist.length;
+    player.src = playlist[index];
+    player.play();
+  });
+
+  // Play / Mute বাটন কাজ করবে
+  const musicBtn = document.getElementById("music-btn");
+  musicBtn.addEventListener("click", () => {
+    if (player.muted) {
+      player.muted = false;
+      player.play();
+      musicBtn.textContent = "🔇 Mute Sound";
+    } else {
+      player.muted = true;
+      musicBtn.textContent = "🔊 Play Sound";
+    }
+  });
 </script>
 </body>
 </html>
