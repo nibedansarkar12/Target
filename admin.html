@@ -44,6 +44,8 @@
       <button onclick="showSection('add')" class="nav-btn w-full py-2 px-3 rounded">➕ Add Question</button>
       <button onclick="showSection('results')" class="nav-btn w-full py-2 px-3 rounded">📊 View Results</button>
       <button onclick="showSection('users')" class="nav-btn w-full py-2 px-3 rounded">👥 Manage Users</button>
+      <!-- add this inside <nav class="p-4 space-y-3 flex-1">, after Manage Users button -->
+<button onclick="showSection('notes')" class="nav-btn w-full py-2 px-3 rounded">📚 Manage Notes</button>
       <button onclick="showSection('finance')" class="nav-btn w-full py-2 px-3 rounded">💼 Salary & More</button>
         <button onclick="showSection('submissions')" class="nav-btn w-full py-2 px-3 rounded">💰 Payments & Forms</button>
   </nav>
@@ -176,6 +178,21 @@
   <div id="attendance-panel" class="hidden mt-8"></div>
   <div id="reports-panel" class="hidden mt-8"></div>
           </section>
+    <!-- Manage Notes Section -->
+<section id="section-notes" class="glass p-6 rounded-lg shadow-lg hidden">
+  <h3 class="text-xl font-bold mb-4">📚 Manage Notes (Google Drive links)</h3>
+
+  <div class="flex gap-2 mb-4">
+    <input id="noteTitle" class="border rounded px-3 py-2 flex-1" placeholder="Note Title (e.g. SSC GD - Set A)">
+    <input id="noteLink" class="border rounded px-3 py-2 flex-1" placeholder="Google Drive share link (paste here)">
+    <button onclick="addNote()" class="bg-green-500 text-white px-3 rounded">➕ Add</button>
+  </div>
+
+  <table class="w-full text-left border">
+    <thead><tr><th>Title</th><th>Link</th><th>Delete</th></tr></thead>
+    <tbody id="notes-list"></tbody>
+  </table>
+</section>
 
 </main>
 
@@ -279,14 +296,17 @@ window.loadQuestions = async (categoryOrColl) => {
     }
 
     // Show Section
-    window.showSection=async(id)=>{
-      document.querySelectorAll("section").forEach(sec=>sec.classList.add("hidden"));
-      document.getElementById("section-"+id).classList.remove("hidden");
-      if(id==="results") loadResults();
-      if(id==="users") loadUsers();
-      if(id==="submissions") loadSubmissions();
-      if(id==="users") loadUsers();
-    }
+    window.showSection = async (id) => {
+  document.querySelectorAll("section").forEach(sec => sec.classList.add("hidden"));
+  const el = document.getElementById("section-" + id);
+  if (el) el.classList.remove("hidden");
+  // load hooks
+  if (id === "notes") await loadNotes();
+  if (id === "results") await loadResults();
+  if (id === "users") await loadUsers();
+  if (id === "submissions") await loadSubmissions();
+  // finance handled elsewhere by click cards
+};
 
     // Load Results with Pie Chart
     async function loadResults(){
@@ -653,7 +673,69 @@ window.addQuestion = async () => {
   loadQuestions(collName);
     }
     // ---- end additions ----
+// ================= Manage Notes (Drive links) ===================
+import { addDoc, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+// (উপরের imports আপনার ফাইলে আগেই আছে—যদি না থাকে, যোগ করুন।)
+ 
+window.addNote = async () => {
+  try {
+    const title = document.getElementById("noteTitle").value.trim();
+    const url = document.getElementById("noteLink").value.trim();
+    if (!title || !url) return alert("⚠️ Title এবং Drive link দিন!");
 
+    // OPTIONAL: শুধু admin কে allow করতে চান তাহলে নিচের চেক আনকমেন্ট করুন এবং admin-email পরিবর্তন করুন
+    // const user = auth.currentUser;
+    // if (!user || user.email !== "youradmin@example.com") return alert("আপনার অনুমতি নেই।");
+
+    await addDoc(collection(db, "driveLinks"), {
+      title,
+      url,
+      createdAt: Date.now()
+    });
+
+    document.getElementById("noteTitle").value = "";
+    document.getElementById("noteLink").value = "";
+    loadNotes();
+    alert("✅ Note added");
+  } catch (e) {
+    console.error("addNote error:", e);
+    alert("Error: " + (e.message || e));
+  }
+};
+
+window.loadNotes = async () => {
+  const table = document.getElementById("notes-list");
+  if (!table) return;
+  table.innerHTML = "<tr><td colspan='3'>লোড হচ্ছে...</td></tr>";
+  try {
+    const qSnap = await getDocs(query(collection(db, "driveLinks"), orderBy("createdAt", "desc")));
+    let rows = "";
+    qSnap.forEach(docSnap => {
+      const d = docSnap.data() || {};
+      rows += `<tr>
+        <td>${(d.title)||""}</td>
+        <td><a href="${(d.url)||"#"}" target="_blank" class="text-blue-500 underline">Open</a></td>
+        <td><button onclick="deleteNote('${docSnap.id}')" class="bg-red-500 text-white px-2 py-1 rounded">🗑</button></td>
+      </tr>`;
+    });
+    table.innerHTML = rows || "<tr><td colspan='3'>কোনো Note নাই</td></tr>";
+  } catch (e) {
+    console.error("loadNotes error:", e);
+    table.innerHTML = `<tr><td colspan='3'>লোডে সমস্যা: ${e.message || e}</td></tr>`;
+  }
+};
+
+window.deleteNote = async (id) => {
+  if(!confirm("Are you sure to delete this note?")) return;
+  try {
+    await deleteDoc(doc(db, "driveLinks", id));
+    loadNotes();
+  } catch (e) {
+    console.error("deleteNote error:", e);
+    alert("Delete failed: " + (e.message || e));
+  }
+};
+// ==============================================================
 </script>
 
   <script>
