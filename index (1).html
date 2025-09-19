@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Target Zone — সাফল্যের ঠিকানা</title>
+<meta name="description" content="Target Zone: SSC GD, WBP, KP, WBPSI, Jail Police প্রস্তুতি (Offline)।" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset & Base ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;scroll-behavior:smooth}
+body{
+  font-family:"Noto Sans","Poppins",Arial,sans-serif;
+  background:linear-gradient(180deg,#071428 0%, #021026 70%);
+  color:#e9f6ff; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+
+/* Colors */
+:root{
+  --primary:#ff7e5f;
+  --accent:#6bd1ff;
+  --glass: rgba(255,255,255,0.03);
+  --card:bg; /* placeholder */
+}
+
+/* ===== Header ===== */
+header{
+  position:fixed; top:0; left:0; right:0; height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; z-index:1200;
+  background: linear-gradient(90deg, rgba(2,6,15,0.65), rgba(2,6,15,0.35));
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.header-left{display:flex;align-items:center;gap:10px}
+.hamburger{
+  width:44px;height:44px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  border-radius:10px; cursor:pointer; border:1px solid var(--glass);
+  background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+  margin-right:6px;
+}
+.hamburger .bar{width:22px;height:2px;background:#fff;margin:3px 0;border-radius:2px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{height:40px;border-radius:6px}
+.brand .title{font-weight:700;font-size:1.05rem}
+nav.top{display:flex;gap:8px;align-items:center;margin-left:12px}
+nav.top a{color:#dff;font-weight:700;padding:8px 12px;border-radius:8px;font-size:0.95rem;border-left:3px solid transparent}
+nav.top a:hover{background:rgba(255,255,255,0.03)}
+nav.top a.active{background:linear-gradient(90deg, rgba(255,126,95,0.10), rgba(107,209,255,0.02)); border-left-color:var(--primary)}
+
+/* header-right intentionally minimal */
+.header-right{display:flex;align-items:center;gap:8px}
+/* ===== Sidebar (drawer) ===== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 320px;
+  max-width: 86vw;
+  transform: translateX(-110%);
+  transition: transform .36s cubic-bezier(.2,.9,.25,1);
+  background: linear-gradient(180deg,#081426,#04101a);
+  padding: 18px;
+  z-index: 1300;
+  box-shadow: 18px 30px 80px rgba(2,6,12,0.7);
+
+  /* ✅ Scrollbar enable */
+  overflow-y: auto;
+  scrollbar-width: thin;           /* Firefox */
+  scrollbar-color: #555 #111;      /* Firefox */
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar .close {
+  display: block;
+  align-self: flex-end;
+  font-size: 26px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.sidebar nav a {
+  display: block;
+  padding: 12px 14px;
+  margin: 6px 0;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #ddf;
+  border-left: 3px solid transparent;
+}
+
+.sidebar nav a:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.sidebar nav a.active {
+  border-left-color: var(--primary);
+  background: linear-gradient(90deg, rgba(255,126,95,0.06), rgba(107,209,255,0.02));
+}
+
+.sidebar .muted {
+  margin-top: auto;
+  opacity: 0.9;
+  font-size: 0.92rem;
+}
+
+/* ✅ Custom Scrollbar (Chrome/Edge/Webkit) */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: #111;
+  }
+
+/* Overlay */
+.overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.48); display:none; z-index:1250 }
+.overlay.show{ display:block }
+
+/* ===== Main ===== */
+main{
+  position:relative;
+  z-index:100;
+  padding-top:80px; /* <-- IMPORTANT: header height (64px) + small gap */
+  min-height:100vh;
+  max-width:1100px;
+  margin:0 auto;
+  padding-left:16px;
+  padding-right:16px;
+}
+  
+
+/* Sections */
+.section{ display:none; padding:14px 0 36px 0; animation:fadeIn .32s ease both; border-bottom:1px solid rgba(255,255,255,0.02) }
+.section.active{ display:block }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+
+/* Welcome & head card */
+.welcome{ text-align:center; padding-top:2px }
+.welcome h1{ font-family:"Poppins",sans-serif;font-weight:700;font-size:1.9rem;margin-bottom:6px;color:#fff }
+.welcome p.lead{ max-width:760px;margin:0 auto;opacity:0.95;font-size:1rem }
+
+.head-card-wrap{ display:flex; justify-content:center; margin-top:14px }
+.head-card{
+  width:100%; max-width:820px; border-radius:12px; position:relative; overflow:visible; padding:10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+  box-shadow: 0 16px 44px rgba(2,6,12,0.55); border:1px solid rgba(255,255,255,0.03);
+  opacity:0; transform:translateY(8px) scale(.995);
+  transition: transform .6s cubic-bezier(.2,.9,.25,1), opacity .6s ease;
+}
+/* Animated border (outer glow + rotating gradient) - no animated bg */
+.head-card::before{
+  content:""; position:absolute; inset:-5px; border-radius:16px;
+  background: conic-gradient(from 120deg, rgba(255,126,95,0.95), rgba(107,209,255,0.95), rgba(182,139,255,0.95), rgba(255,126,95,0.95));
+  filter: blur(8px); opacity:0.7; z-index:0; animation:rotate 7s linear infinite; pointer-events:none;
+}
+.head-card .inner{ position:relative; z-index:1; padding:12px; border-radius:10px; background:rgba(2,6,12,0.45); border:1px solid rgba(255,255,255,0.03) }
+@keyframes rotate{ to{ transform: rotate(360deg); } }
+
+.head-meta{ display:flex; gap:12px; align-items:center }
+.head-meta img{ width:92px; height:92px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.04) }
+.head-text h3{ font-size:1.05rem; margin-bottom:6px; font-weight:700 }
+.head-text p{ opacity:0.92; line-height:1.45 }
+.signature{ display:flex; align-items:center; gap:12px; margin-top:10px }
+.sig-line{ font-family:"Poppins", cursive; color:var(--primary); font-weight:600; font-size:1.02rem }
+
+/* Courses */
+.courses-grid{ display:grid; gap:14px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); margin-top:12px }
+.course-card{ background:rgba(255,255,255,0.02); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); position:relative; overflow:hidden }
+.course-card h4{ margin-bottom:8px }
+.course-features{ margin-top:8px; font-size:0.95rem; opacity:0.95; line-height:1.45 }
+.pill{ display:inline-block; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.02); font-weight:700; margin-right:8px; border:1px solid rgba(255,255,255,0.02) }
+
+/* Buttons */
+.cta-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap }
+.btn{ padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer; border:none; text-decoration:none; display:inline-flex; align-items:center; gap:8px }
+.btn.primary{ background: linear-gradient(90deg,var(--primary), #ffb86b); color:#111 }
+.btn.ghost{ background: rgba(255,255,255,0.03); color:#fff; border:1px solid rgba(255,255,255,0.04) }
+
+/* Syllabus row */
+.syllabus-row{ display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap }
+.syllabus-row a{ padding:8px 10px; background:rgba(255,255,255,0.02); border-radius:8px; font-weight:700; border:1px solid rgba(255,255,255,0.03); text-decoration:none }
+
+/* Payments grid */
+.pay-grid{ display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); margin-top:12px }
+.pay-card{ background:rgba(255,255,255,0.02); padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03); display:flex; align-items:center; gap:12px }
+.pay-card img.icon{ width:48px;height:48px; object-fit:contain }
+.pay-info{ flex:1 }
+.copy-btn{ padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);font-weight:700; cursor:pointer }
+
+/* Upload area */
+.upload-box{ margin-top:10px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03) }
+
+/* Map */
+.map-frame{ width:100%; height:280px; border-radius:10px; overflow:hidden; margin-top:12px; border:1px solid rgba(255,255,255,0.03) }
+
+/* Contact / form */
+.form-row{ display:flex; gap:8px; flex-wrap:wrap }
+.form-row > *{ flex:1 1 200px }
+input, textarea, select{ width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.01); color:#e8f7ff }
+.label{ font-size:0.9rem; color:#bfe0ff; margin-bottom:6px; display:block }
+
+/* Footer */
+footer{ margin-top:24px; padding:12px; text-align:center; color:#cfe8ff; opacity:0.95 }
+
+/* Responsive */
+@media(max-width:920px){
+  nav.top{ display:none }
+  .hamburger{ margin-left:-6px }
+  .courses-grid{ grid-template-columns:1fr }
+  .pay-grid{ grid-template-columns:1fr }
+  /* main এর জন্য মোবাইল স্পেশাল */
+  main{ padding-left:12px; padding-right:12px; padding-top:88px; } /* একটু বেশি gap মোবাইলে ভালো লাগে */
+  .head-meta img{ width:80px; height:80px }
+}
+#bgCanvas{
+  position:fixed;
+  inset:0;           /* top:0; right:0; bottom:0; left:0; */
+  width:100%;
+  height:100%;
+  z-index:0;         /* main/header have higher z-index so canvas stays behind */
+  pointer-events:none; /* clicks go through canvas */
+  display:block;
+}
+  #qrModal img {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+#qrModal .btn {
+  margin-top: 10px;
+}
+ /* --- Neon Glow Headings --- */
+h1, h2, h3, h4 {
+  text-shadow: 0 0 5px rgba(255, 126, 95, 0.8),
+               0 0 10px rgba(255, 184, 107, 0.6),
+               0 0 20px rgba(107, 209, 255, 0.5);
+  transition: text-shadow 0.3s ease;
+}
+h1:hover, h2:hover, h3:hover, h4:hover {
+  text-shadow: 0 0 8px rgba(255, 126, 95, 1),
+               0 0 16px rgba(255, 184, 107, 0.8),
+               0 0 28px rgba(107, 209, 255, 0.7);
+}
+
+/* --- Buttons Glow Effect (no scale-up) --- */
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.btn.primary:hover {
+  background: linear-gradient(90deg, #ffb86b, #ff7e5f);
+  box-shadow: 0 0 8px rgba(255, 126, 95, 0.8),
+              0 0 16px rgba(255, 184, 107, 0.6);
+}
+.btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 8px rgba(107, 209, 255, 0.8),
+              0 0 16px rgba(182, 139, 255, 0.6);
+}
+
+/* --- Card Glow Border --- */
+.course-card, .pay-card, .faculty-card, .upload-box {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.course-card:hover, .pay-card:hover, .faculty-card:hover, .upload-box:hover {
+  border-color: rgba(255, 126, 95, 0.8);
+  box-shadow: 0 0 10px rgba(255, 126, 95, 0.6),
+              0 0 20px rgba(107, 209, 255, 0.4);
+}
+
+/* --- Icon Hover Glow --- */
+a:hover img.icon, .pay-card:hover img.icon {
+  filter: drop-shadow(0 0 6px rgba(107, 209, 255, 0.8));
+  transition: filter 0.3s ease;
+}
+  
+</style>
+</head>
+<body>
+
+<!-- Canvas background -->
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+<!-- Header -->
+<header>
+  <div class="header-left">
+    <button class="hamburger" id="hamburger" aria-label="Open menu" title="Open menu" type="button">
+      <span class="bar" aria-hidden="true"></span>
+      <span class="bar" aria-hidden="true"></span>
+      <span class="bar" aria-hidden="true"></span>
+    </button>
+
+    <div class="brand" role="banner">
+      <img src="logo.png" alt="Target Zone Logo" onerror="this.style.display='none'">
+      <div>
+        <div class="title">Target Zone</div>
+        <div class="tag" style="font-size:0.78rem;opacity:0.9">সাফল্যের ঠিকানা — Target Zone আপনার পাশে</div>
+      </div>
+    </div>
+
+    <nav class="top" aria-label="Top navigation">
+      <a href="#" data-target="home" class="active">Home</a>
+      <a href="#" data-target="courses">Courses</a>
+      <a href="#" data-target="faculty">Faculty</a>
+      <a href="#" data-target="payments">Payments</a>
+      <a href="#" data-target="contact">Contact</a>
+      <!-- exam is external page (you asked to keep exam.html) -->
+      <a href="exam.html" title="Exam Page">Exam</a>
+      <a href="admin-login.html">Admin</a>
+      <a href="#" data-target="about">About</a>
+      <a href="#" data-target="success">Success</a>
+      <a href="#" data-target="resources">Resources</a>
+      <a href="#" data-target="gallery">Gallery</a>
+      <a href="#" data-target="faq">FAQ</a>
+    </nav>
+  </div>
+
+  <div class="header-right" aria-hidden="true">
+    <!-- intentionally left empty; contact in Contact section -->
+  </div>
+</header>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="close" id="closeSidebar" title="Close">&times;</div>
+  <h3>Menu — মেনু</h3>
+  <nav aria-label="Sidebar navigation">
+    <a href="#" data-target="home" class="active">Home</a>
+    <a href="#" data-target="courses">Courses</a>
+    <a href="#" data-target="faculty">Faculty</a>
+    <a href="#" data-target="payments">Payments</a>
+    <a href="#" data-target="contact">Contact</a>
+    <a href="exam.html">Exam</a>
+    <a href="admin-login.html">Admin Panel</a>
+    <a href="#" data-target="about">About Us</a>
+    <a href="#" data-target="success">Success Stories</a>
+    <a href="#" data-target="resources">Resources</a>
+    <a href="#" data-target="gallery">Gallery</a>
+    <a href="#" data-target="faq">FAQ</a>
+  </nav>
+
+  <div class="muted" style="margin-top:auto">
+    <strong>Head:</strong> Nibedan Sarkar<br>
+    Hardighi, Bhikahar, Tapan, Dakshin Dinajpur<br>
+    <a href="tel:9614373839" style="color:var(--primary);font-weight:800">Call: 9614373839</a>
+  </div>
+</aside>
+<div class="overlay" id="overlay" aria-hidden="true"></div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- HOME -->
+  <section id="home" class="section active" aria-labelledby="home-heading">
+    <div class="welcome">
+      <h1 id="home-heading">Welcome to Target Zone</h1>
+      <p class="lead">সাফল্যের ঠিকানা — আমরা অফলাইন কোচিং দিয়ে থাকি, লক্ষ্যভিত্তিক প্রস্তুতি, mock tests এবং personalised mentorship। ভর্তি সবসময় খোলা — কোনও এন্ট্রি ফি নেই, মাসিক মাত্র <strong>₹350</strong>।</p>
+
+      <!-- Head card -->
+      <div class="head-card-wrap" aria-live="polite">
+        <article class="head-card" id="headCard" role="article" aria-label="Message from Head of Institute">
+          <div class="inner">
+            <div class="head-meta">
+              <img alt="Nibedan Sarkar" src="FB_IMG_1741191514795.jpg" onerror="this.onerror=null;this.src='1000064246.jpg'">
+              <div class="head-text">
+                <h3>Message from Head of Institute</h3>
+                <p>“Target Zone-এ আমরা শুধু টিউশন দিই না — আমরা একটি পরিকল্পিত পথ দেখাই। প্রতিটি বিষয়েই আলাদা শিক্ষক আছেন। সপ্তাহে <strong>৩টি রেগুলার ক্লাস</strong> এবং প্রয়োজন অনুযায়ী <strong>২টি এক্সট্রা ক্লাস</strong> দেওয়া হয়। ভর্তি চলমান — কোন এন্ট্রি ফি নেই, মাসিক ফি <strong>₹350</strong>। আমাদের লক্ষ্য: তোমার সফলতা।”</p>
+
+                <div class="signature">
+                  <div>
+                    <div class="sig-line">Nibedan Sarkar</div>
+                    <small style="opacity:0.78">Head of Institute</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
+              <a href="https://www.facebook.com/share/19XL3bj3EG/" target="_blank" rel="noopener noreferrer" class="btn ghost">Facebook</a>
+              <a href="https://www.instagram.com/nibedans?igsh=OXQ2c2x4djk3ZHNv" target="_blank" rel="noopener noreferrer" class="btn ghost">Instagram</a>
+              <a href="https://wa.me/919614373839" target="_blank" rel="noopener noreferrer" class="btn primary">WhatsApp</a>
+            </div>
+
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- COURSES -->
+  <section id="courses" class="section" aria-labelledby="courses-heading">
+    <h2 id="courses-heading">Courses — কোর্সসমূহ (Offline)</h2>
+    <p style="opacity:0.9; margin-top:8px">Experienced teachers per subject. ভর্তি সবসময় খোলা — মাসিক ফি মাত্র <strong>₹350</strong>. ক্লাস: সপ্তাহে ৩ দিন রেগুলার + প্রয়োজনে ২ দিন এক্সট্রা।</p>
+
+    <div class="courses-grid" aria-live="polite">
+
+      <!-- Course cards (as before) -->
+      <div class="course-card">
+        <h4>SSC GD — Full Preparation</h4>
+        <div class="pill">Offline</div> <div class="pill">Monthly ₹350</div>
+        <div class="course-features">
+          <ul>
+            <li>৩ রেগুলার ক্লাস/সপ্তাহ + প্রয়োজন অনুযায়ী ২ এক্সট্রা ক্লাস</li>
+            <li>প্রতি বিষয়ের জন্য আলাদা শিক্ষক (Quant, GK, English, Reasoning, Physical)</li>
+            <li>Mock tests, topic-wise practice, interview guidance</li>
+          </ul>
+        </div>
+        <div class="syllabus-row">
+          <a href="syllabus/ssc_gd.pdf" download>Download Syllabus (PDF)</a>
+        </div>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/919614373839?text=I%20want%20to%20enroll%20in%20SSC%20GD">Enroll via WhatsApp</a>
+          <a class="btn ghost" href="#" data-target="contact">Fill Admission Form</a>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <h4>WBP (West Bengal Police) — Constable</h4>
+        <div class="pill">Offline</div> <div class="pill">Monthly ₹350</div>
+        <div class="course-features">
+          <ul>
+            <li>Comprehensive syllabus coverage (MCQ practice & physical)</li>
+            <li>Experienced GK & Current Affairs faculty</li>
+            <li>Mock tests & interview tips</li>
+          </ul>
+        </div>
+        <div class="syllabus-row">
+          <a href="syllabus/wbp_constable.pdf" download>Download Syllabus (PDF)</a>
+        </div>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/919614373839?text=I%20want%20to%20enroll%20in%20WBP">Enroll via WhatsApp</a>
+          <a class="btn ghost" href="#" data-target="contact">Fill Admission Form</a>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <h4>KP — State Police Preparation</h4>
+        <div class="pill">Offline</div> <div class="pill">Monthly ₹350</div>
+        <div class="course-features">
+          <ul>
+            <li>State-specific syllabus coaching</li>
+            <li>Topic-wise practice & physical drills</li>
+            <li>Flexible batch timings</li>
+          </ul>
+        </div>
+        <div class="syllabus-row">
+          <a href="syllabus/kp_constable.pdf" download>Download Syllabus (PDF)</a>
+        </div>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/919614373839?text=I%20want%20to%20enroll%20in%20KP">Enroll via WhatsApp</a>
+          <a class="btn ghost" href="#" data-target="contact">Fill Admission Form</a>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <h4>WBPSI / Competitive — Advanced Coaching</h4>
+        <div class="pill">Offline</div> <div class="pill">Monthly ₹350</div>
+        <div class="course-features">
+          <ul>
+            <li>Mains & interview focused guidance</li>
+            <li>Mock interviews & personality development</li>
+            <li>Crash courses available</li>
+          </ul>
+        </div>
+        <div class="syllabus-row"><a href="syllabus/wbpsi.pdf" download>Download Syllabus (PDF)</a></div>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/919614373839?text=I%20want%20to%20enroll%20in%20WBPSI">Enroll via WhatsApp</a>
+          <a class="btn ghost" href="#" data-target="contact">Fill Admission Form</a>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <h4>Jail Police — Recruitment Batch</h4>
+        <div class="pill">Offline</div> <div class="pill">Monthly ₹350</div>
+        <div class="course-features">
+          <ul>
+            <li>Full syllabus coverage and physical training</li>
+            <li>Interview & document guidance</li>
+          </ul>
+        </div>
+        <div class="syllabus-row"><a href="syllabus/jail_police.pdf" download>Download Syllabus (PDF)</a></div>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/919614373839?text=I%20want%20to%20enroll%20in%20Jail%20Police">Enroll via WhatsApp</a>
+          <a class="btn ghost" href="#" data-target="contact">Fill Admission Form</a>
+        </div>
+      </div>
+
+      <div class="course-card">
+        <h4>Other State Level / Tailor-made</h4>
+        <div class="pill">Offline</div> <div class="pill">Monthly ₹350</div>
+        <div class="course-features">
+          <ul>
+            <li>Customized batches for other states</li>
+            <li>Topic-wise practice & doubt clearing</li>
+          </ul>
+        </div>
+        <div class="syllabus-row"><a href="syllabus/other_state.pdf" download>Download Syllabus (PDF)</a></div>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/919614373839?text=I%20want%20to%20enroll%20in%20Other%20State%20Course">Enroll via WhatsApp</a>
+          <a class="btn ghost" href="#" data-target="contact">Fill Admission Form</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FACULTY -->
+  <section id="faculty" class="section" aria-labelledby="faculty-heading">
+  <h2 id="faculty-heading">Faculty — শিক্ষকবৃন্দ</h2>
+  <p style="opacity:0.92; margin-top:8px">
+    আমাদের প্রতিটি বিষয়ের জন্য আছেন অভিজ্ঞ শিক্ষকবৃন্দ — তোমার সফলতার জন্য সর্বোচ্চ প্রচেষ্টা।
+  </p>
+
+  <div style="display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-top:14px">
+    
+    <!-- Nibedan Sarkar -->
+    <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.3)">
+      <img src="FB_IMG_1741191514795.jpg" alt="Nibedan Sarkar" style="width:110px;height:110px;border-radius:50%;object-fit:cover;margin:10px auto;display:block" onerror="this.remove()">
+      <strong style="font-size:1.05rem;color:#fff">Nibedan Sarkar</strong>
+      <div style="opacity:0.95;margin-top:6px;font-size:0.95rem;color:#ffb86b">Head of the Institution</div>
+      <div style="opacity:0.9;margin-top:4px">Teaches <strong>Maths</strong> & <strong>Reasoning</strong></div>
+    </div>
+
+    <!-- Deep Sarkar -->
+    <!-- Deep Sarkar -->
+<div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.3)">
+  <img src="IMG_20250810_100016.jpg" alt="Deep Sarkar"
+ style="width:110px;height:110px;border-radius:50%;object-fit:cover;object-position:0 15%;margin:10px auto;display:block"
+ onerror="this.remove()">
+  <strong style="font-size:1.05rem;color:#fff">Deep Sarkar</strong>
+  <div style="opacity:0.95;margin-top:6px;font-size:0.95rem;color:#ffb86b">Faculty — Hindi & GK</div>
+</div>
+
+
+    <!-- Other subjects -->
+    <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.3)">
+      <img src="teacher-team.jpg" alt="Other Faculty" style="width:110px;height:110px;border-radius:50%;object-fit:cover;margin:10px auto;display:block" onerror="this.remove()">
+      <strong style="font-size:1.05rem;color:#fff">Expert Teachers</strong>
+      <div style="opacity:0.95;margin-top:6px;font-size:0.95rem;color:#ffb86b">English, Physical Training & More</div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- PAYMENTS -->
+<section id="payments" class="section" aria-labelledby="payments-heading">
+  <h2 id="payments-heading">Payments & Proof Upload</h2>
+  <p style="opacity:0.92; margin-top:8px">
+    UPI (GPay / PhonePe / Paytm) — <strong>7679262362</strong> &nbsp;•&nbsp; Bank Transfer details নিচে দেওয়া আছে।
+  </p>
+
+  <div class="pay-grid">
+
+    <!-- Google Pay -->
+    <div class="pay-card icon-only" title="Pay with Google Pay">
+      <img class="icon" src="gpay.png" alt="Google Pay" onerror="this.remove()">
+      <a class="btn primary" 
+         href="intent://pay?pa=rajnitirgalpokotha@oksbi&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;"
+         target="_blank">
+        Pay Now
+      </a>
+      <button class="btn ghost" onclick="showQR('GooglePay_QR.png')">Download QR</button>
+    </div>
+
+    <!-- PhonePe -->
+    <div class="pay-card icon-only" title="Pay with PhonePe">
+      <img class="icon" src="phonepe.png" alt="PhonePe" onerror="this.remove()">
+      <a class="btn primary" 
+         href="intent://pay?pa=7679262362@axl&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=com.phonepe.app;end;"
+         target="_blank">
+        Pay Now
+      </a>
+      <button class="btn ghost" onclick="showQR('phonepe QR.png')">Download QR</button>
+    </div>
+
+    <!-- Paytm -->
+    <div class="pay-card icon-only" title="Pay with Paytm">
+      <img class="icon" src="paytm.png" alt="Paytm" onerror="this.remove()">
+      <a class="btn primary" 
+         href="intent://pay?pa=7679262362@ptaxis&pn=Target%20Zone&tn=Fees%20Payment&cu=INR#Intent;scheme=upi;package=net.one97.paytm;end;"
+         target="_blank">
+        Pay Now
+      </a>
+      <button class="btn ghost" onclick="showQR('Paytm QR.png')">Download QR</button>
+    </div>
+
+    <!-- Bank -->
+    <div class="pay-card bank-card">
+      <img class="icon" src="bank.png" alt="Bank" onerror="this.remove()">
+      <div class="pay-info">
+        <strong>Bank Transfer</strong>
+        <div style="opacity:0.9">Account No: <strong id="bankAcc">2992702223</strong></div>
+        <div style="opacity:0.9">IFSC: <strong id="bankIFSC">CBIN0282799</strong> — Central Bank of India</div>
+        <div style="opacity:0.9">Holder: <strong>Nibedan Sarkar</strong></div>
+      </div>
+      <div>
+        <button class="copy-btn" id="copyBank">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Upload payment proof -->
+  <div class="upload-box" aria-live="polite">
+    <h4 style="margin-bottom:8px">Upload Payment Proof</h4>
+    <p style="opacity:0.88; margin-bottom:8px">
+      Payment করার পরে এখানে screenshot/upload করে দিন — আমরা পরে যাচাই করে যোগাযোগ করব।
+    </p>
+    <input type="file" id="proofFile" accept="image/*,application/pdf"><br>
+    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+      <input id="proofName" placeholder="Your name" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
+      <input id="proofPhone" placeholder="Phone" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);color:#e8f7ff">
+      <button class="btn primary" id="uploadProofBtn">Upload</button>
+    </div>
+    <div id="proofStatus" style="margin-top:8px;color:#dff;"></div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-frame" style="margin-top:12px">
+    <iframe src="https://www.google.com/maps?q=Target+Zone,+Hardighi,+West+Bengal,+733142&output=embed" width="100%" height="100%" style="border:0" allowfullscreen="" loading="lazy"></iframe>
+  </div>
+        </section>
+
+  <!-- CONTACT / Admission Form -->
+  <section id="contact" class="section" aria-labelledby="contact-heading">
+    <h2 id="contact-heading">Admission Form / Contact</h2>
+
+    <div style="background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); padding:12px; border-radius:10px; margin-top:10px;">
+      <form id="admissionForm" onsubmit="return false;">
+        <div class="form-row">
+          <div>
+            <label class="label">নাম / Name</label>
+            <input id="adm_name" placeholder="তোমার নাম" required>
+          </div>
+          <div>
+            <label class="label">Phone</label>
+            <input id="adm_phone" placeholder="Phone number" required>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label class="label">Course</label>
+          <select id="adm_course">
+            <option>SSC GD</option><option>WBP</option><option>KP</option><option>WBPSI</option><option>Jail Police</option><option>WBPSC</option><option>Other State Level</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px">
+          <label class="label">Address (Optional)</label>
+          <input id="adm_address" placeholder="Address">
+        </div>
+
+        <div style="margin-top:10px">
+          <label class="label">Message (Optional)</label>
+          <textarea id="adm_message" rows="3"></textarea>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+          <button class="btn primary" id="submitAdmission">Submit Admission</button>
+          <button class="btn ghost" type="reset" onclick="document.getElementById('admissionForm').reset()">Reset</button>
+          <div id="admStatus" style="color:#dff; margin-left:8px"></div>
+        </div>
+      </form>
+    </div>
+
+    <div style="margin-top:12px; opacity:0.92">
+      <p><strong>Contact:</strong> 9614373839 | 7679262362 — Or message via WhatsApp.</p>
+    </div>
+  </section>
+
+  <!-- EXAM placeholder (link exists to exam.html) -->
+  <section id="exam" class="section" aria-labelledby="exam-heading">
+    <h2 id="exam-heading">Exam / Mock Tests</h2>
+    <p style="opacity:0.9; margin-top:8px">Mock tests & practice area — <a href="exam.html">Open Exam Page</a>.</p>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section">
+    <h2>About Us</h2>
+    <p style="opacity:0.9; margin-top:8px">
+      Target Zone — একটি লক্ষ্যে নির্ভর কোচিং সেন্টার, যা পুলিশ ও স্টেট-লেভেল পরীক্ষার জন্য বিশেষভাবে তৈরি করা হয়েছে। আমাদের উদ্দেশ্য প্রতিটি ছাত্র/ছাত্রীকে সার্বিকভাবে প্রস্তুত করা — সিলেবাস কভার করে, নিয়মিত মক টেস্ট ও ব্যক্তিগত গাইডেন্স দিয়ে। আমরা অফলাইন ক্লাসে বিশ্বাস করি — যেখানে শিক্ষার্থীরা সরাসরি টিচারের সাথে আলোচনা ও ফিজিক্যাল প্র্যাকটিস পায়।  
+    </p>
+  </section>
+
+  <!-- SUCCESS -->
+  <section id="success" class="section">
+    <h2>Success Stories</h2>
+    <p style="opacity:0.9; margin-top:8px">আমাদের শিক্ষার্থীরা বিভিন্ন রাজ্য পুলিশ, SSC GD-এ সফল হয়ে কাজ পেয়েছেন — success stories আসছে।</p>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="resources" class="section">
+    <h2>Resources</h2>
+    <p style="opacity:0.9; margin-top:8px">Syllabus PDFs, practice sheets ও গুরুত্বপূর্ণ লিংকগুলো এখানে থাকবে।</p>
+  
+    <!-- AUTO-INJECTED: Resources list (populated from Firestore 'driveLinks') -->
+    <div id="resources-list">লোড হচ্ছে...</div>
+</section>
+
+  <!-- GALLERY -->
+  <section id="gallery" class="section">
+    <h2>Gallery</h2>
+    <p style="opacity:0.9; margin-top:8px">ক্লাস ও ইভেন্টের ছবি এখানে থাকবে।</p>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section">
+    <h2>FAQ — প্রায় জিজ্ঞাসিত প্রশ্নাবলী</h2>
+    <div style="margin-top:8px;opacity:0.92">
+      <p><strong>Q:</strong> ভর্তি কখন করা যায়?<br><strong>A:</strong> ভর্তি চলমান — যেকোনো সময়ে ভর্তি করতে পারবেন।</p>
+      <p><strong>Q:</strong> এন্ট্রি ফি আছে কি?<br><strong>A:</strong> নেই — কোন এন্ট্রি ফি নেই, মাত্র মাসিক ₹350।</p>
+      <p><strong>Q:</strong> ক্লাস কবে হয়?<br><strong>A:</strong> সপ্তাহে ৩ বার রেগুলার ক্লাস, প্রয়োজনে ২ বার এক্সট্রা ক্লাস।</p>
+      <p><strong>Q:</strong> কিভাবে পেমেন্ট করবেন?<br><strong>A:</strong> Payments সেকশনে GPay/PhonePe/Paytm নম্বর দেয়া আছে — প্রমাণ হিসেবে screenshot আপলোড করুন।</p>
+      <p><strong>Q:</strong> সিলেবাস কোথা থেকে পাব?<br><strong>A:</strong> প্রতিটি কোর্স কার্ডে "Download Syllabus" বাটন আছে — PDF ডাউনলোড করুন।</p>
+    </div>
+  </section>
+
+  <footer>&copy; 2025 Target Zone — Hardighi, Bhikahar, Tapan | Call: 9614373839</footer>
+</main>
+
+<!-- ===== SCRIPTS ===== -->
+
+<!-- Tabs & Sidebar -->
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const navLinks = document.querySelectorAll('nav.top a[data-target], .sidebar nav a[data-target]');
+  const sections = document.querySelectorAll('.section');
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const closeSidebar = document.getElementById('closeSidebar');
+  const overlay = document.getElementById('overlay');
+
+  function showSection(id){
+    sections.forEach(s => s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if(t) t.classList.add('active');
+    // active links
+    document.querySelectorAll('nav.top a, .sidebar nav a').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('[data-target="'+id+'"]').forEach(a => a.classList.add('active'));
+    // close sidebar
+    closeMenu();
+    // scroll top of main
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  navLinks.forEach(a => {
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      const id = this.getAttribute('data-target');
+      if(id) showSection(id);
+    });
+  });
+
+  // initial from hash
+  const hash = location.hash.replace('#','');
+  if(hash && document.getElementById(hash)) showSection(hash);
+  else showSection('home');
+
+  // sidebar
+  function openMenu(){ sidebar.classList.add('open'); overlay.classList.add('show'); sidebar.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden'; }
+  function closeMenu(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); sidebar.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); document.documentElement.style.overflow=''; document.body.style.overflow=''; }
+
+  hamburger.addEventListener('click', function(e){ e.stopPropagation(); openMenu(); });
+  if(closeSidebar) closeSidebar.addEventListener('click', function(e){ e.stopPropagation(); closeMenu(); });
+  overlay.addEventListener('click', closeMenu);
+  window.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
+  window.addEventListener('resize', function(){ if(window.innerWidth > 920) closeMenu(); });
+
+  // links in course CTA that target contact should show the admission form
+  document.querySelectorAll('a[data-target="contact"]').forEach(a => a.addEventListener('click', function(e){ e.preventDefault(); showSection('contact'); }));
+
+  // animate head-card in
+  const headCard = document.getElementById('headCard');
+  if(headCard) setTimeout(()=>{ headCard.style.opacity='1'; headCard.style.transform='none'; }, 260);
+});
+</script>
+
+<!-- Firebase: Realtime DB + Storage for proof upload & admissions -->
+<script>
+(async function(){
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js');
+    const dbModule = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js');
+    const storageModule = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js');
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      databaseURL: "https://target-zone-8fffd-default-rtdb.firebaseio.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e",
+      measurementId: "G-436XDYLGVX"
+    };
+    const app = initializeApp(firebaseConfig);
+    const { getDatabase, ref, push, set, serverTimestamp } = dbModule;
+    const { getStorage, ref: sref, uploadBytes, getDownloadURL } = storageModule;
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // Admission form submit
+    const submitAdmission = document.getElementById('submitAdmission');
+    const admStatus = document.getElementById('admStatus');
+    submitAdmission.addEventListener('click', async function(){
+      const name = document.getElementById('adm_name').value.trim();
+      const phone = document.getElementById('adm_phone').value.trim();
+      const course = document.getElementById('adm_course').value;
+      const addr = document.getElementById('adm_address').value.trim();
+      const msg = document.getElementById('adm_message').value.trim();
+      if(!name || !phone){ admStatus.style.color='#ffd2d2'; admStatus.textContent='নাম ও ফোন দরকার'; return; }
+      submitAdmission.disabled=true; submitAdmission.textContent='Sending...';
+      try {
+        const admissionsRef = ref(db, 'admissions');
+        const newRef = push(admissionsRef);
+        await set(newRef, { name, phone, course, address:addr, message:msg, createdAt: serverTimestamp() });
+        admStatus.style.color='#bfffd4'; admStatus.textContent='ধন্যবাদ! তোমার আবেদন জমা হয়েছে।';
+        document.getElementById('admissionForm').reset();
+      } catch(err){
+        console.error(err);
+        admStatus.style.color='#ffd2d2'; admStatus.textContent='ত্রুটি হয়েছে। আবার চেষ্টা করুন।';
+      } finally {
+        submitAdmission.disabled=false; submitAdmission.textContent='Submit Admission';
+        setTimeout(()=> admStatus.textContent='',6000);
+      }
+    });
+
+    // Payment proof upload
+    const uploadBtn = document.getElementById('uploadProofBtn');
+    const proofFile = document.getElementById('proofFile');
+    const proofName = document.getElementById('proofName');
+    const proofPhone = document.getElementById('proofPhone');
+    const proofStatus = document.getElementById('proofStatus');
+
+    uploadBtn.addEventListener('click', async function(){
+      const file = proofFile.files[0];
+      const name = (proofName.value || '').trim();
+      const phone = (proofPhone.value || '').trim();
+      if(!file || !name || !phone){ proofStatus.style.color='#ffd2d2'; proofStatus.textContent='নাম, ফোন ও ফাইল লাগবে'; return; }
+      uploadBtn.disabled=true; uploadBtn.textContent='Uploading...';
+      try {
+        const fileExt = file.name.split('.').pop();
+        const filename = `proofs/${phone}_${Date.now()}.${fileExt}`;
+        const storageRef = sref(storage, filename);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        // save metadata to realtime db
+        const proofsRef = ref(db, 'paymentProofs');
+        const newRef = push(proofsRef);
+        await set(newRef, { name, phone, file: filename, url, createdAt: serverTimestamp() });
+        proofStatus.style.color = '#bfffd4'; proofStatus.textContent = 'আপলোড হয়েছে। ধন্যবাদ।';
+        proofFile.value = ''; proofName.value=''; proofPhone.value='';
+      } catch(err){
+        console.error(err);
+        proofStatus.style.color='#ffd2d2'; proofStatus.textContent='আপলোড হয়নি। আবার চেষ্টা করুন।';
+      } finally {
+        uploadBtn.disabled=false; uploadBtn.textContent='Upload';
+        setTimeout(()=> proofStatus.textContent='', 6000);
+      }
+    });
+
+    // copy bank details
+    document.getElementById('copyBank').addEventListener('click', function(){
+      const acc = document.getElementById('bankAcc').textContent.trim();
+      const ifsc = document.getElementById('bankIFSC').textContent.trim();
+      const text = `A/C: ${acc}, IFSC: ${ifsc}`;
+      navigator.clipboard?.writeText(text).then(()=> {
+        alert('Bank details copied to clipboard');
+      }).catch(()=> alert('Copy failed — please select and copy manually'));
+    });
+
+  } catch(err){
+    console.error('Firebase init error', err);
+  }
+})();
+</script>
+
+<!-- UPI / Payment Deep Links (client side) -->
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const upiNumber = '7679262362';
+  // create a generic UPI id (phone@upi) — many apps accept upi:// links with pa param
+  const upiPA = encodeURIComponent(upiNumber + '@upi'); // placeholder; if you have specific VPA replace like 7679262362@okaxis
+  const payText = encodeURIComponent('Payment%20to%20Target%20Zone');
+  // upi deeplink (works on mobile supporting UPI)
+  const upiLink = `upi://pay?pa=${upiPA}&pn=${encodeURIComponent('Target Zone')}&tn=${payText}&cu=INR`;
+  // fallback http link that opens UPI intent on Android via intent: (some browsers)
+  const intentLink = `intent://pay?pa=${upiPA}&pn=${encodeURIComponent('Target Zone')}&tn=${payText}&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+
+  const gpayBtn = document.getElementById('gpayBtn');
+  const phonepeBtn = document.getElementById('phonepeBtn');
+  const paytmBtn = document.getElementById('paytmBtn');
+
+  function openUPI(link){
+    // attempt open via location.href — on mobile will prompt UPI apps
+    window.location.href = link;
+    // also try intent after short delay (Android Chrome)
+    setTimeout(()=> { window.location.href = intentLink; }, 800);
+  }
+
+  if(gpayBtn){
+    gpayBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      // prefer Google Pay package intent
+      openUPI(upiLink);
+    });
+  }
+  if(phonepeBtn){
+    phonepeBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      openUPI(upiLink);
+    });
+  }
+  if(paytmBtn){
+    paytmBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      openUPI(upiLink);
+    });
+  }
+});
+</script>
+
+<!-- Canvas background animation -->
+<script>
+(function(){
+  const canvas = document.getElementById('bgCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = innerWidth;
+  let H = canvas.height = innerHeight;
+  const stars = [], boxes = [];
+  const plane = { x: W * 0.05, y: H * 0.12, vx: 0.6 };
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+  function initBG(){ stars.length=0; boxes.length=0; for(let i=0;i<120;i++) stars.push({x:rand(0,W),y:rand(0,H),r:rand(0.6,1.8),a:rand(0.2,1),vy:rand(0.02,0.45)}); for(let i=0;i<8;i++) boxes.push({x:rand(0,W),y:rand(0,H),w:rand(40,120),h:rand(20,60),a:rand(0,Math.PI*2),va:rand(0.0006,0.003)}); }
+  function resize(){ W=canvas.width=innerWidth; H=canvas.height=innerHeight; plane.x = W * 0.05; plane.y = H * 0.12; initBG(); }
+  addEventListener('resize', resize); initBG();
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(2,7,20,0.85)'); g.addColorStop(1,'rgba(6,12,24,0.95)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    for(const s of stars){ s.y -= s.vy; if(s.y < -5) s.y = H+5; ctx.globalAlpha = s.a; ctx.beginPath(); ctx.fillStyle = '#fff'; ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    for(const b of boxes){ b.a += b.va; ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.a*0.35); ctx.globalAlpha = 0.06; ctx.fillStyle = '#fff'; ctx.fillRect(-b.w/2,-b.h/2,b.w,b.h); ctx.restore(); }
+    ctx.globalAlpha = 1;
+    plane.x += plane.vx; if(plane.x > W + 200) plane.x = -200;
+    ctx.save(); ctx.translate(plane.x, plane.y); ctx.rotate(Math.sin(Date.now()/4500)*0.05); ctx.globalAlpha = 0.95;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-40,10); ctx.lineTo(-40,-10); ctx.closePath(); ctx.fillStyle = '#ffd59a'; ctx.fill(); ctx.restore();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+  <script>
+function showQR(imgSrc){
+  document.getElementById('qrImage').src = imgSrc;
+  document.getElementById('downloadQR').href = imgSrc;
+  document.getElementById('qrModal').style.display = 'flex';
+}
+function closeQR(){
+  document.getElementById('qrModal').style.display = 'none';
+}
+  </script>
+  <!-- QR Modal -->
+<div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:20px; border-radius:10px; text-align:center; max-width:90%; position:relative;">
+    <span onclick="closeQR()" style="position:absolute; right:10px; top:5px; font-size:20px; cursor:pointer;">&times;</span>
+    <img id="qrImage" src="" alt="QR Code" style="max-width:300px; width:100%; height:auto; border-radius:8px;">
+    <br><br>
+    <a id="downloadQR" class="btn primary" download="payment-qr.png">Download QR</a>
+  </div>
+</div>
+
+
+<!-- AUTO-INJECTED SCRIPT: Load Drive links into #resources-list from Firestore -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+      apiKey: "AIzaSyCR5rqthBh0vX0yLOcOG3b9xJiKbYtzdxU",
+      authDomain: "target-zone-8fffd.firebaseapp.com",
+      projectId: "target-zone-8fffd",
+      storageBucket: "target-zone-8fffd.appspot.com",
+      messagingSenderId: "667579216123",
+      appId: "1:667579216123:web:37bb1fcc724743073d005e"
+    };
+
+try {
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadDriveResources() {
+    const container = document.getElementById('resources-list');
+    if(!container) return;
+    container.innerHTML = 'লোড হচ্ছে...';
+    try {
+      const qSnap = await getDocs(query(collection(db, 'driveLinks'), orderBy('createdAt', 'desc')));
+      if(!qSnap || qSnap.size === 0) {
+        container.innerHTML = '<p>কোনো রিসোর্স পাওয়া যায়নি।</p>';
+        return;
+      }
+      let html = '<ol>';
+      qSnap.forEach(docSnap => {
+        const d = docSnap.data() || {};
+        const title = d.title || 'Untitled';
+        const url = d.url || '#';
+        html += `<li><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></li>`;
+      });
+      html += '</ol>';
+      container.innerHTML = html;
+    } catch (e) {
+      console.error('Error loading driveLinks:', e);
+      container.innerHTML = '<p>রিসোর্স লোড করতে সমস্যা হয়েছে — কনসল দেখুন।</p>';
+    }
+  }
+
+  if(document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadDriveResources);
+  } else {
+    loadDriveResources();
+  }
+} catch (e) {
+  console.error('Firebase init failed in resources loader', e);
+}
+</script>
+</body>
+</html>
