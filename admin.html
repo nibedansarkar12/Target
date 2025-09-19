@@ -674,9 +674,6 @@ window.addQuestion = async () => {
     }
     // ---- end additions ----
 // ================= Manage Notes (Drive links) ===================
-import { addDoc, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-// (উপরের imports আপনার ফাইলে আগেই আছে—যদি না থাকে, যোগ করুন।)
- 
 window.addNote = async () => {
   try {
     const title = document.getElementById("noteTitle").value.trim();
