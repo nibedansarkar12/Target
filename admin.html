@@ -439,40 +439,64 @@ window.loadQuestions = async (categoryOrColl) => {
   // ---------------- Salary Module ----------------
 
   // Open Salary
-  window.openSalary = async () => {
-    hideFinancePanels();
-    const panel = document.getElementById("salary-panel");
-    panel.classList.remove("hidden");
-    panel.innerHTML = `
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">🪙 Salary Management</h3>
-        <button id="export-csv" class="bg-indigo-600 px-3 py-1 rounded">Export CSV</button>
+  <!-- Salary Section (update inside openSalary) -->
+window.openSalary = async () => {
+  hideFinancePanels();
+  const panel = document.getElementById("salary-panel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <div class="flex justify-between items-center">
+      <h3 class="text-xl font-bold">🪙 Salary Management</h3>
+      <button id="export-csv" class="bg-indigo-600 px-3 py-1 rounded">Export CSV</button>
+    </div>
+
+    <!-- Batch Create -->
+    <div class="mt-4 p-4 bg-white/10 rounded">
+      <h4 class="font-semibold mb-2">➕ Create New Batch</h4>
+      <div class="flex gap-2">
+        <input id="new-batch-name" class="border rounded px-3 py-2 flex-1" placeholder="Batch Name (e.g. SSC 2025)">
+        <button onclick="createBatch()" class="bg-green-600 px-3 py-2 rounded">Create</button>
       </div>
+    </div>
 
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 bg-white/10 rounded">
-          <h4 class="font-semibold">Batches</h4>
-          <div id="batch-list" class="mt-3 space-y-2">Loading...</div>
-        </div>
-        <div class="p-4 bg-white/10 rounded">
-          <h4 class="font-semibold">Students</h4>
-          <div id="student-list" class="mt-3 max-h-56 overflow-y-auto">Select a batch</div>
-        </div>
-        <div class="p-4 bg-white/10 rounded">
-          <h4 class="font-semibold">Summary</h4>
-          <div id="salary-summary" class="mt-3">—</div>
-          <canvas id="salaryChart" class="mt-4" height="120"></canvas>
-        </div>
+    <!-- Student Registration -->
+    <div class="mt-4 p-4 bg-white/10 rounded">
+      <h4 class="font-semibold mb-2">🧑‍🎓 Register Student</h4>
+      <form id="student-form" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input id="student-name" class="border rounded px-3 py-2" placeholder="Full Name">
+        <input id="student-phone" class="border rounded px-3 py-2" placeholder="Phone">
+        <input id="student-email" class="border rounded px-3 py-2" placeholder="Email">
+        <input id="student-address" class="border rounded px-3 py-2" placeholder="Address">
+        <select id="student-batch" class="border rounded px-3 py-2">
+          <option value="">-- Select Batch --</option>
+        </select>
+        <button type="button" onclick="registerStudent()" class="bg-blue-600 text-white px-3 py-2 rounded col-span-2">Register</button>
+      </form>
+    </div>
+
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-4 bg-white/10 rounded">
+        <h4 class="font-semibold">Batches</h4>
+        <div id="batch-list" class="mt-3 space-y-2">Loading...</div>
       </div>
+      <div class="p-4 bg-white/10 rounded">
+        <h4 class="font-semibold">Students</h4>
+        <div id="student-list" class="mt-3 max-h-56 overflow-y-auto">Select a batch</div>
+      </div>
+      <div class="p-4 bg-white/10 rounded">
+        <h4 class="font-semibold">Summary</h4>
+        <div id="salary-summary" class="mt-3">—</div>
+        <canvas id="salaryChart" class="mt-4" height="120"></canvas>
+      </div>
+    </div>
 
-      <div id="student-finance-area" class="mt-6"></div>
-    `;
+    <div id="student-finance-area" class="mt-6"></div>
+  `;
 
-    document.getElementById("export-csv").addEventListener("click", exportCurrentViewCSV);
+  document.getElementById("export-csv").addEventListener("click", exportCurrentViewCSV);
 
-    loadBatches();
-  };
-
+  loadBatches();
+};
   // Load Batches
   async function loadBatches() {
     try {
